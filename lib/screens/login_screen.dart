@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/auth_response.dart';
+import '../services/token_storage.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,6 +12,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final ApiService _apiService = ApiService();
+  final TokenStorage _tokenStorage = TokenStorage();
 
   final TextEditingController _emailController =
   TextEditingController();
@@ -32,8 +34,12 @@ class _LoginScreenState extends State<LoginScreen> {
         _passwordController.text.trim(),
       );
 
-      print("Access Token: ${result.accessToken}");
-      print("User: ${result.user.username}");
+      await _tokenStorage.saveTokens(
+        result.accessToken,
+        result.refreshToken,
+      );
+
+      print("Login erfolgreich");
 
     } catch (e) {
       setState(() {
