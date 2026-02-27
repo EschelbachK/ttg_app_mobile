@@ -1,24 +1,21 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
-import '../models/auth_response.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/token_storage.dart';
-import 'home_screen.dart';
+import '../services/api_service.dart';
+import '../core/auth/auth_provider.dart';
+import '../models/auth_response.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final ApiService _apiService = ApiService();
+class _LoginScreenState extends ConsumerState<LoginScreen> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final TokenStorage _tokenStorage = TokenStorage();
-
-  final TextEditingController _emailController =
-  TextEditingController();
-  final TextEditingController _passwordController =
-  TextEditingController();
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -30,7 +27,9 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      AuthResponse result = await _apiService.login(
+      final apiService = ref.read(apiServiceProvider);
+
+      AuthResponse result = await apiService.login(
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
@@ -40,16 +39,12 @@ class _LoginScreenState extends State<LoginScreen> {
         result.refreshToken,
       );
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => HomeScreen()),
-      );
-
-      print("Login erfolgreich");
+      // 🔥 Riverpod State Update (kein Navigator mehr)
+      ref.read(authProvider.notifier).login();
 
     } catch (e) {
       setState(() {
-        _errorMessage = "Login fehlgeschlagen";
+        _errorMessage = "Login failed. Please check your credentials.";
       });
     } finally {
       setState(() {
@@ -68,7 +63,9 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("TrainToGain Login")),
+      appBar: AppBar(
+        title: const Text("Login"),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -79,7 +76,6 @@ class _LoginScreenState extends State<LoginScreen> {
               controller: _emailController,
               decoration: const InputDecoration(
                 labelText: "Email",
-                border: OutlineInputBorder(),
               ),
             ),
 
@@ -89,12 +85,11 @@ class _LoginScreenState extends State<LoginScreen> {
               controller: _passwordController,
               obscureText: true,
               decoration: const InputDecoration(
-                labelText: "Passwort",
-                border: OutlineInputBorder(),
+                labelText: "Password",
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
             if (_errorMessage != null)
               Text(
@@ -102,16 +97,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: const TextStyle(color: Colors.red),
               ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
 
             _isLoading
                 ? const CircularProgressIndicator()
-                : SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _login,
-                child: const Text("Login"),
-              ),
+                : ElevatedButton(
+              onPressed: _login,
+              child: const Text("Login"),
             ),
           ],
         ),
