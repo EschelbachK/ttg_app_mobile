@@ -1,30 +1,25 @@
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/auth_response.dart';
+import '../core/network/api_client.dart';
 
 class ApiService {
-  final String baseUrl = "http://10.0.2.2:8080/api";
+  final ApiClient _apiClient = ApiClient();
 
+  // 🔐 LOGIN
   Future<AuthResponse> login(String email, String password) async {
-    final url = Uri.parse("$baseUrl/auth/login");
-
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
+    final response = await _apiClient.post(
+      "/api/auth/login",
+      body: {
+        "email": email,
+        "password": password,
       },
-      body: jsonEncode({
-        'email': email,
-        'password': password,
-      }),
     );
 
-    final data = jsonDecode(response.body);
-
     if (response.statusCode == 200) {
-      return AuthResponse.fromJson(data);
+      final data = jsonDecode(response.body);
+      return AuthResponse.fromJson(data["data"]);
     } else {
-      throw Exception(data['message'] ?? 'Login failed');
+      throw Exception("Login failed: ${response.statusCode}");
     }
   }
 }
