@@ -1,31 +1,35 @@
-import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../core/network/api_client_provider.dart';
+import 'package:dio/dio.dart';
+
+import '../core/network/dio_provider.dart';
 import '../models/auth_response.dart';
 import 'token_storage.dart';
 
 class ApiService {
   final Ref ref;
-  final TokenStorage _tokenStorage = TokenStorage();
 
   ApiService(this.ref);
 
-  Future<AuthResponse> login(String email, String password) async {
-    final apiClient = ref.read(apiClientProvider);
+  Future<AuthResponse> login(
+      String email,
+      String password,
+      ) async {
 
-    final response = await apiClient.post(
-      "/api/auth/login",
-      body: {
+    final dio = ref.read(dioProvider);
+    final tokenStorage = ref.read(tokenStorageProvider);
+
+    final response = await dio.post(
+      "/auth/login",
+      data: {
         "email": email,
         "password": password,
       },
     );
 
-    final data = jsonDecode(response.body);
-    final authResponse = AuthResponse.fromJson(data["data"]);
+    final authResponse =
+    AuthResponse.fromJson(response.data);
 
-    // 🔥 TOKENS SPEICHERN
-    await _tokenStorage.saveTokens(
+    await tokenStorage.saveTokens(
       authResponse.accessToken,
       authResponse.refreshToken,
     );
