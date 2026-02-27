@@ -1,46 +1,52 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../auth/auth_provider.dart';
 import '../../screens/login_screen.dart';
 import '../../screens/dashboard_screen.dart';
-import '../../core/navigation/main_navigation.dart';
+import '../../screens/loading_screen.dart';
+import '../auth/auth_provider.dart';
 
-final appRouterProvider = Provider<GoRouter>((ref) {
+final routerProvider = Provider<GoRouter>((ref) {
+
   final authState = ref.watch(authProvider);
 
   return GoRouter(
-    initialLocation: '/dashboard',
-    redirect: (context, state) {
-      final isLoggedIn = authState.isLoggedIn;
-      final isGoingToLogin = state.matchedLocation == '/login';
+    initialLocation: '/login',
 
-      if (!isLoggedIn && !isGoingToLogin) {
+    redirect: (context, state) {
+
+      final isLoggedIn = authState.isLoggedIn;
+      final isLoggingIn = state.matchedLocation == '/login';
+      final isLoading = state.matchedLocation == '/loading';
+
+      if (!isLoggedIn) {
         return '/login';
       }
 
-      if (isLoggedIn && isGoingToLogin) {
-        return '/dashboard';
+      if (isLoggedIn && isLoggingIn) {
+        return '/loading';
+      }
+
+      if (isLoggedIn && isLoading) {
+        return null;
       }
 
       return null;
     },
+
     routes: [
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
       ),
-
-      ShellRoute(
-        builder: (context, state, child) {
-          return MainNavigation(child: child);
-        },
-        routes: [
-          GoRoute(
-            path: '/dashboard',
-            builder: (context, state) => const DashboardScreen(),
-          ),
-        ],
+      GoRoute(
+        path: '/loading',
+        builder: (context, state) => const LoadingScreen(),
+      ),
+      GoRoute(
+        path: '/dashboard',
+        builder: (context, state) => const DashboardScreen(),
       ),
     ],
   );
