@@ -1,13 +1,17 @@
 import 'dart:convert';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/network/api_client_provider.dart';
 import '../models/auth_response.dart';
-import '../core/network/api_client.dart';
 
 class ApiService {
-  final ApiClient _apiClient = ApiClient();
+  final Ref ref;
 
-  // 🔐 LOGIN
+  ApiService(this.ref);
+
   Future<AuthResponse> login(String email, String password) async {
-    final response = await _apiClient.post(
+    final apiClient = ref.read(apiClientProvider);
+
+    final response = await apiClient.post(
       "/api/auth/login",
       body: {
         "email": email,
@@ -19,7 +23,11 @@ class ApiService {
       final data = jsonDecode(response.body);
       return AuthResponse.fromJson(data["data"]);
     } else {
-      throw Exception("Login failed: ${response.statusCode}");
+      throw Exception("Login failed");
     }
   }
 }
+
+final apiServiceProvider = Provider<ApiService>((ref) {
+  return ApiService(ref);
+});
