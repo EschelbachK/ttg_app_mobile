@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/token_storage.dart';
 import '../auth/auth_provider.dart';
+import '../error/api_exceptions.dart';
+import '../error/dio_error_mapper.dart';
 
 class AuthInterceptor extends Interceptor {
   final Ref ref;
@@ -51,10 +53,21 @@ class AuthInterceptor extends Interceptor {
 
         return handler.resolve(cloneReq);
       } catch (_) {
-        return handler.next(err);
+        return handler.reject(
+          DioException(
+            requestOptions: err.requestOptions,
+            error: UnauthorizedException(),
+          ),
+        );
       }
     }
 
-    handler.next(err);
-  }
-}
+    final mappedError = DioErrorMapper.map(err);
+
+    handler.reject(
+      DioException(
+        requestOptions: err.requestOptions,
+        error: mappedError,
+      ),
+    );
+  }}
