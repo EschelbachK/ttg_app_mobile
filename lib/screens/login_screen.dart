@@ -30,52 +30,52 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     try {
       final apiService = ref.read(apiServiceProvider);
-      final tokenStorage = ref.read(tokenStorageProvider);
 
-      AuthResponse result = await apiService.login(
+      final AuthResponse result =
+      await apiService.login(
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
 
-      await tokenStorage.saveTokens(
-        result.accessToken,
-        result.refreshToken,
-      );
-
-      // 🔥 State-driven Login
       ref.read(authProvider.notifier).login();
     }
 
-    // 🔥 WICHTIG: DioException abfangen
     on DioException catch (e) {
+      print("===== DIO ERROR =====");
+      print("Type: ${e.type}");
+      print("Status: ${e.response?.statusCode}");
+      print("Data: ${e.response?.data}");
+      print("Error: ${e.error}");
+      print("=====================");
+
       final error = e.error;
 
       if (error is UnauthorizedException) {
-        setState(() {
-          _errorMessage = "Invalid credentials.";
-        });
+        _errorMessage = "Invalid credentials.";
       } else if (error is NetworkException) {
-        setState(() {
-          _errorMessage = "Network error. Please try again.";
-        });
+        _errorMessage = "Network error. Please try again.";
       } else if (error is ServerException) {
-        setState(() {
-          _errorMessage = "Server error. Please try later.";
-        });
+        _errorMessage = "Server error. Please try later.";
       } else if (error is ApiException) {
-        setState(() {
-          _errorMessage = error.message;
-        });
+        _errorMessage = error.message;
       } else {
-        setState(() {
-          _errorMessage = "Unexpected error.";
-        });
+        _errorMessage =
+            e.response?.data?.toString() ??
+                e.message ??
+                "Unexpected error.";
       }
+
+      setState(() {});
     }
 
-    catch (e) {
+    catch (e, stack) {
+      print("===== UNKNOWN ERROR =====");
+      print(e);
+      print(stack);
+      print("=========================");
+
       setState(() {
-        _errorMessage = "Unexpected error.";
+        _errorMessage = e.toString();
       });
     }
 
