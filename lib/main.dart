@@ -1,22 +1,34 @@
 import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
+import 'screens/home_screen.dart';
 import 'services/token_storage.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      home: AuthWrapper(),
+    );
+  }
 }
 
-class _MyAppState extends State<MyApp> {
-  final TokenStorage _tokenStorage = TokenStorage();
-  bool _isLoading = true;
-  bool _isLoggedIn = false;
+class AuthWrapper extends StatefulWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  final TokenStorage tokenStorage = TokenStorage();
+  bool isLoading = true;
+  bool isLoggedIn = false;
 
   @override
   void initState() {
@@ -25,32 +37,22 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _checkLogin() async {
-    final token = await _tokenStorage.getAccessToken();
+    final token = await tokenStorage.getAccessToken();
 
     setState(() {
-      _isLoggedIn = token != null;
-      _isLoading = false;
+      isLoggedIn = token != null;
+      isLoading = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const MaterialApp(
-        home: Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: _isLoggedIn
-          ? const Scaffold(
-        body: Center(
-            child: Text("User already logged in")),
-      )
-          : const LoginScreen(),
-    );
+    return isLoggedIn ? HomeScreen() : LoginScreen();
   }
 }
