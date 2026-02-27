@@ -19,12 +19,8 @@ class ApiService {
       },
     );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return AuthResponse.fromJson(data["data"]);
-    } else {
-      throw Exception("Login failed");
-    }
+    final data = jsonDecode(response.body);
+    return AuthResponse.fromJson(data["data"]);
   }
 }
 
