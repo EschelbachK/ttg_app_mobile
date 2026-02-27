@@ -10,12 +10,10 @@ class AppTheme {
   static ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
     scaffoldBackgroundColor: background,
-
     colorScheme: const ColorScheme.dark(
       primary: accent,
       surface: surface,
     ),
-
     appBarTheme: const AppBarTheme(
       backgroundColor: background,
       elevation: 0,
@@ -26,7 +24,6 @@ class AppTheme {
         fontWeight: FontWeight.w600,
       ),
     ),
-
     cardTheme: CardThemeData(
       color: surface,
       elevation: 0,
@@ -35,7 +32,6 @@ class AppTheme {
         borderRadius: BorderRadius.all(Radius.circular(12)),
       ),
     ),
-
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: accent,
@@ -46,7 +42,6 @@ class AppTheme {
         ),
       ),
     ),
-
     inputDecorationTheme: const InputDecorationTheme(
       filled: true,
       fillColor: surface,
@@ -56,7 +51,6 @@ class AppTheme {
       ),
       hintStyle: TextStyle(color: textSecondary),
     ),
-
     textTheme: const TextTheme(
       titleLarge: TextStyle(
         fontSize: 22,
