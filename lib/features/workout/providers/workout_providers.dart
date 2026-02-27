@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 
 import '../data/workout_api_service.dart';
+import '../models/set_entry.dart';
 import '../models/training_plan.dart';
 import '../models/training_folder.dart';
 import '../models/training_exercise.dart';
@@ -60,4 +61,11 @@ FutureProvider.family<List<TrainingExercise>, String>(
         (ref, folderId) async {
       final api = ref.watch(workoutApiServiceProvider);
       return api.getExercises(folderId);
+    });
+
+final setsProvider =
+FutureProvider.family<List<SetEntry>, String>(
+        (ref, exerciseId) async {
+      final api = ref.watch(workoutApiServiceProvider);
+      return api.getSets(exerciseId);
     });
