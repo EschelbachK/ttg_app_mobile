@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 
 import '../services/api_service.dart';
 import '../services/token_storage.dart';
 import '../core/auth/auth_provider.dart';
-import '../core/error/app_exceptions.dart';
+import '../core/error/api_exceptions.dart';
 import '../models/auth_response.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -17,7 +18,6 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final TokenStorage _tokenStorage = TokenStorage();
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -30,37 +30,56 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     try {
       final apiService = ref.read(apiServiceProvider);
+      final tokenStorage = ref.read(tokenStorageProvider);
 
       AuthResponse result = await apiService.login(
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
 
-      await _tokenStorage.saveTokens(
+      await tokenStorage.saveTokens(
         result.accessToken,
         result.refreshToken,
       );
 
-      // 🔥 State-driven Login (kein Navigator)
+      // 🔥 State-driven Login
       ref.read(authProvider.notifier).login();
+    }
 
-    } on UnauthorizedException {
-      setState(() {
-        _errorMessage = "Invalid credentials.";
-      });
-    } on NetworkException {
-      setState(() {
-        _errorMessage = "Network error. Please try again.";
-      });
-    } on ServerException {
-      setState(() {
-        _errorMessage = "Server error. Please try later.";
-      });
-    } catch (e) {
+    // 🔥 WICHTIG: DioException abfangen
+    on DioException catch (e) {
+      final error = e.error;
+
+      if (error is UnauthorizedException) {
+        setState(() {
+          _errorMessage = "Invalid credentials.";
+        });
+      } else if (error is NetworkException) {
+        setState(() {
+          _errorMessage = "Network error. Please try again.";
+        });
+      } else if (error is ServerException) {
+        setState(() {
+          _errorMessage = "Server error. Please try later.";
+        });
+      } else if (error is ApiException) {
+        setState(() {
+          _errorMessage = error.message;
+        });
+      } else {
+        setState(() {
+          _errorMessage = "Unexpected error.";
+        });
+      }
+    }
+
+    catch (e) {
       setState(() {
         _errorMessage = "Unexpected error.";
       });
-    } finally {
+    }
+
+    finally {
       setState(() {
         _isLoading = false;
       });
