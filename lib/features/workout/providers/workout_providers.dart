@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 
 import '../data/workout_api_service.dart';
+import '../models/training_folder.dart';
 import '../models/training_plan.dart';
 
 /// Dio provider (falls noch nicht global vorhanden)
@@ -26,4 +27,10 @@ final trainingPlansProvider =
 FutureProvider<List<TrainingPlan>>((ref) async {
   final api = ref.watch(workoutApiServiceProvider);
   return api.getTrainingPlans();
+});
+
+final foldersProvider = FutureProvider.family<
+    List<TrainingFolder>, String>((ref, planId) async {
+  final api = ref.watch(workoutApiServiceProvider);
+  return api.getFolders(planId);
 });
