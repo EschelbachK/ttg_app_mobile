@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/training_plan.dart';
 import '../providers/workout_providers.dart';
+import 'training_folder_screen.dart';
 
 class TrainingPlanScreen extends ConsumerWidget {
   const TrainingPlanScreen({super.key});
@@ -73,7 +74,6 @@ class TrainingPlanScreen extends ConsumerWidget {
   }
 }
 
-/// 👇 Diese Klasse muss AUSSERHALB der Screen-Klasse stehen
 class _PlansList extends ConsumerWidget {
   final List<TrainingPlan> plans;
 
@@ -92,9 +92,60 @@ class _PlansList extends ConsumerWidget {
       itemBuilder: (context, index) {
         final plan = plans[index];
 
-        return ListTile(
-          title: Text(plan.name),
-          subtitle: Text('${plan.folders.length} folders'),
+        return Dismissible(
+          key: ValueKey(plan.id),
+          direction: DismissDirection.endToStart,
+          background: Container(
+            color: Colors.red,
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: const Icon(Icons.delete, color: Colors.white),
+          ),
+          confirmDismiss: (_) async {
+            return await showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Delete Plan'),
+                content: Text('Delete "${plan.name}"?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    child: const Text('Delete'),
+                  ),
+                ],
+              ),
+            );
+          },
+          onDismissed: (_) async {
+            final api = ref.read(workoutApiServiceProvider);
+
+            await api.deleteTrainingPlan(plan.id);
+
+            ref.invalidate(trainingPlansProvider);
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('${plan.name} deleted')),
+            );
+          },
+          child: ListTile(
+            title: Text(plan.name),
+            subtitle: Text('${plan.folders.length} folders'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => TrainingFolderScreen(
+                    planId: plan.id,
+                    planName: plan.name,
+                  ),
+                ),
+              );
+            },
+          ),
         );
       },
     );
