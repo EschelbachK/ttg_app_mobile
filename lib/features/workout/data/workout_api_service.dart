@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
+
 import '../models/training_plan.dart';
 import '../models/training_folder.dart';
+import '../models/training_exercise.dart';
 
 class WorkoutApiService {
   final Dio _dio;
@@ -49,9 +51,7 @@ class WorkoutApiService {
   }
 
   Future<TrainingFolder> createFolder(
-      String planId,
-      String name,
-      ) async {
+      String planId, String name) async {
     final response = await _dio.post(
       '/training-plans/$planId/folders',
       data: {'name': name},
@@ -61,10 +61,40 @@ class WorkoutApiService {
   }
 
   Future<void> deleteFolder(
-      String planId,
-      String folderId,
-      ) async {
+      String planId, String folderId) async {
     await _dio.delete(
         '/training-plans/$planId/folders/$folderId');
+  }
+
+  // =========================
+  // TRAINING EXERCISE
+  // =========================
+
+  Future<List<TrainingExercise>> getExercises(
+      String folderId) async {
+    final response =
+    await _dio.get('/folders/$folderId/exercises');
+
+    final data = response.data as List<dynamic>;
+
+    return data
+        .map((json) => TrainingExercise.fromJson(json))
+        .toList();
+  }
+
+  Future<TrainingExercise> createExercise(
+      String folderId, String name) async {
+    final response = await _dio.post(
+      '/folders/$folderId/exercises',
+      data: {'name': name},
+    );
+
+    return TrainingExercise.fromJson(response.data);
+  }
+
+  Future<void> deleteExercise(
+      String folderId, String exerciseId) async {
+    await _dio.delete(
+        '/folders/$folderId/exercises/$exerciseId');
   }
 }
