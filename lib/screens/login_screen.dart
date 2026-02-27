@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dio/dio.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dio/dio.dart';
 
 import '../services/api_service.dart';
 import '../core/auth/auth_provider.dart';
@@ -39,7 +39,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // Auth-State setzen
       ref.read(authProvider.notifier).login();
 
-      // Router übernimmt → redirect auf /loading
       if (mounted) {
         context.go('/loading');
       }
@@ -64,15 +63,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       }
 
       setState(() {});
-    }
-
-    catch (e) {
+    } catch (_) {
       setState(() {
         _errorMessage = "Unexpected error.";
       });
-    }
-
-    finally {
+    } finally {
       setState(() {
         _isLoading = false;
       });
@@ -96,23 +91,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ),
       body: Stack(
         children: [
-
-          // 🔹 Normales Login UI
           Padding(
             padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-
                 TextField(
                   controller: _emailController,
                   decoration: const InputDecoration(
                     labelText: "Email",
                   ),
                 ),
-
                 const SizedBox(height: 16),
-
                 TextField(
                   controller: _passwordController,
                   obscureText: true,
@@ -120,9 +110,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     labelText: "Password",
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
                 if (_errorMessage != null)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
@@ -131,7 +119,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       style: const TextStyle(color: Colors.red),
                     ),
                   ),
-
                 _isLoading
                     ? const CircularProgressIndicator()
                     : ElevatedButton(
@@ -142,7 +129,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
           ),
 
-          // 🔥 Overlay wenn User bereits eingeloggt ist
+          // Overlay falls bereits eingeloggt
           if (authState.isLoggedIn)
             Container(
               color: Colors.black.withOpacity(0.7),
