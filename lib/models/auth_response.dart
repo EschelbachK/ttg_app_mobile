@@ -10,10 +10,12 @@ class AuthResponse {
   });
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
+    final data = json['data'];
+
     return AuthResponse(
-      accessToken: json['accessToken'],
-      refreshToken: json['refreshToken'],
-      user: User.fromJson(json['user']),
+      accessToken: data['accessToken'],
+      refreshToken: data['refreshToken'],
+      user: User.fromJson(data['user']),
     );
   }
 }
