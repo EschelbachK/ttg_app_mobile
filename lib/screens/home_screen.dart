@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../core/layout/app_layout.dart';
 import '../core/auth/auth_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -7,19 +9,17 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Home"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              ref.read(authProvider.notifier).logout();
-            },
-          ),
-        ],
-      ),
-      body: const Center(
+    return AppLayout(
+      title: "Home",
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.logout),
+          onPressed: () {
+            ref.read(authProvider.notifier).logout();
+          },
+        ),
+      ],
+      child: const Center(
         child: Text(
           "Welcome to TrainToGain",
           style: TextStyle(fontSize: 18),
