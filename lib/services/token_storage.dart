@@ -1,30 +1,37 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final tokenStorageProvider = Provider<TokenStorage>(
+      (ref) => TokenStorage(),
+);
 
 class TokenStorage {
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  final FlutterSecureStorage _storage =
+  const FlutterSecureStorage();
 
-  static const _accessKey = "accessToken";
-  static const _refreshKey = "refreshToken";
+  static const _accessTokenKey = 'access_token';
+  static const _refreshTokenKey = 'refresh_token';
 
-  Future<void> saveTokens(String accessToken, String refreshToken) async {
-    await _storage.write(key: _accessKey, value: accessToken);
-    await _storage.write(key: _refreshKey, value: refreshToken);
-  }
-
-  Future<void> saveAccessToken(String accessToken) async {
-    await _storage.write(key: _accessKey, value: accessToken);
+  Future<void> saveTokens(
+      String accessToken,
+      String refreshToken,
+      ) async {
+    await _storage.write(
+        key: _accessTokenKey, value: accessToken);
+    await _storage.write(
+        key: _refreshTokenKey, value: refreshToken);
   }
 
   Future<String?> getAccessToken() async {
-    return await _storage.read(key: _accessKey);
+    return _storage.read(key: _accessTokenKey);
   }
 
   Future<String?> getRefreshToken() async {
-    return await _storage.read(key: _refreshKey);
+    return _storage.read(key: _refreshTokenKey);
   }
 
   Future<void> clearTokens() async {
-    await _storage.delete(key: _accessKey);
-    await _storage.delete(key: _refreshKey);
+    await _storage.delete(key: _accessTokenKey);
+    await _storage.delete(key: _refreshTokenKey);
   }
 }
