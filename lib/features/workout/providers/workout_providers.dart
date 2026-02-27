@@ -2,10 +2,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 
 import '../data/workout_api_service.dart';
-import '../models/training_folder.dart';
 import '../models/training_plan.dart';
+import '../models/training_folder.dart';
+import '../models/training_exercise.dart';
 
-/// Dio provider (falls noch nicht global vorhanden)
+// =========================
+// DIO
+// =========================
+
 final dioProvider = Provider<Dio>((ref) {
   return Dio(
     BaseOptions(
@@ -16,21 +20,44 @@ final dioProvider = Provider<Dio>((ref) {
   );
 });
 
-/// Workout API Service Provider
-final workoutApiServiceProvider = Provider<WorkoutApiService>((ref) {
+// =========================
+// API SERVICE
+// =========================
+
+final workoutApiServiceProvider =
+Provider<WorkoutApiService>((ref) {
   final dio = ref.watch(dioProvider);
   return WorkoutApiService(dio);
 });
 
-/// Fetch Training Plans
+// =========================
+// TRAINING PLAN
+// =========================
+
 final trainingPlansProvider =
 FutureProvider<List<TrainingPlan>>((ref) async {
   final api = ref.watch(workoutApiServiceProvider);
   return api.getTrainingPlans();
 });
 
-final foldersProvider = FutureProvider.family<
-    List<TrainingFolder>, String>((ref, planId) async {
-  final api = ref.watch(workoutApiServiceProvider);
-  return api.getFolders(planId);
-});
+// =========================
+// TRAINING FOLDER
+// =========================
+
+final foldersProvider =
+FutureProvider.family<List<TrainingFolder>, String>(
+        (ref, planId) async {
+      final api = ref.watch(workoutApiServiceProvider);
+      return api.getFolders(planId);
+    });
+
+// =========================
+// TRAINING EXERCISE
+// =========================
+
+final exercisesProvider =
+FutureProvider.family<List<TrainingExercise>, String>(
+        (ref, folderId) async {
+      final api = ref.watch(workoutApiServiceProvider);
+      return api.getExercises(folderId);
+    });
