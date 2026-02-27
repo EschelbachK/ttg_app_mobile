@@ -10,6 +10,7 @@ class MainNavigation extends StatelessWidget {
     final location = GoRouterState.of(context).matchedLocation;
 
     if (location.startsWith('/dashboard')) return 0;
+    if (location.startsWith('/workout')) return 1;
 
     return 0;
   }
@@ -18,6 +19,9 @@ class MainNavigation extends StatelessWidget {
     switch (index) {
       case 0:
         context.go('/dashboard');
+        break;
+      case 1:
+        context.go('/workout');
         break;
     }
   }
@@ -35,6 +39,10 @@ class MainNavigation extends StatelessWidget {
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard),
             label: "Dashboard",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.fitness_center),
+            label: "Workout",
           ),
         ],
       ),
