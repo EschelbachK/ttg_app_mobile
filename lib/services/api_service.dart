@@ -2,9 +2,11 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/network/api_client_provider.dart';
 import '../models/auth_response.dart';
+import 'token_storage.dart';
 
 class ApiService {
   final Ref ref;
+  final TokenStorage _tokenStorage = TokenStorage();
 
   ApiService(this.ref);
 
@@ -20,7 +22,15 @@ class ApiService {
     );
 
     final data = jsonDecode(response.body);
-    return AuthResponse.fromJson(data["data"]);
+    final authResponse = AuthResponse.fromJson(data["data"]);
+
+    // 🔥 TOKENS SPEICHERN
+    await _tokenStorage.saveTokens(
+      authResponse.accessToken,
+      authResponse.refreshToken,
+    );
+
+    return authResponse;
   }
 }
 
