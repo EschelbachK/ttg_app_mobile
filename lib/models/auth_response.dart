@@ -1,44 +1,42 @@
 class AuthResponse {
   final String accessToken;
   final String refreshToken;
-  final User user;
 
   AuthResponse({
     required this.accessToken,
     required this.refreshToken,
-    required this.user,
   });
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
-    final data = json['data'];
+
+    // 🔥 Falls Backend Wrapper hat
+    final Map<String, dynamic> data =
+    json.containsKey("data")
+        ? json["data"]
+        : json;
+
+    final accessToken =
+        data["accessToken"] ??
+            data["access_token"];
+
+    final refreshToken =
+        data["refreshToken"] ??
+            data["refresh_token"];
+
+    if (accessToken == null || refreshToken == null) {
+      throw Exception("Invalid auth response format: $json");
+    }
 
     return AuthResponse(
-      accessToken: data['accessToken'],
-      refreshToken: data['refreshToken'],
-      user: User.fromJson(data['user']),
+      accessToken: accessToken,
+      refreshToken: refreshToken,
     );
   }
-}
 
-class User {
-  final String id;
-  final String email;
-  final String username;
-  final String role;
-
-  User({
-    required this.id,
-    required this.email,
-    required this.username,
-    required this.role,
-  });
-
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'],
-      email: json['email'],
-      username: json['username'],
-      role: json['role'],
-    );
+  Map<String, dynamic> toJson() {
+    return {
+      "accessToken": accessToken,
+      "refreshToken": refreshToken,
+    };
   }
 }
