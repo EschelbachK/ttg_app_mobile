@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 
+import '../models/set_entry.dart';
 import '../models/training_plan.dart';
 import '../models/training_folder.dart';
 import '../models/training_exercise.dart';
@@ -96,5 +97,59 @@ class WorkoutApiService {
       String folderId, String exerciseId) async {
     await _dio.delete(
         '/folders/$folderId/exercises/$exerciseId');
+  }
+  // =========================
+  // SET ENTRY
+  // =========================
+
+  Future<List<SetEntry>> getSets(String exerciseId) async {
+    final response =
+    await _dio.get('/exercises/$exerciseId/sets');
+
+    final data = response.data as List<dynamic>;
+
+    return data
+        .map((json) => SetEntry.fromJson(json))
+        .toList();
+  }
+
+  Future<SetEntry> createSet(
+      String exerciseId,
+      int reps,
+      double weight) async {
+    final response = await _dio.post(
+      '/exercises/$exerciseId/sets',
+      data: {
+        'reps': reps,
+        'weight': weight,
+      },
+    );
+
+    return SetEntry.fromJson(response.data);
+  }
+
+  Future<SetEntry> updateSet(
+      String exerciseId,
+      String setId,
+      int reps,
+      double weight,
+      bool completed) async {
+    final response = await _dio.put(
+      '/exercises/$exerciseId/sets/$setId',
+      data: {
+        'reps': reps,
+        'weight': weight,
+        'completed': completed,
+      },
+    );
+
+    return SetEntry.fromJson(response.data);
+  }
+
+  Future<void> deleteSet(
+      String exerciseId,
+      String setId) async {
+    await _dio.delete(
+        '/exercises/$exerciseId/sets/$setId');
   }
 }
