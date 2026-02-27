@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../services/token_storage.dart';
 import '../auth/auth_provider.dart';
+import '../error/app_exceptions.dart';
 
 class ApiClient {
   final Ref ref;
@@ -15,8 +17,10 @@ class ApiClient {
     return _sendRequest("GET", endpoint);
   }
 
-  Future<http.Response> post(String endpoint,
-      {Map<String, dynamic>? body}) async {
+  Future<http.Response> post(
+      String endpoint, {
+        Map<String, dynamic>? body,
+      }) async {
     return _sendRequest("POST", endpoint, body: body);
   }
 
@@ -25,40 +29,63 @@ class ApiClient {
       String endpoint, {
         Map<String, dynamic>? body,
       }) async {
-    String? accessToken = await _tokenStorage.getAccessToken();
+    try {
+      String? accessToken = await _tokenStorage.getAccessToken();
 
-    final headers = {
-      "Content-Type": "application/json",
-      if (accessToken != null) "Authorization": "Bearer $accessToken",
-    };
+      final headers = {
+        "Content-Type": "application/json",
+        if (accessToken != null)
+          "Authorization": "Bearer $accessToken",
+      };
 
-    final uri = Uri.parse("$baseUrl$endpoint");
+      final uri = Uri.parse("$baseUrl$endpoint");
 
-    http.Response response;
+      http.Response response;
 
-    if (method == "GET") {
-      response = await http.get(uri, headers: headers);
-    } else {
-      response = await http.post(
-        uri,
-        headers: headers,
-        body: body != null ? jsonEncode(body) : null,
-      );
-    }
-
-    // 401 → Auto Refresh
-    if (response.statusCode == 401) {
-      final refreshed = await _refreshToken();
-
-      if (refreshed) {
-        return _sendRequest(method, endpoint, body: body);
+      if (method == "GET") {
+        response = await http.get(uri, headers: headers);
       } else {
-        await _tokenStorage.clearTokens();
-        ref.read(authProvider.notifier).logout();
+        response = await http.post(
+          uri,
+          headers: headers,
+          body: body != null ? jsonEncode(body) : null,
+        );
       }
-    }
 
-    return response;
+      // 🔥 Handle 401 → try refresh
+      if (response.statusCode == 401) {
+        final refreshed = await _refreshToken();
+
+        if (refreshed) {
+          // Retry original request
+          return _sendRequest(method, endpoint, body: body);
+        } else {
+          // Refresh failed → logout globally
+          await _tokenStorage.clearTokens();
+          ref.read(authProvider.notifier).logout();
+          throw const UnauthorizedException("Session expired.");
+        }
+      }
+
+      // 🔥 Structured Error Handling
+      if (response.statusCode >= 500) {
+        throw const ServerException("Server error occurred.");
+      }
+
+      if (response.statusCode >= 400) {
+        throw const NetworkException("Request failed.");
+      }
+
+      return response;
+    } on UnauthorizedException {
+      rethrow;
+    } on ServerException {
+      rethrow;
+    } on NetworkException {
+      rethrow;
+    } catch (e) {
+      throw const NetworkException("Unexpected network error.");
+    }
   }
 
   Future<bool> _refreshToken() async {
