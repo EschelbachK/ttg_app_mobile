@@ -1,16 +1,22 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/token_storage.dart';
+import '../auth/auth_provider.dart';
 
 class ApiClient {
+  final Ref ref;
   final String baseUrl = "http://10.0.2.2:8080";
   final TokenStorage _tokenStorage = TokenStorage();
+
+  ApiClient(this.ref);
 
   Future<http.Response> get(String endpoint) async {
     return _sendRequest("GET", endpoint);
   }
 
-  Future<http.Response> post(String endpoint, {Map<String, dynamic>? body}) async {
+  Future<http.Response> post(String endpoint,
+      {Map<String, dynamic>? body}) async {
     return _sendRequest("POST", endpoint, body: body);
   }
 
@@ -40,12 +46,15 @@ class ApiClient {
       );
     }
 
-    // 🔥 401 Handling
+    // 401 → Auto Refresh
     if (response.statusCode == 401) {
       final refreshed = await _refreshToken();
 
       if (refreshed) {
         return _sendRequest(method, endpoint, body: body);
+      } else {
+        await _tokenStorage.clearTokens();
+        ref.read(authProvider.notifier).logout();
       }
     }
 
@@ -63,10 +72,16 @@ class ApiClient {
     );
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final newAccessToken = data["accessToken"];
+      final json = jsonDecode(response.body);
 
-      await _tokenStorage.saveAccessToken(newAccessToken);
+      final newAccessToken = json["data"]["accessToken"];
+      final newRefreshToken = json["data"]["refreshToken"];
+
+      await _tokenStorage.saveTokens(
+        newAccessToken,
+        newRefreshToken,
+      );
+
       return true;
     }
 
