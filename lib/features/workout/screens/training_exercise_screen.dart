@@ -113,14 +113,11 @@ class _ExerciseList extends ConsumerWidget {
           background: Container(
             color: Colors.red,
             alignment: Alignment.centerRight,
-            padding:
-            const EdgeInsets.symmetric(horizontal: 20),
-            child:
-            const Icon(Icons.delete, color: Colors.white),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: const Icon(Icons.delete, color: Colors.white),
           ),
           onDismissed: (_) async {
-            final api =
-            ref.read(workoutApiServiceProvider);
+            final api = ref.read(workoutApiServiceProvider);
 
             await api.deleteExercise(folderId, exercise.id);
 
@@ -132,11 +129,16 @@ class _ExerciseList extends ConsumerWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => TrainingSetScreen(
-                    exerciseId: exercise.id,
-                    exerciseName: exercise.name,
-                  ),
+                  builder: (_) =>
+                      TrainingSetScreen(
+                        exerciseId: exercise.id,
+                        exerciseName: exercise.name,
+                      ),
                 ),
               );
             },
           ),
+        );
+      },
+    );
+  }}
