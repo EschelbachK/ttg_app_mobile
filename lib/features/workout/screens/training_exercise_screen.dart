@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ttg_app_mobile/features/workout/screens/training_set_screen.dart';
 
 import '../models/training_exercise.dart';
 import '../providers/workout_providers.dart';
@@ -127,9 +128,15 @@ class _ExerciseList extends ConsumerWidget {
           },
           child: ListTile(
             title: Text(exercise.name),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => TrainingSetScreen(
+                    exerciseId: exercise.id,
+                    exerciseName: exercise.name,
+                  ),
+                ),
+              );
+            },
           ),
-        );
-      },
-    );
-  }
-}
