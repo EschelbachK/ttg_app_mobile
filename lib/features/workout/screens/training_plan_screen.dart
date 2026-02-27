@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../providers/workout_providers.dart';
 import '../models/training_plan.dart';
+import '../providers/workout_providers.dart';
 
 class TrainingPlanScreen extends ConsumerWidget {
   const TrainingPlanScreen({super.key});
@@ -16,16 +16,14 @@ class TrainingPlanScreen extends ConsumerWidget {
         title: const Text('Training Plans'),
       ),
       body: plansAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(
-          child: Text('Error: $err'),
-        ),
+        loading: () =>
+        const Center(child: CircularProgressIndicator()),
+        error: (err, stack) =>
+            Center(child: Text('Error: $err')),
         data: (plans) => _PlansList(plans: plans),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: Create Plan
-        },
+        onPressed: () => _showCreateDialog(context, ref),
         child: const Icon(Icons.add),
       ),
     );
@@ -54,10 +52,54 @@ class _PlansList extends StatelessWidget {
           title: Text(plan.name),
           subtitle: Text('${plan.folders.length} folders'),
           onTap: () {
-            // TODO: Navigate to folders
+            // TODO: Navigate to TrainingFolderScreen
           },
         );
       },
     );
   }
+}
+
+Future<void> _showCreateDialog(
+    BuildContext context,
+    WidgetRef ref,
+    ) async {
+  final controller = TextEditingController();
+
+  await showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Create Training Plan'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            labelText: 'Plan name',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final name = controller.text.trim();
+              if (name.isEmpty) return;
+
+              final api = ref.read(workoutApiServiceProvider);
+
+              await api.createTrainingPlan(name);
+
+              // Trigger refresh
+              ref.invalidate(trainingPlansProvider);
+
+              Navigator.pop(context);
+            },
+            child: const Text('Create'),
+          ),
+        ],
+      );
+    },
+  );
 }
