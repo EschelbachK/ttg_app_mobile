@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
+import 'package:go_router/go_router.dart';
 
 import '../services/api_service.dart';
-import '../services/token_storage.dart';
 import '../core/auth/auth_provider.dart';
 import '../core/error/api_exceptions.dart';
 import '../models/auth_response.dart';
@@ -31,23 +31,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     try {
       final apiService = ref.read(apiServiceProvider);
 
-      final AuthResponse result =
-      await apiService.login(
+      final AuthResponse result = await apiService.login(
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
 
+      // Auth-State setzen
       ref.read(authProvider.notifier).login();
+
+      // Router übernimmt → redirect auf /loading
+      if (mounted) {
+        context.go('/loading');
+      }
     }
 
     on DioException catch (e) {
-      print("===== DIO ERROR =====");
-      print("Type: ${e.type}");
-      print("Status: ${e.response?.statusCode}");
-      print("Data: ${e.response?.data}");
-      print("Error: ${e.error}");
-      print("=====================");
-
       final error = e.error;
 
       if (error is UnauthorizedException) {
@@ -68,14 +66,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       setState(() {});
     }
 
-    catch (e, stack) {
-      print("===== UNKNOWN ERROR =====");
-      print(e);
-      print(stack);
-      print("=========================");
-
+    catch (e) {
       setState(() {
-        _errorMessage = e.toString();
+        _errorMessage = "Unexpected error.";
       });
     }
 
@@ -95,52 +88,74 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Login"),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+      body: Stack(
+        children: [
 
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: "Email",
-              ),
+          // 🔹 Normales Login UI
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+
+                TextField(
+                  controller: _emailController,
+                  decoration: const InputDecoration(
+                    labelText: "Email",
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                TextField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: const InputDecoration(
+                    labelText: "Password",
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                if (_errorMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Text(
+                      _errorMessage!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  ),
+
+                _isLoading
+                    ? const CircularProgressIndicator()
+                    : ElevatedButton(
+                  onPressed: _login,
+                  child: const Text("Login"),
+                ),
+              ],
             ),
+          ),
 
-            const SizedBox(height: 16),
-
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: "Password",
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            if (_errorMessage != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Text(
-                  _errorMessage!,
-                  style: const TextStyle(color: Colors.red),
+          // 🔥 Overlay wenn User bereits eingeloggt ist
+          if (authState.isLoggedIn)
+            Container(
+              color: Colors.black.withOpacity(0.7),
+              child: Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    context.go('/dashboard');
+                  },
+                  child: const Text("Zum Dashboard"),
                 ),
               ),
-
-            _isLoading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-              onPressed: _login,
-              child: const Text("Login"),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }
