@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../models/auth_response.dart';
 import '../services/token_storage.dart';
+import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -37,6 +38,11 @@ class _LoginScreenState extends State<LoginScreen> {
       await _tokenStorage.saveTokens(
         result.accessToken,
         result.refreshToken,
+      );
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => HomeScreen()),
       );
 
       print("Login erfolgreich");
