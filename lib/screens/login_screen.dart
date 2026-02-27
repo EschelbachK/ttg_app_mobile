@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../services/token_storage.dart';
+
 import '../services/api_service.dart';
+import '../services/token_storage.dart';
 import '../core/auth/auth_provider.dart';
+import '../core/error/app_exceptions.dart';
 import '../models/auth_response.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -39,12 +41,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         result.refreshToken,
       );
 
-      // 🔥 Riverpod State Update (kein Navigator mehr)
+      // 🔥 State-driven Login (kein Navigator)
       ref.read(authProvider.notifier).login();
 
+    } on UnauthorizedException {
+      setState(() {
+        _errorMessage = "Invalid credentials.";
+      });
+    } on NetworkException {
+      setState(() {
+        _errorMessage = "Network error. Please try again.";
+      });
+    } on ServerException {
+      setState(() {
+        _errorMessage = "Server error. Please try later.";
+      });
     } catch (e) {
       setState(() {
-        _errorMessage = "Login failed. Please check your credentials.";
+        _errorMessage = "Unexpected error.";
       });
     } finally {
       setState(() {
@@ -92,12 +106,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             const SizedBox(height: 24),
 
             if (_errorMessage != null)
-              Text(
-                _errorMessage!,
-                style: const TextStyle(color: Colors.red),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  _errorMessage!,
+                  style: const TextStyle(color: Colors.red),
+                ),
               ),
-
-            const SizedBox(height: 12),
 
             _isLoading
                 ? const CircularProgressIndicator()
