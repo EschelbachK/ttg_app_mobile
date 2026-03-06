@@ -1,82 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../services/api_service_provider.dart';
-import '../models/training_folder.dart';
-import 'training_exercises_screen.dart';
+import '../../../core/layout/app_layout.dart';
 
-class TrainingFoldersScreen extends ConsumerStatefulWidget {
-  final String planId;
-  final String planName;
-
-  const TrainingFoldersScreen({
-    super.key,
-    required this.planId,
-    required this.planName,
-  });
-
-  @override
-  ConsumerState<TrainingFoldersScreen> createState() =>
-      _TrainingFoldersScreenState();
-}
-
-class _TrainingFoldersScreenState
-    extends ConsumerState<TrainingFoldersScreen> {
-
-  List<TrainingFolder> folders = [];
-  bool loading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    loadFolders();
-  }
-
-  Future<void> loadFolders() async {
-    try {
-      final api = ref.read(apiServiceProvider);
-      final data = await api.getFolders(widget.planId);
-
-      setState(() {
-        folders = data;
-        loading = false;
-      });
-    } catch (e) {
-      debugPrint("Folders error: $e");
-      setState(() => loading = false);
-    }
-  }
+class TrainingFoldersScreen extends StatelessWidget {
+  const TrainingFoldersScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    if (loading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    return Scaffold(
-      appBar: AppBar(title: Text(widget.planName)),
-      body: ListView.builder(
-        itemCount: folders.length,
-        itemBuilder: (context, index) {
-          final folder = folders[index];
-
-          return Card(
-            child: ListTile(
-              title: Text(folder.name),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        TrainingExercisesScreen(folder: folder),
-                  ),
-                );
-              },
-            ),
-          );
-        },
+    return AppLayout(
+      title: 'Folders',
+      child: ListView(
+        children: [
+          ListTile(
+            title: const Text('Folder A'),
+            onTap: () => context.go('/folders/1/plans'),
+          ),
+        ],
       ),
     );
   }

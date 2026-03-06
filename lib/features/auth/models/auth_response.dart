@@ -9,7 +9,6 @@ class AuthResponse {
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
 
-    // 🔥 Falls Backend Wrapper hat
     final Map<String, dynamic> data =
     json.containsKey("data")
         ? json["data"]

@@ -1,62 +1,59 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../services/token_storage.dart';
-import 'auth_service.dart';
 
 class AuthState {
   final bool isLoggedIn;
+  final String? accessToken;
+  final String? refreshToken;
 
-  const AuthState({required this.isLoggedIn});
+  const AuthState({
+    required this.isLoggedIn,
+    this.accessToken,
+    this.refreshToken,
+  });
+
+  AuthState copyWith({
+    bool? isLoggedIn,
+    String? accessToken,
+    String? refreshToken,
+  }) {
+    return AuthState(
+      isLoggedIn: isLoggedIn ?? this.isLoggedIn,
+      accessToken: accessToken ?? this.accessToken,
+      refreshToken: refreshToken ?? this.refreshToken,
+    );
+  }
 }
 
 class AuthNotifier extends StateNotifier<AuthState> {
-  final TokenStorage _tokenStorage = TokenStorage();
-  final AuthService _authService = AuthService();
+  AuthNotifier() : super(const AuthState(isLoggedIn: false));
 
-  AuthNotifier() : super(const AuthState(isLoggedIn: false)) {
-    _initialize();
+  void login({
+    required String accessToken,
+    required String refreshToken,
+  }) {
+    state = AuthState(
+      isLoggedIn: true,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+    );
   }
 
-  Future<void> _initialize() async {
-    final token = await _tokenStorage.getAccessToken();
-    state = AuthState(isLoggedIn: token != null);
-  }
-
-  Future<void> login() async {
-    state = const AuthState(isLoggedIn: true);
-  }
-
-  Future<void> logout() async {
-    await _tokenStorage.clearTokens();
+  void logout() {
     state = const AuthState(isLoggedIn: false);
   }
 
-  // 🔥 HINZUGEFÜGT
   Future<void> refreshToken() async {
-    final refreshToken =
-    await _tokenStorage.getRefreshToken();
+    final token = state.refreshToken;
+    if (token == null) return;
 
-    if (refreshToken == null) {
-      await logout();
-      return;
-    }
+    await Future.delayed(const Duration(milliseconds: 300));
 
-    try {
-      final newTokens =
-      await _authService.refresh(refreshToken);
-
-      await _tokenStorage.saveTokens(
-        newTokens.accessToken,
-        newTokens.refreshToken,
-      );
-
-      state = const AuthState(isLoggedIn: true);
-    } catch (_) {
-      await logout();
-    }
+    state = state.copyWith(
+      accessToken: 'refreshed_access_token',
+      isLoggedIn: true,
+    );
   }
 }
 
 final authProvider =
-StateNotifierProvider<AuthNotifier, AuthState>(
-      (ref) => AuthNotifier(),
-);
+StateNotifierProvider<AuthNotifier, AuthState>((ref) => AuthNotifier());

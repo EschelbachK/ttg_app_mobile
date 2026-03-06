@@ -1,68 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/api_service_provider.dart';
-import '../models/training_exercise.dart';
-import '../models/training_folder.dart';
+import 'package:go_router/go_router.dart';
 
-class TrainingExercisesScreen extends ConsumerStatefulWidget {
-  final TrainingFolder folder;
+import '../../../core/layout/app_layout.dart';
+
+class TrainingExercisesScreen extends StatelessWidget {
+  final String folderId;
+  final String planId;
 
   const TrainingExercisesScreen({
     super.key,
-    required this.folder,
+    required this.folderId,
+    required this.planId,
   });
 
   @override
-  ConsumerState<TrainingExercisesScreen> createState() =>
-      _TrainingExercisesScreenState();
-}
-
-class _TrainingExercisesScreenState
-    extends ConsumerState<TrainingExercisesScreen> {
-
-  List<TrainingExercise> exercises = [];
-  bool loading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    loadExercises();
-  }
-
-  Future<void> loadExercises() async {
-    final api = ref.read(apiServiceProvider);
-    final data = await api.getExercises(widget.folder.id);
-
-    setState(() {
-      exercises = data;
-      loading = false;
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (loading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    return Scaffold(
-      appBar: AppBar(title: Text(widget.folder.name)),
-      body: ListView.builder(
-        itemCount: exercises.length,
-        itemBuilder: (context, index) {
-          final exercise = exercises[index];
-
-          return Card(
-            child: ListTile(
-              title: Text(exercise.name),
-              onTap: () {
-                // später: Sets Screen
-              },
+    return AppLayout(
+      title: 'Exercises (Plan $planId)',
+      child: ListView(
+        children: [
+          ListTile(
+            title: const Text('Exercise 1'),
+            onTap: () => context.go(
+              '/folders/$folderId/plans/$planId/exercises/99/sets',
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }

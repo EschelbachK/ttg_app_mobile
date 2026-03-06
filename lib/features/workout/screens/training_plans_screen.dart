@@ -1,80 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../services/api_service_provider.dart';
-import '../models/training_plan.dart';
-import 'training_folders_screen.dart';
+import '../../../core/layout/app_layout.dart';
 
-class TrainingPlansScreen extends ConsumerStatefulWidget {
-  const TrainingPlansScreen({super.key});
-
-  @override
-  ConsumerState<TrainingPlansScreen> createState() =>
-      _TrainingPlansScreenState();
-}
-
-class _TrainingPlansScreenState
-    extends ConsumerState<TrainingPlansScreen> {
-
-  List<TrainingPlan> plans = [];
-  bool loading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    loadPlans();
-  }
-
-  Future<void> loadPlans() async {
-    try {
-      final api = ref.read(apiServiceProvider);
-      final data = await api.getTrainingPlans();
-
-      setState(() {
-        plans = data;
-        loading = false;
-      });
-    } catch (e) {
-      debugPrint("Plans error: $e");
-      setState(() => loading = false);
-    }
-  }
+class TrainingPlansScreen extends StatelessWidget {
+  final String folderId;
+  const TrainingPlansScreen({super.key, required this.folderId});
 
   @override
   Widget build(BuildContext context) {
-    if (loading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    return Scaffold(
-      appBar: AppBar(title: const Text("Trainingspläne")),
-      body: plans.isEmpty
-          ? const Center(child: Text("Keine Trainingspläne"))
-          : ListView.builder(
-        itemCount: plans.length,
-        itemBuilder: (context, index) {
-          final plan = plans[index];
-
-          return Card(
-            child: ListTile(
-              title: Text(plan.name),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => TrainingFoldersScreen(
-                      planId: plan.id,
-                      planName: plan.name,
-                    ),
-                  ),
-                );
-              },
-            ),
-          );
-        },
+    return AppLayout(
+      title: 'Plans (Folder $folderId)',
+      child: ListView(
+        children: [
+          ListTile(
+            title: const Text('Plan X'),
+            onTap: () => context.go('/folders/$folderId/plans/10/exercises'),
+          ),
+        ],
       ),
     );
   }

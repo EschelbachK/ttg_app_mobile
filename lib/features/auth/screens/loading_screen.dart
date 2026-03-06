@@ -10,51 +10,18 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
-
   @override
   void initState() {
     super.initState();
-
-    Timer(const Duration(seconds: 2), () {
-      if (mounted) {
-        context.go('/dashboard');
-      }
+    Timer(const Duration(milliseconds: 800), () {
+      if (mounted) context.go('/login');
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        width: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xFF111827),
-              Color(0xFF1F2937),
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: const Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.local_fire_department,
-                  size: 80,
-                  color: Colors.blueAccent),
-              SizedBox(height: 24),
-              CircularProgressIndicator(),
-              SizedBox(height: 16),
-              Text(
-                "Bereite dein Dashboard vor...",
-                style: TextStyle(color: Colors.white70),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator()),
     );
   }
 }

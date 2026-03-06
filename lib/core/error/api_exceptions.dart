@@ -2,7 +2,7 @@ class ApiException implements Exception {
   final String message;
   final int? statusCode;
 
-  ApiException({
+  const ApiException({
     required this.message,
     this.statusCode,
   });
@@ -12,16 +12,16 @@ class ApiException implements Exception {
 }
 
 class NetworkException extends ApiException {
-  NetworkException()
-      : super(message: 'No internet connection');
+  const NetworkException([String message = 'No internet connection'])
+      : super(message: message);
 }
 
 class UnauthorizedException extends ApiException {
-  UnauthorizedException()
-      : super(message: 'Session expired. Please login again.', statusCode: 401);
+  const UnauthorizedException([String message = 'Session expired'])
+      : super(message: message, statusCode: 401);
 }
 
 class ServerException extends ApiException {
-  ServerException()
-      : super(message: 'Server error. Please try again later.');
+  const ServerException([String message = 'Server error'])
+      : super(message: message);
 }
