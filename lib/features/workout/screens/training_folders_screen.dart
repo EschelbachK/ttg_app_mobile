@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../services/api_service_provider.dart';
 import '../models/training_folder.dart';
 import 'training_exercises_screen.dart';
@@ -32,13 +33,18 @@ class _TrainingFoldersScreenState
   }
 
   Future<void> loadFolders() async {
-    final api = ref.read(apiServiceProvider);
-    final data = await api.getFolders(widget.planId);
+    try {
+      final api = ref.read(apiServiceProvider);
+      final data = await api.getFolders(widget.planId);
 
-    setState(() {
-      folders = data;
-      loading = false;
-    });
+      setState(() {
+        folders = data;
+        loading = false;
+      });
+    } catch (e) {
+      debugPrint("Folders error: $e");
+      setState(() => loading = false);
+    }
   }
 
   @override
@@ -63,9 +69,8 @@ class _TrainingFoldersScreenState
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => TrainingExercisesScreen(
-                      folder: folder,
-                    ),
+                    builder: (_) =>
+                        TrainingExercisesScreen(folder: folder),
                   ),
                 );
               },
