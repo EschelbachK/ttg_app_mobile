@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ttg_app_mobile/features/workout/models/training_plan.dart';
 
 import '../models/training_folder.dart';
 import '../providers/workout_providers.dart';
@@ -12,7 +13,7 @@ class TrainingFoldersScreen extends ConsumerWidget {
   const TrainingFoldersScreen({
     super.key,
     required this.planId,
-    required this.planName,
+    required this.planName, required TrainingPlan plan,
   });
 
   @override
