@@ -1,44 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ttg_app_mobile/features/workout/screens/training_plans_screen.dart';
 
-import '../../../services/api_service_provider.dart';
-import '../models/training_folder.dart';
-import 'training_exercises_screen.dart';
+import '../models/training_plan.dart';
+import 'training_folders_screen.dart';
+import '../../../services/api_service.dart';
 
-class TrainingFoldersScreen extends ConsumerStatefulWidget {
-  final String planId;
-  final String planName;
+final apiServiceProvider = Provider<ApiService>((ref) {
+  return ApiService(ref);
+});
 
-  const TrainingFoldersScreen({
-    super.key,
-    required this.planId,
-    required this.planName,
-  });
+class TrainingPlansScreen extends ConsumerStatefulWidget {
+  const TrainingPlansScreen({super.key});
 
   @override
-  ConsumerState<TrainingFoldersScreen> createState() =>
-      _TrainingFoldersScreenState();
+  ConsumerState<TrainingPlansScreen> createState() =>
+      _TrainingPlansScreenState();
 }
 
-class _TrainingFoldersScreenState
-    extends ConsumerState<TrainingFoldersScreen> {
+class _TrainingPlansScreenState
+    extends ConsumerState<TrainingPlansScreen> {
 
-  List<TrainingFolder> folders = [];
+  List<TrainingPlan> plans = [];
   bool loading = true;
 
   @override
   void initState() {
     super.initState();
-    loadFolders();
+    loadPlans();
   }
 
-  Future<void> loadFolders() async {
+  Future<void> loadPlans() async {
     final api = ref.read(apiServiceProvider);
-    final data = await api.getFolders(widget.planId);
+    final data = await api.getTrainingPlans();
 
     setState(() {
-      folders = data;
+      plans = data;
       loading = false;
     });
   }
@@ -47,26 +43,31 @@ class _TrainingFoldersScreenState
   Widget build(BuildContext context) {
     if (loading) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(widget.planName)),
+      appBar: AppBar(
+        title: const Text("Trainingspläne"),
+      ),
       body: ListView.builder(
-        itemCount: folders.length,
+        itemCount: plans.length,
         itemBuilder: (context, index) {
-          final folder = folders[index];
+          final plan = plans[index];
 
           return Card(
             child: ListTile(
-              title: Text(folder.name),
+              title: Text(plan.name),
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => TrainingExercisesScreen(
-                      folder: folder,
+                    builder: (_) => TrainingFoldersScreen(
+                      planId: plan.id,
+                      planName: plan.name,
                     ),
                   ),
                 );
