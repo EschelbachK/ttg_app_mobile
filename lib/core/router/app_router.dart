@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:ttg_app_mobile/screens/login_screen.dart';
-import 'package:ttg_app_mobile/screens/loading_screen.dart';
-import 'package:ttg_app_mobile/screens/dashboard_screen.dart';
+import 'package:ttg_app_mobile/features/auth/screens/login_screen.dart';
+import 'package:ttg_app_mobile/features/auth/screens/dashboard_screen.dart';
+
+import '../../features/auth/screens/loading_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(

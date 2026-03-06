@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 
-import '../../models/auth_response.dart';
+import '../../features/auth/models/auth_response.dart';
 import '../network/dio_provider.dart';
 
 class AuthService {
