@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../services/api_service_provider.dart';
 import '../models/training_plan.dart';
 import 'training_folders_screen.dart';
-import '../../../services/api_service.dart';
-
-final apiServiceProvider = Provider<ApiService>((ref) {
-  return ApiService(ref);
-});
 
 class TrainingPlansScreen extends ConsumerStatefulWidget {
   const TrainingPlansScreen({super.key});
@@ -30,30 +26,33 @@ class _TrainingPlansScreenState
   }
 
   Future<void> loadPlans() async {
-    final api = ref.read(apiServiceProvider);
-    final data = await api.getTrainingPlans();
+    try {
+      final api = ref.read(apiServiceProvider);
+      final data = await api.getTrainingPlans();
 
-    setState(() {
-      plans = data;
-      loading = false;
-    });
+      setState(() {
+        plans = data;
+        loading = false;
+      });
+    } catch (e) {
+      debugPrint("Plans error: $e");
+      setState(() => loading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     if (loading) {
       return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Trainingspläne"),
-      ),
-      body: ListView.builder(
+      appBar: AppBar(title: const Text("Trainingspläne")),
+      body: plans.isEmpty
+          ? const Center(child: Text("Keine Trainingspläne"))
+          : ListView.builder(
         itemCount: plans.length,
         itemBuilder: (context, index) {
           final plan = plans[index];
@@ -61,6 +60,7 @@ class _TrainingPlansScreenState
           return Card(
             child: ListTile(
               title: Text(plan.name),
+              trailing: const Icon(Icons.chevron_right),
               onTap: () {
                 Navigator.push(
                   context,
