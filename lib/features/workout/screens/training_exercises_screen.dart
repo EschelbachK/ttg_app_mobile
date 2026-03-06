@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import '../../../services/api_service_provider.dart';
 import '../models/training_exercise.dart';
 import '../models/training_folder.dart';
-import '../providers/workout_providers.dart';
-import 'training_set_screen.dart';
-import '../../catalog/screens/exercise_catalog_screen.dart';
 
-class TrainingExercisesScreen extends ConsumerWidget {
+class TrainingExercisesScreen extends ConsumerStatefulWidget {
   final TrainingFolder folder;
 
   const TrainingExercisesScreen({
@@ -16,75 +13,57 @@ class TrainingExercisesScreen extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final exercisesAsync =
-    ref.watch(exercisesProvider(folder.id));
-
-    return Scaffold(
-      appBar: AppBar(title: Text(folder.name)),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _openCatalog(context),
-        child: const Icon(Icons.add),
-      ),
-      body: exercisesAsync.when(
-        loading: () =>
-        const Center(child: CircularProgressIndicator()),
-        error: (err, _) =>
-            Center(child: Text('Error: $err')),
-        data: (exercises) =>
-            _ExerciseList(exercises: exercises, folderId: folder.id),
-      ),
-    );
-  }
-
-  void _openCatalog(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) =>
-            ExerciseCatalogScreen(folderId: folder.id),
-      ),
-    );
-  }
+  ConsumerState<TrainingExercisesScreen> createState() =>
+      _TrainingExercisesScreenState();
 }
 
-class _ExerciseList extends ConsumerWidget {
-  final List<TrainingExercise> exercises;
-  final String folderId;
+class _TrainingExercisesScreenState
+    extends ConsumerState<TrainingExercisesScreen> {
 
-  const _ExerciseList({
-    required this.exercises,
-    required this.folderId,
-  });
+  List<TrainingExercise> exercises = [];
+  bool loading = true;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (exercises.isEmpty) {
-      return const Center(
-        child: Text("Keine Übungen vorhanden"),
+  void initState() {
+    super.initState();
+    loadExercises();
+  }
+
+  Future<void> loadExercises() async {
+    final api = ref.read(apiServiceProvider);
+    final data = await api.getExercises(widget.folder.id);
+
+    setState(() {
+      exercises = data;
+      loading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
-    return ListView.builder(
-      itemCount: exercises.length,
-      itemBuilder: (context, index) {
-        final ex = exercises[index];
+    return Scaffold(
+      appBar: AppBar(title: Text(widget.folder.name)),
+      body: ListView.builder(
+        itemCount: exercises.length,
+        itemBuilder: (context, index) {
+          final exercise = exercises[index];
 
-        return ListTile(
-          title: Text(ex.name),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => TrainingSetScreen(
-                  exerciseId: ex.id,
-                  exerciseName: ex.name,
-                ),
-              ),
-            );
-          },
-        );
-      },
+          return Card(
+            child: ListTile(
+              title: Text(exercise.name),
+              onTap: () {
+                // später: Sets Screen
+              },
+            ),
+          );
+        },
+      ),
     );
   }
 }
