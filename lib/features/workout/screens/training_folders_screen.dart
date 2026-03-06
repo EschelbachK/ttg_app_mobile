@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../services/providers.dart';
+import '../../../services/api_service_provider.dart';
 import '../models/training_folder.dart';
 import 'training_exercises_screen.dart';
 
