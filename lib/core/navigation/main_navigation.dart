@@ -20,6 +20,7 @@ class MainNavigation extends ConsumerWidget {
 
     return Scaffold(
       body: child,
+
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: index,
         onTap: (i) {
@@ -37,6 +38,7 @@ class MainNavigation extends ConsumerWidget {
           ),
         ],
       ),
+
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           ref.read(authProvider.notifier).logout();
