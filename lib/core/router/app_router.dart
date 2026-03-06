@@ -13,7 +13,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
     initialLocation: '/login',
     routes: [
-      // ===== Auth =====
+      // ========= AUTH =========
       GoRoute(
         path: '/login',
         builder: (context, state) => const LoginScreen(),
@@ -23,7 +23,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const LoadingScreen(),
       ),
 
-      // ===== App Shell =====
+      // ========= APP SHELL =========
       ShellRoute(
         builder: (context, state, child) =>
             MainNavigation(child: child),
@@ -42,7 +42,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
     ],
 
-    // ===== Auth Redirect =====
+    // ========= AUTH REDIRECT =========
     redirect: (context, state) {
       final loggedIn = ref.read(authProvider).isLoggedIn;
       final isLogin = state.matchedLocation == '/login';
@@ -53,6 +53,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     },
   );
 
+  // Router refresh bei Auth-Änderung
   ref.listen(authProvider, (_, __) {
     router.refresh();
   });
