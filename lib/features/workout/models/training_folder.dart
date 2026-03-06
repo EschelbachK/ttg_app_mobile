@@ -24,6 +24,8 @@ class TrainingFolder {
     );
   }
 
+  int get exerciseCount => exercises.length;
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,

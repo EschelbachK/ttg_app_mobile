@@ -19,21 +19,19 @@ class TrainingSetScreen extends ConsumerWidget {
     final setsAsync = ref.watch(setsProvider(exerciseId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(exerciseName),
+      appBar: AppBar(title: Text(exerciseName)),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () =>
+            _showCreateDialog(context, ref),
+        child: const Icon(Icons.add),
       ),
       body: setsAsync.when(
         loading: () =>
         const Center(child: CircularProgressIndicator()),
-        error: (err, stack) =>
+        error: (err, _) =>
             Center(child: Text('Error: $err')),
         data: (sets) =>
             _SetList(sets: sets, exerciseId: exerciseId),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () =>
-            _showCreateDialog(context, ref, exerciseId),
-        child: const Icon(Icons.add),
       ),
     );
   }
@@ -41,61 +39,57 @@ class TrainingSetScreen extends ConsumerWidget {
   Future<void> _showCreateDialog(
       BuildContext context,
       WidgetRef ref,
-      String exerciseId) async {
-    final repsController = TextEditingController();
-    final weightController = TextEditingController();
+      ) async {
+    final repsCtrl = TextEditingController();
+    final weightCtrl = TextEditingController();
 
     await showDialog(
       context: context,
-      builder: (_) {
-        return AlertDialog(
-          title: const Text('Add Set'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: repsController,
-                keyboardType: TextInputType.number,
-                decoration:
-                const InputDecoration(labelText: 'Reps'),
-              ),
-              TextField(
-                controller: weightController,
-                keyboardType: TextInputType.number,
-                decoration:
-                const InputDecoration(labelText: 'Weight'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () =>
-                  Navigator.pop(context),
-              child: const Text('Cancel'),
+      builder: (_) => AlertDialog(
+        title: const Text("Satz hinzufügen"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: repsCtrl,
+              keyboardType: TextInputType.number,
+              decoration:
+              const InputDecoration(labelText: "Wiederholungen"),
             ),
-            ElevatedButton(
-              onPressed: () async {
-                final reps =
-                    int.tryParse(repsController.text) ?? 0;
-                final weight =
-                    double.tryParse(weightController.text) ?? 0;
-
-                final api =
-                ref.read(workoutApiServiceProvider);
-
-                await api.createSet(
-                    exerciseId, reps, weight);
-
-                ref.invalidate(
-                    setsProvider(exerciseId));
-
-                Navigator.pop(context);
-              },
-              child: const Text('Create'),
+            TextField(
+              controller: weightCtrl,
+              keyboardType: TextInputType.number,
+              decoration:
+              const InputDecoration(labelText: "Gewicht"),
             ),
           ],
-        );
-      },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Abbrechen"),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final reps =
+                  int.tryParse(repsCtrl.text) ?? 0;
+              final weight =
+                  double.tryParse(weightCtrl.text) ?? 0;
+
+              final api =
+              ref.read(workoutApiServiceProvider);
+
+              await api.createSet(
+                  exerciseId, reps, weight);
+
+              ref.invalidate(setsProvider(exerciseId));
+
+              Navigator.pop(context);
+            },
+            child: const Text("Erstellen"),
+          )
+        ],
+      ),
     );
   }
 }
@@ -113,7 +107,7 @@ class _SetList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (sets.isEmpty) {
       return const Center(
-        child: Text('No sets yet.'),
+        child: Text("Keine Sätze vorhanden"),
       );
     }
 
@@ -122,48 +116,25 @@ class _SetList extends ConsumerWidget {
       itemBuilder: (context, index) {
         final set = sets[index];
 
-        return Dismissible(
-          key: ValueKey(set.id),
-          direction: DismissDirection.endToStart,
-          background: Container(
-            color: Colors.red,
-            alignment: Alignment.centerRight,
-            padding:
-            const EdgeInsets.symmetric(horizontal: 20),
-            child:
-            const Icon(Icons.delete, color: Colors.white),
-          ),
-          onDismissed: (_) async {
-            final api =
-            ref.read(workoutApiServiceProvider);
+        return ListTile(
+          title: Text(
+              "${set.reps} Wdh • ${set.weight} kg"),
+          trailing: Checkbox(
+            value: set.completed,
+            onChanged: (value) async {
+              final api =
+              ref.read(workoutApiServiceProvider);
 
-            await api.deleteSet(
-                exerciseId, set.id);
+              await api.updateSet(
+                exerciseId,
+                set.id,
+                set.reps,
+                set.weight,
+                value ?? false,
+              );
 
-            ref.invalidate(
-                setsProvider(exerciseId));
-          },
-          child: ListTile(
-            title: Text(
-                '${set.reps} reps - ${set.weight} kg'),
-            trailing: Checkbox(
-              value: set.completed,
-              onChanged: (value) async {
-                final api =
-                ref.read(workoutApiServiceProvider);
-
-                await api.updateSet(
-                  exerciseId,
-                  set.id,
-                  set.reps,
-                  set.weight,
-                  value ?? false,
-                );
-
-                ref.invalidate(
-                    setsProvider(exerciseId));
-              },
-            ),
+              ref.invalidate(setsProvider(exerciseId));
+            },
           ),
         );
       },
