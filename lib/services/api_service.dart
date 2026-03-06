@@ -143,7 +143,6 @@ class ApiService {
     );
   }
 
-// ⭐⭐⭐ DAS FEHLT BEI DIR ⭐⭐⭐
   Future<void> addExerciseToFolder(
       String folderId,
       String catalogExerciseId,
@@ -175,4 +174,6 @@ class ApiService {
     return (res.data as List)
         .map((e) => ExerciseCatalog.fromJson(e))
         .toList();
+
+
   }}
