@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dio/dio.dart';
 
-import '../services/api_service.dart';
-import '../core/auth/auth_provider.dart';
-import '../core/error/api_exceptions.dart';
+import '../../../services/api_service.dart';
+import '../../../core/auth/auth_provider.dart';
+import '../../../core/error/api_exceptions.dart';
 import '../models/auth_response.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -22,6 +22,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
+  ProviderListenable<dynamic>? get apiServiceProvider => null;
+
   Future<void> _login() async {
     setState(() {
       _isLoading = true;
@@ -29,7 +31,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
 
     try {
-      final apiService = ref.read(apiServiceProvider);
+      final apiService = ref.read(apiServiceProvider!);
 
       final AuthResponse result = await apiService.login(
         _emailController.text.trim(),
