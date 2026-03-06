@@ -1,73 +1,60 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const Color background = Color(0xFF1C1C1E);
-  static const Color surface = Color(0xFF2A2A2D);
-  static const Color accent = Color(0xFF7A1F2B);
-  static const Color textPrimary = Colors.white;
-  static const Color textSecondary = Color(0xFFB3B3B8);
+  // 🍷 Farben
+  static const bgDark = Color(0xFF121417);
+  static const surfaceDark = Color(0xFF1B1F24);
+  static const wine = Color(0xFF7B1E3A);
+  static const wineLight = Color(0xFFA23B5A);
+  static const textPrimary = Colors.white;
+  static const textSecondary = Color(0xFFB0B3B8);
 
   static ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
-    scaffoldBackgroundColor: background,
+    scaffoldBackgroundColor: bgDark,
     colorScheme: const ColorScheme.dark(
-      primary: accent,
-      surface: surface,
+      primary: wine,
+      surface: surfaceDark,
     ),
 
     appBarTheme: const AppBarTheme(
-      backgroundColor: background,
+      backgroundColor: bgDark,
       elevation: 0,
       centerTitle: true,
-      titleTextStyle: TextStyle(
-        color: textPrimary,
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-      ),
-    ),
-
-    cardTheme: CardThemeData(
-      color: surface,
-      elevation: 0,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(12)),
-      ),
     ),
 
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: accent,
+        backgroundColor: wine,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(vertical: 14),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(28),
         ),
       ),
     ),
 
-    inputDecorationTheme: const InputDecorationTheme(
+    inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: surface,
+      fillColor: surfaceDark,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(12)),
+        borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide.none,
       ),
-      hintStyle: TextStyle(color: textSecondary),
+      hintStyle: const TextStyle(color: textSecondary),
     ),
 
     textTheme: const TextTheme(
       titleLarge: TextStyle(
-        fontSize: 22,
+        fontSize: 28,
         fontWeight: FontWeight.bold,
         color: textPrimary,
       ),
       bodyMedium: TextStyle(
-        fontSize: 16,
         color: textPrimary,
+        fontSize: 16,
       ),
       bodySmall: TextStyle(
-        fontSize: 14,
         color: textSecondary,
       ),
     ),
