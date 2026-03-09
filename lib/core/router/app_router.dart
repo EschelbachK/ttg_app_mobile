@@ -5,9 +5,11 @@ import '../auth/auth_provider.dart';
 import '../navigation/main_navigation.dart';
 
 import '../../features/auth/screens/login_screen.dart';
-import '../../features/auth/screens/dashboard_screen.dart';
 import '../../features/auth/screens/loading_screen.dart';
 import '../../features/workout/screens/training_folders_screen.dart';
+
+// ✅ RICHTIGES DASHBOARD IMPORT
+import '../../features/dashboard/screens/dashboard_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final router = GoRouter(
@@ -53,7 +55,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     },
   );
 
-  // Router refresh bei Auth-Änderung
   ref.listen(authProvider, (_, __) {
     router.refresh();
   });
