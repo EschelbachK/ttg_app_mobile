@@ -14,9 +14,14 @@ class DashboardTopBar extends ConsumerWidget implements PreferredSizeWidget {
     return AppBar(
       backgroundColor: const Color(0xFF0E0F12),
       elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.menu),
-        onPressed: () => Scaffold.of(context).openDrawer(),
+      leading: Builder(
+        builder: (context) => IconButton(
+          icon: const Icon(
+            Icons.menu,
+            color: Colors.white38, // ← grau wie andere Icons
+          ),
+          onPressed: () => Scaffold.of(context).openDrawer(),
+        ),
       ),
       title: Row(
         children: const [
@@ -28,18 +33,26 @@ class DashboardTopBar extends ConsumerWidget implements PreferredSizeWidget {
         ],
       ),
       actions: [
-        TextButton.icon(
-          onPressed: () {
-            ref.read(authProvider.notifier).logout();
-            context.go('/login');
-          },
-          icon: const Icon(Icons.logout, color: Colors.white),
-          label: const Text(
-            "Logout",
-            style: TextStyle(color: Colors.white),
+        Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: TextButton.icon(
+            style: ButtonStyle(
+              foregroundColor:
+              MaterialStateProperty.resolveWith((states) {
+                if (states.contains(MaterialState.hovered)) {
+                  return const Color(0xFFFF3B30);
+                }
+                return Colors.white70;
+              }),
+            ),
+            onPressed: () {
+              ref.read(authProvider.notifier).logout();
+              context.go('/login');
+            },
+            icon: const Icon(Icons.logout),
+            label: const Text("Logout"),
           ),
         ),
-        const SizedBox(width: 8),
       ],
     );
   }

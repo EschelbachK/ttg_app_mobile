@@ -20,10 +20,16 @@ class MainNavigation extends ConsumerWidget {
       body: child,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: index,
+        backgroundColor: const Color(0xFF121418),
+
+        selectedItemColor: const Color(0xFFFF3B30), // ← aktiv rot
+        unselectedItemColor: Colors.grey, // ← inaktiv grau
+
         onTap: (i) {
           if (i == 0) context.go('/dashboard');
           if (i == 1) context.go('/workout');
         },
+
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard),
