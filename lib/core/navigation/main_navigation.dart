@@ -18,28 +18,47 @@ class MainNavigation extends ConsumerWidget {
 
     return Scaffold(
       body: child,
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: index,
-        backgroundColor: const Color(0xFF121418),
+      backgroundColor: Colors.black,
 
-        selectedItemColor: const Color(0xFFFF3B30), // ← aktiv rot
-        unselectedItemColor: Colors.grey, // ← inaktiv grau
+      bottomNavigationBar: Container(
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 18),
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        decoration: BoxDecoration(
+          color: const Color(0xFF111418),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.7),
+              blurRadius: 30,
+              spreadRadius: 4,
+            ),
+          ],
+        ),
+        child: BottomNavigationBar(
+          currentIndex: index,
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          type: BottomNavigationBarType.fixed,
 
-        onTap: (i) {
-          if (i == 0) context.go('/dashboard');
-          if (i == 1) context.go('/workout');
-        },
+          selectedItemColor: const Color(0xFFFF3B30),
+          unselectedItemColor: Colors.grey,
 
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Dashboard',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.fitness_center),
-            label: 'Workout',
-          ),
-        ],
+          onTap: (i) {
+            if (i == 0) context.go('/dashboard');
+            if (i == 1) context.go('/workout');
+          },
+
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.grid_view),
+              label: 'Dashboard',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.fitness_center),
+              label: 'Workout',
+            ),
+          ],
+        ),
       ),
     );
   }

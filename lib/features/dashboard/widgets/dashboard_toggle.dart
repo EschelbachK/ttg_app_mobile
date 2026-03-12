@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../state/dashboard_provider.dart';
 
-class DashboardToggle extends StatelessWidget {
+class DashboardToggle extends ConsumerWidget {
   const DashboardToggle({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+
+    final state = ref.watch(dashboardProvider);
+    final notifier = ref.read(dashboardProvider.notifier);
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Container(
@@ -15,27 +21,44 @@ class DashboardToggle extends StatelessWidget {
         ),
         child: Row(
           children: [
+
             Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFF3B30),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                alignment: Alignment.center,
-                child: const Text(
-                  "PLÄNE",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
+              child: GestureDetector(
+                onTap: notifier.showPlans,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: !state.showArchive
+                        ? const Color(0xFFFF3B30)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Text(
+                    "PLÄNE",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
             ),
-            const Expanded(
-              child: Center(
-                child: Text(
-                  "ARCHIV",
-                  style: TextStyle(color: Colors.white38),
+
+            Expanded(
+              child: GestureDetector(
+                onTap: notifier.showArchive,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: state.showArchive
+                        ? const Color(0xFFFF3B30)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Text(
+                    "ARCHIV",
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
             ),
