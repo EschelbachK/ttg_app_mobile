@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../auth/auth_provider.dart';
-
 class MainNavigation extends ConsumerWidget {
   final Widget child;
   const MainNavigation({super.key, required this.child});
@@ -20,7 +18,6 @@ class MainNavigation extends ConsumerWidget {
 
     return Scaffold(
       body: child,
-
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: index,
         onTap: (i) {
@@ -37,15 +34,6 @@ class MainNavigation extends ConsumerWidget {
             label: 'Workout',
           ),
         ],
-      ),
-
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          ref.read(authProvider.notifier).logout();
-          context.go('/login');
-        },
-        icon: const Icon(Icons.logout),
-        label: const Text('Logout'),
       ),
     );
   }
