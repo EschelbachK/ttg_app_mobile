@@ -17,10 +17,55 @@ class ExerciseCategoryScreen extends ConsumerWidget {
     required this.planId,
   });
 
+  String mapCategoryToBodyRegion(String category) {
+
+    switch (category.toLowerCase()) {
+
+      case "brustmuskulatur":
+        return "BRUST";
+
+      case "rücken":
+        return "RUECKEN";
+
+      case "beine":
+        return "BEINE";
+
+      case "schulter":
+      case "schultern":
+        return "SCHULTERN";
+
+      case "bizeps":
+        return "BIZEPS";
+
+      case "trizeps":
+        return "TRIZEPS";
+
+      case "bauchmuskulatur":
+        return "BAUCH";
+
+      case "nacken":
+        return "NACKEN";
+
+      case "unterarme":
+        return "UNTERARME";
+
+      case "cardio":
+        return "CARDIO";
+
+      case "ganzkörpertraining":
+        return "GANZKOERPER";
+
+      default:
+        return category.toUpperCase();
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
     final exercisesAsync = ref.watch(exerciseCatalogProvider);
+
+    final mappedCategory = mapCategoryToBodyRegion(category);
 
     return Scaffold(
 
@@ -50,21 +95,56 @@ class ExerciseCategoryScreen extends ConsumerWidget {
 
         data: (List<ExerciseCatalogItem> exercises) {
 
+          final filteredExercises = exercises
+              .where((exercise) => exercise.bodyRegion == mappedCategory)
+              .toList();
+
+          if (filteredExercises.isEmpty) {
+            return const Center(
+              child: Text(
+                "Keine Übungen gefunden",
+                style: TextStyle(color: Colors.white54),
+              ),
+            );
+          }
+
           return ListView.builder(
 
-            itemCount: exercises.length,
+            itemCount: filteredExercises.length,
 
             itemBuilder: (context, index) {
 
-              final exercise = exercises[index];
+              final exercise = filteredExercises[index];
 
-              return ListTile(
+              return Container(
 
-                title: Text(
-                  exercise.name,
-                  style: const TextStyle(color: Colors.white),
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 6,
                 ),
 
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1B1F23),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+
+                child: ListTile(
+
+                  title: Text(
+                    exercise.name,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+
+                  subtitle: Text(
+                    "${exercise.primaryMuscle} • ${exercise.equipment}",
+                    style: const TextStyle(color: Colors.white54),
+                  ),
+
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    color: Colors.white38,
+                  ),
+                ),
               );
             },
           );
