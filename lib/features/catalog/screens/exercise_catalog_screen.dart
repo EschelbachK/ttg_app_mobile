@@ -7,6 +7,11 @@ import '../models/exercise_catalog_item.dart';
 class ExerciseCatalogScreen extends ConsumerWidget {
   const ExerciseCatalogScreen({super.key});
 
+  String buildImageUrl(String path) {
+    if (path.isEmpty) return "";
+    return "http://10.0.2.2:8080$path";
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
@@ -34,6 +39,8 @@ class ExerciseCatalogScreen extends ConsumerWidget {
 
               final exercise = exercises[index];
 
+              final imageUrl = buildImageUrl(exercise.imageUrl);
+
               return Card(
                 margin: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -42,9 +49,9 @@ class ExerciseCatalogScreen extends ConsumerWidget {
 
                 child: ListTile(
 
-                  leading: exercise.imageUrl.isNotEmpty
+                  leading: imageUrl.isNotEmpty
                       ? Image.network(
-                    exercise.imageUrl,
+                    imageUrl,
                     width: 40,
                     height: 40,
                     fit: BoxFit.cover,
@@ -58,7 +65,9 @@ class ExerciseCatalogScreen extends ConsumerWidget {
                     ),
                   ),
 
-                  subtitle: Text(exercise.id),
+                  subtitle: Text(
+                    "${exercise.bodyRegion} • ${exercise.equipment}",
+                  ),
 
                   trailing: const Icon(Icons.chevron_right),
 
