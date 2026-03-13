@@ -1,23 +1,21 @@
-class ExerciseCatalog {
+class ExerciseCatalogItem {
 
   final String id;
   final String name;
-  final String bodyRegion;
-  final String equipment;
+  final String imageUrl;
 
-  ExerciseCatalog({
+  ExerciseCatalogItem({
     required this.id,
     required this.name,
-    required this.bodyRegion,
-    required this.equipment,
+    required this.imageUrl,
   });
 
-  factory ExerciseCatalog.fromJson(Map<String, dynamic> json) {
-    return ExerciseCatalog(
-      id: json['id'],
-      name: json['name'],
-      bodyRegion: json['bodyRegion'],
-      equipment: json['equipment'],
+  factory ExerciseCatalogItem.fromJson(Map<String, dynamic> json) {
+
+    return ExerciseCatalogItem(
+      id: json["id"],
+      name: json["name"],
+      imageUrl: json["imageUrl"] ?? "",
     );
   }
 }
