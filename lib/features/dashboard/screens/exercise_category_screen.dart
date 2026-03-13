@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../widgets/exercise_input_dialog.dart';
+import '../../catalog/models/exercise_catalog_item.dart';
+import '../../catalog/state/exercise_catalog_provider.dart';
 
-class ExerciseCategoryScreen extends StatelessWidget {
+class ExerciseCategoryScreen extends ConsumerWidget {
 
   final String category;
   final String folderId;
@@ -16,45 +18,53 @@ class ExerciseCategoryScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
 
-    final exercises = [
-
-      "Crunch",
-      "Crunch am Gerät",
-      "Crunch am Seilzug",
-      "Crunch mit Gewicht",
-      "Beinheben",
-      "Beinheben Schrägbank"
-
-    ];
+    final exercisesAsync = ref.watch(exerciseCatalogProvider);
 
     return Scaffold(
 
+      backgroundColor: const Color(0xFF0B0D10),
+
       appBar: AppBar(
-        title: Text(category),
+        backgroundColor: const Color(0xFF0B0D10),
+        elevation: 0,
+        title: Text(
+          category,
+          style: const TextStyle(color: Colors.white),
+        ),
       ),
 
-      body: ListView.builder(
+      body: exercisesAsync.when(
 
-        itemCount: exercises.length,
+        loading: () => const Center(
+          child: CircularProgressIndicator(),
+        ),
 
-        itemBuilder: (context, index) {
+        error: (e, _) => Center(
+          child: Text(
+            "Error: $e",
+            style: const TextStyle(color: Colors.white),
+          ),
+        ),
 
-          return ListTile(
+        data: (List<ExerciseCatalogItem> exercises) {
 
-            title: Text(exercises[index]),
+          return ListView.builder(
 
-            onTap: () {
+            itemCount: exercises.length,
 
-              showDialog(
-                context: context,
-                builder: (_) => ExerciseInputDialog(
-                  category: category,
-                  name: exercises[index],
-                  folderId: folderId,
-                  planId: planId,
+            itemBuilder: (context, index) {
+
+              final exercise = exercises[index];
+
+              return ListTile(
+
+                title: Text(
+                  exercise.name,
+                  style: const TextStyle(color: Colors.white),
                 ),
+
               );
             },
           );
