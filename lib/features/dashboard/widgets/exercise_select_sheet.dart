@@ -3,19 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../catalog/state/exercise_catalog_provider.dart';
 import '../../catalog/models/exercise_catalog_item.dart';
-import 'exercise_input_dialog.dart';
 
 class ExerciseSelectSheet extends ConsumerWidget {
 
   final String category;
-  final String folderId;
-  final String planId;
 
   const ExerciseSelectSheet({
     super.key,
     required this.category,
-    required this.folderId,
-    required this.planId,
   });
 
   String mapCategoryToBodyRegion(String category) {
@@ -73,7 +68,7 @@ class ExerciseSelectSheet extends ConsumerWidget {
       height: 500,
 
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: Color(0xFF1B1F23),
         borderRadius: BorderRadius.vertical(
           top: Radius.circular(16),
         ),
@@ -97,25 +92,25 @@ class ExerciseSelectSheet extends ConsumerWidget {
 
               return ListTile(
 
-                title: Text(exercise.name),
+                title: Text(
+                  exercise.name,
+                  style: const TextStyle(color: Colors.white),
+                ),
 
                 subtitle: Text(
                   exercise.equipment,
+                  style: const TextStyle(color: Colors.white54),
+                ),
+
+                trailing: const Icon(
+                  Icons.chevron_right,
+                  color: Colors.white38,
                 ),
 
                 onTap: () {
 
-                  Navigator.pop(context);
+                  Navigator.pop(context, exercise.name);
 
-                  showDialog(
-                    context: context,
-                    builder: (_) => ExerciseInputDialog(
-                      category: category,
-                      name: exercise.name,
-                      folderId: folderId,
-                      planId: planId,
-                    ),
-                  );
                 },
               );
             },
@@ -127,7 +122,10 @@ class ExerciseSelectSheet extends ConsumerWidget {
         ),
 
         error: (e, _) => Center(
-          child: Text("Fehler: $e"),
+          child: Text(
+            "Fehler: $e",
+            style: const TextStyle(color: Colors.white),
+          ),
         ),
       ),
     );

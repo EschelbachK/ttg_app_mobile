@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/training_plan.dart';
-import '../widgets/exercise_catalog.dart';
+import '../widgets/exercise_selection_card.dart';
 
 class MuscleGroupScreen extends StatelessWidget {
 
@@ -23,10 +23,15 @@ class MuscleGroupScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFF0B0D10),
         elevation: 0,
+
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: Color(0xFFFF3B30),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
+
         title: Text(
           plan.name,
           style: const TextStyle(color: Colors.white),
@@ -34,12 +39,15 @@ class MuscleGroupScreen extends StatelessWidget {
       ),
 
       body: Column(
+
         children: [
 
           const SizedBox(height: 20),
 
           Row(
+
             mainAxisAlignment: MainAxisAlignment.center,
+
             children: [
 
               Text(
@@ -64,73 +72,16 @@ class MuscleGroupScreen extends StatelessWidget {
 
           const SizedBox(height: 30),
 
-          /// ADD EXERCISE CARD
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-
-            child: GestureDetector(
-
-              onTap: () {
-
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ExerciseCatalog(
-                      folderId: folderId,
-                      planId: plan.id,
-                    ),
-                  ),
-                );
-              },
-
-              child: Container(
-
-                padding: const EdgeInsets.all(20),
-
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFF3B30),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-
-                child: Column(
-                  children: const [
-
-                    Icon(
-                      Icons.fitness_center,
-                      color: Colors.white,
-                      size: 30,
-                    ),
-
-                    SizedBox(height: 10),
-
-                    Text(
-                      "Füge Übungen hinzu",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-
-                    SizedBox(height: 6),
-
-                    Text(
-                      "Tippe hier um den Übungskatalog zu öffnen",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          /// NEW SELECTION CARD
+          ExerciseSelectionCard(
+            folderId: folderId,
+            planId: plan.id,
           ),
 
-          const SizedBox(height: 30),
+          const SizedBox(height: 20),
 
           Expanded(
+
             child: plan.exercises.isEmpty
 
                 ? const Center(
@@ -188,26 +139,6 @@ class MuscleGroupScreen extends StatelessWidget {
             ),
           ),
         ],
-      ),
-
-      floatingActionButton: FloatingActionButton(
-
-        backgroundColor: const Color(0xFFFF3B30),
-
-        child: const Icon(Icons.add),
-
-        onPressed: () {
-
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ExerciseCatalog(
-                folderId: folderId,
-                planId: plan.id,
-              ),
-            ),
-          );
-        },
       ),
     );
   }
