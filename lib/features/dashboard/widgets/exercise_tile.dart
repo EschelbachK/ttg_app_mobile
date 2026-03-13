@@ -31,22 +31,66 @@ class ExerciseTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
+          /// Exercise Name
           Text(
             exercise.name,
             style: const TextStyle(
               color: Colors.blue,
               fontSize: 16,
+              fontWeight: FontWeight.bold,
             ),
           ),
 
-          const SizedBox(height: 6),
+          const SizedBox(height: 12),
 
-          Text(
-            "Gewicht ${exercise.weight}kg • ${exercise.reps} Wdh • ${exercise.sets} Sätze",
-            style: const TextStyle(
-              color: Colors.white70,
+          /// Sets List
+          Column(
+
+            children: List.generate(
+
+              exercise.sets,
+
+                  (index) {
+
+                return Padding(
+
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+
+                  child: Row(
+
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+                    children: [
+
+                      /// Set Number
+                      Text(
+                        "Set ${index + 1}",
+                        style: const TextStyle(
+                          color: Colors.white70,
+                        ),
+                      ),
+
+                      /// Weight
+                      Text(
+                        "${exercise.weight} kg",
+                        style: const TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+
+                      /// Reps
+                      Text(
+                        "${exercise.reps} Wdh",
+                        style: const TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-          )
+          ),
         ],
       ),
     );

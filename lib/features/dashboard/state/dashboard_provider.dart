@@ -9,6 +9,7 @@ StateNotifierProvider<DashboardNotifier, DashboardState>(
         (ref) => DashboardNotifier());
 
 class DashboardState {
+
   final List<TrainingFolder> folders;
   final List<TrainingFolder> archivedFolders;
   final List<TrainingPlan> archivedPlans;
@@ -48,6 +49,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     ),
   );
 
+  /// SWITCH VIEW
   void showPlans() {
     state = state.copyWith(showArchive: false);
   }
@@ -56,7 +58,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     state = state.copyWith(showArchive: true);
   }
 
-  /// CREATE PLAN (Folder)
+  /// CREATE FOLDER
   void addFolder(String name) {
 
     final folder = TrainingFolder(
@@ -70,7 +72,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     );
   }
 
-  /// DELETE PLAN
+  /// DELETE FOLDER
   void deleteFolder(String folderId) {
 
     state = state.copyWith(
@@ -80,7 +82,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     );
   }
 
-  /// ARCHIVE PLAN
+  /// ARCHIVE FOLDER
   void archiveFolder(String folderId) {
 
     TrainingFolder? archived;
@@ -105,7 +107,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     );
   }
 
-  /// DRAG SORT PLANS
+  /// DRAG SORT FOLDERS
   void reorderFolders(int oldIndex, int newIndex) {
 
     final list = [...state.folders];
@@ -134,7 +136,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
           return folder;
         }
 
-        final updated = [
+        final updatedPlans = [
 
           ...folder.plans,
 
@@ -147,7 +149,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         ];
 
         return folder.copyWith(
-          plans: updated,
+          plans: updatedPlans,
         );
 
       }).toList(),
@@ -182,7 +184,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
 
     TrainingPlan? archived;
 
-    final folders = state.folders.map((folder) {
+    final updatedFolders = state.folders.map((folder) {
 
       if (folder.id != folderId) {
         return folder;
@@ -190,9 +192,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
 
       final plans = [...folder.plans];
 
-      final index = plans.indexWhere(
-            (p) => p.id == planId,
-      );
+      final index = plans.indexWhere((p) => p.id == planId);
 
       archived = plans.removeAt(index);
 
@@ -203,7 +203,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     }).toList();
 
     state = state.copyWith(
-      folders: folders,
+      folders: updatedFolders,
       archivedPlans: [
         ...state.archivedPlans,
         archived!,

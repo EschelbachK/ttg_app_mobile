@@ -26,7 +26,7 @@ class ExerciseInputDialog extends ConsumerStatefulWidget {
 
 class _ExerciseInputDialogState extends ConsumerState<ExerciseInputDialog> {
 
-  int weight = 0;
+  double weight = 0;
   int reps = 0;
   int sets = 0;
 
@@ -96,8 +96,8 @@ class _ExerciseInputDialogState extends ConsumerState<ExerciseInputDialog> {
 
             children: [
 
-              buildField("GEWICHT (KG)", weight, (v) {
-                setState(() => weight = v);
+              buildField("GEWICHT (KG)", weight as int, (v) {
+                setState(() => weight = v as double);
               }),
 
               buildField("WIEDERHOLUNGEN", reps, (v) {

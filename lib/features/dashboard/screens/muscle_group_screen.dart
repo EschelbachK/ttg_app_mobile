@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../models/training_plan.dart';
+import '../state/dashboard_provider.dart';
 import '../widgets/exercise_selection_card.dart';
 
-class MuscleGroupScreen extends StatelessWidget {
+class MuscleGroupScreen extends ConsumerWidget {
 
   final String folderId;
   final TrainingPlan plan;
@@ -14,7 +17,28 @@ class MuscleGroupScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+
+    final dashboardState = ref.watch(dashboardProvider);
+
+    TrainingPlan currentPlan = plan;
+
+    /// aktuelles Plan Objekt aus Provider holen
+    for (final folder in dashboardState.folders) {
+
+      if (folder.id == folderId) {
+
+        for (final p in folder.plans) {
+
+          if (p.id == plan.id) {
+            currentPlan = p;
+          }
+
+        }
+
+      }
+
+    }
 
     return Scaffold(
 
@@ -33,7 +57,7 @@ class MuscleGroupScreen extends StatelessWidget {
         ),
 
         title: Text(
-          plan.name,
+          currentPlan.name,
           style: const TextStyle(color: Colors.white),
         ),
       ),
@@ -45,13 +69,11 @@ class MuscleGroupScreen extends StatelessWidget {
           const SizedBox(height: 20),
 
           Row(
-
             mainAxisAlignment: MainAxisAlignment.center,
-
             children: [
 
               Text(
-                plan.name.toUpperCase(),
+                currentPlan.name.toUpperCase(),
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 20,
@@ -72,17 +94,18 @@ class MuscleGroupScreen extends StatelessWidget {
 
           const SizedBox(height: 30),
 
-          /// NEW SELECTION CARD
+          /// Exercise hinzufügen
           ExerciseSelectionCard(
             folderId: folderId,
-            planId: plan.id,
+            planId: currentPlan.id,
           ),
 
           const SizedBox(height: 20),
 
+          /// Liste der Übungen
           Expanded(
 
-            child: plan.exercises.isEmpty
+            child: currentPlan.exercises.isEmpty
 
                 ? const Center(
               child: Text(
@@ -93,11 +116,11 @@ class MuscleGroupScreen extends StatelessWidget {
 
                 : ListView.builder(
 
-              itemCount: plan.exercises.length,
+              itemCount: currentPlan.exercises.length,
 
               itemBuilder: (context, index) {
 
-                final exercise = plan.exercises[index];
+                final exercise = currentPlan.exercises[index];
 
                 return Container(
 
@@ -132,6 +155,7 @@ class MuscleGroupScreen extends StatelessWidget {
                         Icons.more_vert,
                         color: Colors.white38,
                       ),
+
                     ],
                   ),
                 );

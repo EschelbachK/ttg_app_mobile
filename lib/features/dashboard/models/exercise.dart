@@ -1,8 +1,10 @@
 class Exercise {
+
   final String id;
   final String category;
   final String name;
-  final int weight;
+
+  final double weight;
   final int reps;
   final int sets;
 
@@ -19,7 +21,7 @@ class Exercise {
     String? id,
     String? category,
     String? name,
-    int? weight,
+    double? weight,
     int? reps,
     int? sets,
   }) {
