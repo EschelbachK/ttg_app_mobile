@@ -1,71 +1,85 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/exercise_catalog.dart';
 
-class ExerciseCatalogScreen extends ConsumerStatefulWidget {
-  final String folderId;
+import '../state/exercise_catalog_provider.dart';
+import '../models/exercise_catalog_item.dart';
 
-  const ExerciseCatalogScreen({
-    super.key,
-    required this.folderId,
-  });
+class ExerciseCatalogScreen extends ConsumerWidget {
+  const ExerciseCatalogScreen({super.key});
 
   @override
-  ConsumerState<ExerciseCatalogScreen> createState() =>
-      _ExerciseCatalogScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
 
-class _ExerciseCatalogScreenState
-    extends ConsumerState<ExerciseCatalogScreen> {
+    final exercisesAsync = ref.watch(exerciseCatalogProvider);
 
-  List<ExerciseCatalog> exercises = [];
-
-  ProviderListenable<dynamic>? get apiServiceProvider => null;
-
-  @override
-  void initState() {
-    super.initState();
-    loadExercises();
-  }
-
-  Future<void> loadExercises() async {
-    final api = ref.read(apiServiceProvider!);
-
-    final data =
-    await api.getCatalogExercises("BRUST");
-
-    setState(() {
-      exercises = data;
-    });
-  }
-
-  Future<void> addExercise(String id) async {
-    final api = ref.read(apiServiceProvider!);
-
-    await api.addExerciseToFolder(
-      widget.folderId,
-      id,
-    );
-
-    Navigator.pop(context);
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Übung auswählen"),
+        title: const Text("Exercises"),
       ),
-      body: ListView.builder(
-        itemCount: exercises.length,
-        itemBuilder: (context, index) {
-          final ex = exercises[index];
 
-          return ListTile(
-            title: Text(ex.name),
-            onTap: () => addExercise(ex.id),
+      body: exercisesAsync.when(
+
+        data: (List<ExerciseCatalogItem> exercises) {
+
+          if (exercises.isEmpty) {
+            return const Center(
+              child: Text("No exercises found"),
+            );
+          }
+
+          return ListView.builder(
+            itemCount: exercises.length,
+
+            itemBuilder: (context, index) {
+
+              final exercise = exercises[index];
+
+              return Card(
+                margin: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+
+                child: ListTile(
+
+                  leading: exercise.imageUrl.isNotEmpty
+                      ? Image.network(
+                    exercise.imageUrl,
+                    width: 40,
+                    height: 40,
+                    fit: BoxFit.cover,
+                  )
+                      : const Icon(Icons.fitness_center),
+
+                  title: Text(
+                    exercise.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+
+                  subtitle: Text(exercise.id),
+
+                  trailing: const Icon(Icons.chevron_right),
+
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Selected: ${exercise.name}"),
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
           );
         },
+
+        loading: () =>
+        const Center(child: CircularProgressIndicator()),
+
+        error: (error, stack) =>
+            Center(child: Text(error.toString())),
       ),
     );
   }
