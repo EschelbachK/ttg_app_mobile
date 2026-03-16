@@ -35,15 +35,18 @@ class _FolderCardState extends ConsumerState<FolderCard> {
           borderRadius: BorderRadius.circular(18),
 
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            filter: ImageFilter.blur(
+              sigmaX: 3,
+              sigmaY: 3,
+            ),
 
             child: Container(
 
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(18),
+                color: Colors.black.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(25),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.08),
+                  color: Colors.white.withOpacity(0.25),
                 ),
               ),
 
@@ -59,11 +62,14 @@ class _FolderCardState extends ConsumerState<FolderCard> {
                     },
 
                     child: Container(
-                      padding: const EdgeInsets.all(14),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 6,
+                      ),
 
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.25),
-                        borderRadius: const BorderRadius.vertical(
+                      decoration: const BoxDecoration(
+                        color: Colors.transparent,
+                        borderRadius: BorderRadius.vertical(
                           top: Radius.circular(18),
                         ),
                       ),
@@ -157,89 +163,134 @@ class _FolderCardState extends ConsumerState<FolderCard> {
 
                         showDialog(
                           context: context,
+                          barrierColor: Colors.black.withOpacity(0.6),
                           builder: (context) {
 
-                            return AlertDialog(
+                            return Dialog(
+                              backgroundColor: Colors.transparent,
 
-                              backgroundColor: const Color(0xFF161A1F),
-
-                              shape: RoundedRectangleBorder(
+                              child: ClipRRect(
                                 borderRadius: BorderRadius.circular(20),
-                              ),
 
-                              title: const Text(
-                                "Neue Muskelgruppe",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
+                                child: BackdropFilter(
+                                  filter: ImageFilter.blur(
+                                    sigmaX: 20,
+                                    sigmaY: 20,
+                                  ),
+
+                                  child: Container(
+                                    padding: const EdgeInsets.all(20),
+
+                                    decoration: BoxDecoration(
+                                      color: Colors.black.withOpacity(0.25),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: Colors.white.withOpacity(0.25),
+                                      ),
+                                    ),
+
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+
+                                        const Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            "Neue Muskelgruppe",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 20,
+                                            ),
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: 16),
+
+                                        TextField(
+
+                                          controller: controller,
+                                          autofocus: false,
+                                          cursorColor: Colors.white,
+
+                                          style: const TextStyle(color: Colors.white),
+
+                                          decoration: const InputDecoration(
+
+                                            hintText: "Name eingeben",
+                                            hintStyle: TextStyle(color: Colors.white38),
+
+                                            enabledBorder: UnderlineInputBorder(
+                                              borderSide: BorderSide(
+                                                color: Color(0xFFFF3B30),
+                                              ),
+                                            ),
+
+                                            focusedBorder: UnderlineInputBorder(
+                                              borderSide: BorderSide(
+                                                color: Color(0xFFFF3B30),
+                                              ),
+                                            ),
+
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: 20),
+
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.end,
+                                          children: [
+
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(context),
+                                              child: const Text(
+                                                "Abbrechen",
+                                                style: TextStyle(
+                                                  color: Colors.white70,
+                                                ),
+                                              ),
+                                            ),
+
+                                            const SizedBox(width: 10),
+
+                                            ElevatedButton(
+
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: const Color(0xFFFF3B30),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                  BorderRadius.circular(20),
+                                                ),
+                                              ),
+
+                                              onPressed: () {
+
+                                                final name = controller.text.trim();
+
+                                                if (name.isEmpty) return;
+
+                                                notifier.addPlan(folder.id, name);
+
+                                                Navigator.pop(context);
+
+                                              },
+
+                                              child: const Text(
+                                                "Erstellen",
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+
+                                          ],
+                                        ),
+
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ),
-
-                              content: TextField(
-
-                                controller: controller,
-                                autofocus: false,
-
-                                style: const TextStyle(color: Colors.white),
-
-                                decoration: const InputDecoration(
-
-                                  hintText: "Name eingeben",
-                                  hintStyle: TextStyle(color: Colors.white38),
-
-                                  enabledBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: Color(0xFFFF3B30),
-                                    ),
-                                  ),
-
-                                  focusedBorder: UnderlineInputBorder(
-                                    borderSide: BorderSide(
-                                      color: Color(0xFFFF3B30),
-                                    ),
-                                  ),
-
-                                ),
-                              ),
-
-                              actions: [
-
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: const Text(
-                                    "Abbrechen",
-                                    style: TextStyle(
-                                      color: Colors.white70,
-                                    ),
-                                  ),
-                                ),
-
-                                ElevatedButton(
-
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFFF3B30),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                      BorderRadius.circular(20),
-                                    ),
-                                  ),
-
-                                  onPressed: () {
-
-                                    final name = controller.text.trim();
-
-                                    if (name.isEmpty) return;
-
-                                    notifier.addPlan(folder.id, name);
-
-                                    Navigator.pop(context);
-
-                                  },
-
-                                  child: const Text("Erstellen"),
-                                ),
-
-                              ],
                             );
                           },
                         );

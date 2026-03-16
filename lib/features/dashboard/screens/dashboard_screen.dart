@@ -101,7 +101,7 @@ class DashboardScreen extends ConsumerWidget {
 
               const SizedBox(height: 10),
 
-              /// GLASS CONTAINER
+              /// CONTAINER (jetzt unsichtbar)
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 6),
@@ -110,17 +110,16 @@ class DashboardScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(20),
 
                     child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+                      filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
 
                       child: Container(
                         padding: const EdgeInsets.all(18),
 
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.05),
+                          color: Colors.transparent,
                           borderRadius: BorderRadius.circular(20),
-
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.08),
+                            color: Colors.transparent,
                           ),
                         ),
 

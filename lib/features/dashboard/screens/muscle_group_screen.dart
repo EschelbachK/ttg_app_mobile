@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/training_plan.dart';
 import '../state/dashboard_provider.dart';
 import '../widgets/exercise_selection_card.dart';
+import '../widgets/exercise_catalog.dart';
 
 class MuscleGroupScreen extends ConsumerWidget {
 
@@ -39,6 +40,8 @@ class MuscleGroupScreen extends ConsumerWidget {
       }
 
     }
+
+    final hasExercises = currentPlan.exercises.isNotEmpty;
 
     return Scaffold(
 
@@ -94,7 +97,83 @@ class MuscleGroupScreen extends ConsumerWidget {
 
           const SizedBox(height: 30),
 
-          /// Exercise hinzufügen
+          /// Roter Button (nur wenn noch keine Übungen existieren)
+          if (!hasExercises)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: InkWell(
+
+                borderRadius: BorderRadius.circular(16),
+
+                onTap: () {
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ExerciseCatalog(
+                        folderId: folderId,
+                        planId: currentPlan.id,
+                      ),
+                    ),
+                  );
+
+                },
+
+                child: Container(
+
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 40,
+                    horizontal: 20,
+                  ),
+
+                  decoration: BoxDecoration(
+
+                    color: const Color(0xFFFF3B30),
+
+                    borderRadius: BorderRadius.circular(16),
+
+                  ),
+
+                  child: const Column(
+
+                    children: [
+
+                      Icon(
+                        Icons.fitness_center,
+                        color: Colors.white,
+                        size: 32,
+                      ),
+
+                      SizedBox(height: 10),
+
+                      Text(
+                        "Füge Übungen hinzu",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      SizedBox(height: 4),
+
+                      Text(
+                        "Tippe hier um den Übungskatalog zu öffnen",
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
+
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+          const SizedBox(height: 20),
+
+          /// Exercise hinzufügen (bleibt immer aktiv)
           ExerciseSelectionCard(
             folderId: folderId,
             planId: currentPlan.id,
@@ -162,6 +241,7 @@ class MuscleGroupScreen extends ConsumerWidget {
               },
             ),
           ),
+
         ],
       ),
     );
