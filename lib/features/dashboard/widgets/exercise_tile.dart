@@ -1,7 +1,10 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import '../../../core/ui/lib/core/ui/ttg_glow_border.dart';
 import '../models/exercise.dart';
+import '../models/exercise_set.dart';
 
-class ExerciseTile extends StatelessWidget {
+class ExerciseTile extends StatefulWidget {
 
   final Exercise exercise;
 
@@ -11,86 +14,299 @@ class ExerciseTile extends StatelessWidget {
   });
 
   @override
+  State<ExerciseTile> createState() => _ExerciseTileState();
+}
+
+class _ExerciseTileState extends State<ExerciseTile> {
+
+  bool expanded = false;
+
+  @override
   Widget build(BuildContext context) {
+
+    final exercise = widget.exercise;
+
+    return Padding(
+
+      padding: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 10,
+      ),
+
+      child: TTGGlowBorder(
+
+        child: ClipRRect(
+
+          borderRadius: BorderRadius.circular(20),
+
+          child: BackdropFilter(
+
+            filter: ImageFilter.blur(
+              sigmaX: 10,
+              sigmaY: 10,
+            ),
+
+            child: Container(
+
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.25),
+                ),
+              ),
+
+              child: Column(
+
+                children: [
+
+                  /// HEADER
+                  InkWell(
+
+                    onTap: () {
+                      setState(() {
+                        expanded = !expanded;
+                      });
+                    },
+
+                    child: Padding(
+
+                      padding: const EdgeInsets.all(16),
+
+                      child: Row(
+
+                        children: [
+
+                          Expanded(
+                            child: Text(
+                              exercise.name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+
+                          Icon(
+                            expanded
+                                ? Icons.keyboard_arrow_up
+                                : Icons.keyboard_arrow_down,
+                            color: Colors.white54,
+                          ),
+
+                          const SizedBox(width: 8),
+
+                          const Icon(
+                            Icons.more_vert,
+                            color: Colors.white38,
+                          ),
+
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  if (expanded) ...[
+
+                    const Divider(color: Colors.white12),
+
+                    /// IMAGE
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+
+                      child: Container(
+
+                        height: 160,
+
+                        decoration: BoxDecoration(
+                          color: Colors.black26,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+
+                        alignment: Alignment.center,
+
+                        child: const Text(
+                          "Übungsbild",
+                          style: TextStyle(color: Colors.white38),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    /// HEADER
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+
+                      child: Row(
+
+                        children: const [
+
+                          Icon(Icons.drag_indicator,
+                              color: Colors.white38, size: 18),
+
+                          SizedBox(width: 10),
+
+                          Expanded(
+                            child: Center(
+                              child: Text(
+                                "SATZ",
+                                style: TextStyle(
+                                  color: Colors.white38,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          Icon(Icons.fitness_center,
+                              color: Colors.white38, size: 16),
+
+                          SizedBox(width: 4),
+
+                          Expanded(
+                            child: Center(
+                              child: Text(
+                                "GEWICHT",
+                                style: TextStyle(
+                                  color: Colors.white38,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          Icon(Icons.repeat,
+                              color: Colors.white38, size: 16),
+
+                          SizedBox(width: 4),
+
+                          Expanded(
+                            child: Center(
+                              child: Text(
+                                "WDH",
+                                style: TextStyle(
+                                  color: Colors.white38,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    ReorderableListView(
+
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+
+                      onReorder: (oldIndex, newIndex) {
+
+                        final sets = [...exercise.sets];
+
+                        if (newIndex > oldIndex) {
+                          newIndex--;
+                        }
+
+                        final item = sets.removeAt(oldIndex);
+
+                        sets.insert(newIndex, item);
+
+                        setState(() {
+                          widget.exercise.sets
+                            ..clear()
+                            ..addAll(sets);
+                        });
+                      },
+
+                      children: [
+
+                        for (int i = 0; i < exercise.sets.length; i++)
+
+                          _buildSetRow(
+                            exercise.sets[i],
+                            i,
+                            key: ValueKey(i),
+                          ),
+
+                      ],
+                    ),
+
+                    const SizedBox(height: 10),
+
+                  ],
+
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSetRow(ExerciseSet set, int index, {required Key key}) {
 
     return Container(
 
-      margin: const EdgeInsets.symmetric(
+      key: key,
+
+      padding: const EdgeInsets.symmetric(
         horizontal: 16,
-        vertical: 8,
+        vertical: 10,
       ),
 
-      padding: const EdgeInsets.all(16),
+      child: Row(
 
-      decoration: BoxDecoration(
-        color: const Color(0xFF1B1F23),
-        borderRadius: BorderRadius.circular(12),
-      ),
-
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          /// Exercise Name
-          Text(
-            exercise.name,
-            style: const TextStyle(
-              color: Colors.blue,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+          const Icon(
+            Icons.drag_indicator,
+            color: Colors.white38,
+          ),
+
+          const SizedBox(width: 10),
+
+          Expanded(
+            child: Center(
+              child: Text(
+                "${index + 1}",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
+              ),
             ),
           ),
 
-          const SizedBox(height: 12),
-
-          /// Sets List
-          Column(
-
-            children: List.generate(
-
-              exercise.sets,
-
-                  (index) {
-
-                return Padding(
-
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-
-                  child: Row(
-
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-
-                    children: [
-
-                      /// Set Number
-                      Text(
-                        "Set ${index + 1}",
-                        style: const TextStyle(
-                          color: Colors.white70,
-                        ),
-                      ),
-
-                      /// Weight
-                      Text(
-                        "${exercise.weight} kg",
-                        style: const TextStyle(
-                          color: Colors.white,
-                        ),
-                      ),
-
-                      /// Reps
-                      Text(
-                        "${exercise.reps} Wdh",
-                        style: const TextStyle(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
+          Expanded(
+            child: Center(
+              child: Text(
+                "${set.weight} kg",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
+              ),
             ),
           ),
+
+          Expanded(
+            child: Center(
+              child: Text(
+                "${set.reps}",
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ),
+
         ],
       ),
     );

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/exercise.dart';
+import '../models/exercise_set.dart';
 import '../state/dashboard_provider.dart';
 import 'exercise_select_sheet.dart';
 
@@ -273,9 +274,13 @@ class _ExerciseSelectionCardState
                       category: selectedCategory!,
                       name: selectedExercise!,
 
-                      weight: weight,
-                      reps: reps,
-                      sets: sets,
+                      sets: List.generate(
+                        sets,
+                            (index) => ExerciseSet(
+                          weight: weight,
+                          reps: reps,
+                        ),
+                      ),
                     );
 
                     ref.read(dashboardProvider.notifier).addExercise(

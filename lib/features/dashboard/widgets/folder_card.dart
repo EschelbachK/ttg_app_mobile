@@ -95,6 +95,170 @@ class _FolderCardState extends ConsumerState<FolderCard> {
                             ),
                           ),
 
+                          /// Ordner umbenennen
+                          InkWell(
+                            onTap: () {
+
+                              final controller =
+                              TextEditingController(text: folder.name);
+
+                              showDialog(
+                                context: context,
+                                barrierColor: Colors.black.withOpacity(0.6),
+                                builder: (context) {
+
+                                  return Dialog(
+                                    backgroundColor: Colors.transparent,
+
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(20),
+
+                                      child: BackdropFilter(
+                                        filter: ImageFilter.blur(
+                                          sigmaX: 20,
+                                          sigmaY: 20,
+                                        ),
+
+                                        child: Container(
+                                          padding: const EdgeInsets.all(20),
+
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withOpacity(0.25),
+                                            borderRadius: BorderRadius.circular(20),
+                                            border: Border.all(
+                                              color: Colors.white.withOpacity(0.25),
+                                            ),
+                                          ),
+
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+
+                                              const Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: Text(
+                                                  "Ordner umbenennen",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 20,
+                                                  ),
+                                                ),
+                                              ),
+
+                                              const SizedBox(height: 16),
+
+                                              TextField(
+
+                                                controller: controller,
+                                                autofocus: false,
+                                                cursorColor: Colors.white,
+
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                ),
+
+                                                decoration: const InputDecoration(
+
+                                                  hintText: "Name eingeben",
+                                                  hintStyle: TextStyle(
+                                                    color: Colors.white38,
+                                                  ),
+
+                                                  enabledBorder: UnderlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                      color: Color(0xFFFF3B30),
+                                                    ),
+                                                  ),
+
+                                                  focusedBorder: UnderlineInputBorder(
+                                                    borderSide: BorderSide(
+                                                      color: Color(0xFFFF3B30),
+                                                    ),
+                                                  ),
+
+                                                ),
+                                              ),
+
+                                              const SizedBox(height: 20),
+
+                                              Row(
+                                                mainAxisAlignment:
+                                                MainAxisAlignment.end,
+                                                children: [
+
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.pop(context),
+                                                    child: const Text(
+                                                      "Abbrechen",
+                                                      style: TextStyle(
+                                                        color: Colors.white70,
+                                                      ),
+                                                    ),
+                                                  ),
+
+                                                  const SizedBox(width: 10),
+
+                                                  ElevatedButton(
+
+                                                    style:
+                                                    ElevatedButton.styleFrom(
+                                                      backgroundColor:
+                                                      const Color(
+                                                          0xFFFF3B30),
+                                                      shape:
+                                                      RoundedRectangleBorder(
+                                                        borderRadius:
+                                                        BorderRadius.circular(
+                                                            20),
+                                                      ),
+                                                    ),
+
+                                                    onPressed: () {
+
+                                                      final name =
+                                                      controller.text.trim();
+
+                                                      if (name.isEmpty) return;
+
+                                                      notifier.renameFolder(
+                                                          folder.id, name);
+
+                                                      Navigator.pop(context);
+                                                    },
+
+                                                    child: const Text(
+                                                      "Speichern",
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontWeight:
+                                                        FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  ),
+
+                                                ],
+                                              ),
+
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                            child: const Padding(
+                              padding: EdgeInsets.only(right: 8),
+                              child: Icon(
+                                Icons.edit,
+                                color: Colors.white54,
+                                size: 18,
+                              ),
+                            ),
+                          ),
+
                           Icon(
                             expanded
                                 ? Icons.keyboard_arrow_up
@@ -124,12 +288,12 @@ class _FolderCardState extends ConsumerState<FolderCard> {
 
                               PopupMenuItem(
                                 value: 'archive',
-                                child: Text("Plan archivieren"),
+                                child: Text("Ordner archivieren"),
                               ),
 
                               PopupMenuItem(
                                 value: 'delete',
-                                child: Text("Plan löschen"),
+                                child: Text("Ordner löschen"),
                               ),
 
                             ],
@@ -264,7 +428,8 @@ class _FolderCardState extends ConsumerState<FolderCard> {
 
                                               onPressed: () {
 
-                                                final name = controller.text.trim();
+                                                final name =
+                                                controller.text.trim();
 
                                                 if (name.isEmpty) return;
 

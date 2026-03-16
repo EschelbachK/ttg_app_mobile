@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../models/training_plan.dart';
-import '../state/dashboard_provider.dart';
 import '../screens/muscle_group_screen.dart';
+import '../state/dashboard_provider.dart';
 
 class PlanTile extends ConsumerWidget {
 

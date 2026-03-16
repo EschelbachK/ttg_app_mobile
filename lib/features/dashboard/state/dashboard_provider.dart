@@ -70,6 +70,19 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     );
   }
 
+  void renameFolder(String folderId, String newName) {
+
+    state = state.copyWith(
+      folders: state.folders.map((folder) {
+
+        if (folder.id != folderId) return folder;
+
+        return folder.copyWith(name: newName);
+
+      }).toList(),
+    );
+  }
+
   void deleteFolder(String folderId) {
 
     state = state.copyWith(
@@ -306,43 +319,80 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     );
   }
 
-  void movePlanToFolder(
-      String sourceFolderId,
-      String targetFolderId,
+  /// NEU: Übung nach oben verschieben
+  void moveExerciseUp(
+      String folderId,
       String planId,
+      String exerciseId,
       ) {
 
-    final folders = [...state.folders];
+    state = state.copyWith(
 
-    final sourceIndex =
-    folders.indexWhere((f) => f.id == sourceFolderId);
+      folders: state.folders.map((folder) {
 
-    final targetIndex =
-    folders.indexWhere((f) => f.id == targetFolderId);
+        if (folder.id != folderId) return folder;
 
-    if (sourceIndex == -1 || targetIndex == -1) return;
+        final updatedPlans = folder.plans.map((plan) {
 
-    final sourceFolder = folders[sourceIndex];
-    final targetFolder = folders[targetIndex];
+          if (plan.id != planId) return plan;
 
-    final plans = [...sourceFolder.plans];
+          final exercises = [...plan.exercises];
 
-    final planIndex =
-    plans.indexWhere((p) => p.id == planId);
+          final index =
+          exercises.indexWhere((e) => e.id == exerciseId);
 
-    if (planIndex == -1) return;
+          if (index <= 0) return plan;
 
-    final movedPlan = plans.removeAt(planIndex);
+          final item = exercises.removeAt(index);
 
-    folders[sourceIndex] =
-        sourceFolder.copyWith(plans: plans);
+          exercises.insert(index - 1, item);
 
-    folders[targetIndex] =
-        targetFolder.copyWith(
-          plans: [...targetFolder.plans, movedPlan],
-        );
+          return plan.copyWith(exercises: exercises);
 
-    state = state.copyWith(folders: folders);
+        }).toList();
+
+        return folder.copyWith(plans: updatedPlans);
+
+      }).toList(),
+    );
+  }
+
+  /// NEU: Übung nach unten verschieben
+  void moveExerciseDown(
+      String folderId,
+      String planId,
+      String exerciseId,
+      ) {
+
+    state = state.copyWith(
+
+      folders: state.folders.map((folder) {
+
+        if (folder.id != folderId) return folder;
+
+        final updatedPlans = folder.plans.map((plan) {
+
+          if (plan.id != planId) return plan;
+
+          final exercises = [...plan.exercises];
+
+          final index =
+          exercises.indexWhere((e) => e.id == exerciseId);
+
+          if (index == exercises.length - 1) return plan;
+
+          final item = exercises.removeAt(index);
+
+          exercises.insert(index + 1, item);
+
+          return plan.copyWith(exercises: exercises);
+
+        }).toList();
+
+        return folder.copyWith(plans: updatedPlans);
+
+      }).toList(),
+    );
   }
 
   void addExercise(
@@ -381,7 +431,6 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         );
 
       }).toList(),
-
     );
   }
 
@@ -418,7 +467,6 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         );
 
       }).toList(),
-
     );
   }
 }

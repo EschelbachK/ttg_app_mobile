@@ -1,12 +1,14 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/ui/lib/core/ui/ttg_glow_border.dart';
 import '../models/training_plan.dart';
 import '../state/dashboard_provider.dart';
 import '../widgets/exercise_selection_card.dart';
-import '../widgets/exercise_catalog.dart';
+import '../widgets/exercise_tile.dart';
 
-class MuscleGroupScreen extends ConsumerWidget {
+class MuscleGroupScreen extends ConsumerStatefulWidget {
 
   final String folderId;
   final TrainingPlan plan;
@@ -18,20 +20,27 @@ class MuscleGroupScreen extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MuscleGroupScreen> createState() => _MuscleGroupScreenState();
+}
+
+class _MuscleGroupScreenState extends ConsumerState<MuscleGroupScreen> {
+
+  bool addExerciseExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
 
     final dashboardState = ref.watch(dashboardProvider);
 
-    TrainingPlan currentPlan = plan;
+    TrainingPlan currentPlan = widget.plan;
 
-    /// aktuelles Plan Objekt aus Provider holen
     for (final folder in dashboardState.folders) {
 
-      if (folder.id == folderId) {
+      if (folder.id == widget.folderId) {
 
         for (final p in folder.plans) {
 
-          if (p.id == plan.id) {
+          if (p.id == widget.plan.id) {
             currentPlan = p;
           }
 
@@ -41,209 +50,241 @@ class MuscleGroupScreen extends ConsumerWidget {
 
     }
 
-    final hasExercises = currentPlan.exercises.isNotEmpty;
+    return Stack(
+      children: [
 
-    return Scaffold(
-
-      backgroundColor: const Color(0xFF0B0D10),
-
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF0B0D10),
-        elevation: 0,
-
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Color(0xFFFF3B30),
+        /// BACKGROUND IMAGE
+        Positioned.fill(
+          child: Image.asset(
+            "assets/images/dashboard_bg.png",
+            fit: BoxFit.cover,
           ),
-          onPressed: () => Navigator.pop(context),
         ),
 
-        title: Text(
-          currentPlan.name,
-          style: const TextStyle(color: Colors.white),
+        /// DARK OVERLAY
+        Positioned.fill(
+          child: Container(
+            color: Colors.black.withOpacity(0.55),
+          ),
         ),
-      ),
 
-      body: Column(
+        Scaffold(
 
-        children: [
+          backgroundColor: Colors.transparent,
 
-          const SizedBox(height: 20),
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            leading: IconButton(
+              icon: const Icon(
+                Icons.arrow_back,
+                color: Color(0xFFFF3B30),
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+
+            title: Text(
+              currentPlan.name,
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
+
+          body: Column(
+
             children: [
 
-              Text(
-                currentPlan.name.toUpperCase(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
-                ),
+              const SizedBox(height: 20),
+
+              /// TITLE
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+
+                  Text(
+                    currentPlan.name.toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  InkWell(
+
+                    onTap: () async {
+
+                      final controller =
+                      TextEditingController(text: currentPlan.name);
+
+                      final newName = await showDialog<String>(
+
+                        context: context,
+
+                        builder: (context) {
+
+                          return AlertDialog(
+
+                            backgroundColor: const Color(0xFF1B1F23),
+
+                            title: const Text(
+                              "Muskelgruppe umbenennen",
+                              style: TextStyle(color: Colors.white),
+                            ),
+
+                            content: TextField(
+                              controller: controller,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+
+                            actions: [
+
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text("Abbrechen"),
+                              ),
+
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context, controller.text);
+                                },
+                                child: const Text("Speichern"),
+                              ),
+
+                            ],
+                          );
+                        },
+                      );
+
+                      if (newName != null && newName.isNotEmpty) {
+
+                        ref
+                            .read(dashboardProvider.notifier)
+                            .renamePlan(
+                          widget.folderId,
+                          currentPlan.id,
+                          newName,
+                        );
+
+                      }
+
+                    },
+
+                    child: const Icon(
+                      Icons.edit,
+                      color: Colors.white54,
+                      size: 18,
+                    ),
+                  ),
+                ],
               ),
 
-              const SizedBox(width: 8),
+              const SizedBox(height: 20),
 
-              const Icon(
-                Icons.edit,
-                color: Colors.white54,
-                size: 18,
-              ),
-            ],
-          ),
+              /// ADD EXERCISE BUTTON
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
 
-          const SizedBox(height: 30),
+                child: TTGGlowBorder(
 
-          /// Roter Button (nur wenn noch keine Übungen existieren)
-          if (!hasExercises)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: InkWell(
+                  child: ClipRRect(
 
-                borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(20),
 
-                onTap: () {
+                    child: BackdropFilter(
 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => ExerciseCatalog(
-                        folderId: folderId,
-                        planId: currentPlan.id,
+                      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+
+                      child: Container(
+
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.06),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.25),
+                          ),
+                        ),
+
+                        child: ExpansionTile(
+
+                          trailing: const Icon(
+                            Icons.add,
+                            color: Color(0xFFFF3B30),
+                          ),
+
+                          onExpansionChanged: (v) {
+                            setState(() {
+                              addExerciseExpanded = v;
+                            });
+                          },
+
+                          collapsedIconColor: Colors.white54,
+                          iconColor: Colors.white,
+
+                          title: const Center(
+                            child: Text(
+                              "Übung hinzufügen",
+                              style: TextStyle(
+                                color: Color(0xFFFF3B30),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+
+                          children: [
+
+                            ExerciseSelectionCard(
+                              folderId: widget.folderId,
+                              planId: currentPlan.id,
+                            ),
+
+                          ],
+
+                        ),
                       ),
                     ),
-                  );
-
-                },
-
-                child: Container(
-
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 40,
-                    horizontal: 20,
-                  ),
-
-                  decoration: BoxDecoration(
-
-                    color: const Color(0xFFFF3B30),
-
-                    borderRadius: BorderRadius.circular(16),
-
-                  ),
-
-                  child: const Column(
-
-                    children: [
-
-                      Icon(
-                        Icons.fitness_center,
-                        color: Colors.white,
-                        size: 32,
-                      ),
-
-                      SizedBox(height: 10),
-
-                      Text(
-                        "Füge Übungen hinzu",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      SizedBox(height: 4),
-
-                      Text(
-                        "Tippe hier um den Übungskatalog zu öffnen",
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 12,
-                        ),
-                      ),
-
-                    ],
                   ),
                 ),
               ),
-            ),
 
-          const SizedBox(height: 20),
+              const SizedBox(height: 10),
 
-          /// Exercise hinzufügen (bleibt immer aktiv)
-          ExerciseSelectionCard(
-            folderId: folderId,
-            planId: currentPlan.id,
-          ),
+              /// EXERCISES
+              Expanded(
 
-          const SizedBox(height: 20),
+                child: currentPlan.exercises.isEmpty
 
-          /// Liste der Übungen
-          Expanded(
+                    ? const Center(
+                  child: Text(
+                    "Noch keine Übungen hinzugefügt",
+                    style: TextStyle(color: Colors.white38),
+                  ),
+                )
 
-            child: currentPlan.exercises.isEmpty
+                    : ListView.builder(
 
-                ? const Center(
-              child: Text(
-                "Noch keine Übungen hinzugefügt",
-                style: TextStyle(color: Colors.white38),
+                  itemCount: currentPlan.exercises.length,
+
+                  itemBuilder: (context, index) {
+
+                    final exercise =
+                    currentPlan.exercises[index];
+
+                    return ExerciseTile(
+                      exercise: exercise,
+                    );
+
+                  },
+                ),
               ),
-            )
 
-                : ListView.builder(
-
-              itemCount: currentPlan.exercises.length,
-
-              itemBuilder: (context, index) {
-
-                final exercise = currentPlan.exercises[index];
-
-                return Container(
-
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 6,
-                  ),
-
-                  padding: const EdgeInsets.all(14),
-
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1B1F23),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-
-                  child: Row(
-
-                    mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween,
-
-                    children: [
-
-                      Text(
-                        exercise.name,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                        ),
-                      ),
-
-                      const Icon(
-                        Icons.more_vert,
-                        color: Colors.white38,
-                      ),
-
-                    ],
-                  ),
-                );
-              },
-            ),
+            ],
           ),
-
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
