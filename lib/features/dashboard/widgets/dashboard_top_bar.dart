@@ -12,24 +12,40 @@ class DashboardTopBar extends ConsumerWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return AppBar(
-      backgroundColor: const Color(0xFF0E0F12),
-      elevation: 8,
-      shadowColor: const Color(0x22FF3B30),
+      backgroundColor: const Color(0xFF1B1F23),
+      elevation: 0,
 
       leading: Builder(
         builder: (context) => IconButton(
-          icon: const Icon(Icons.menu, color: Colors.white38),
+          icon: const Icon(
+            Icons.menu,
+            color: Colors.white38,
+          ),
           onPressed: () => Scaffold.of(context).openDrawer(),
         ),
       ),
 
       title: Row(
         children: const [
-          Icon(Icons.grid_view, color: Color(0xFFFF3B30)),
+
+          Icon(
+            Icons.grid_view,
+            color: Color(0xFFFF3B30),
+          ),
+
           SizedBox(width: 16),
-          Icon(Icons.bar_chart, color: Colors.white38),
+
+          Icon(
+            Icons.bar_chart,
+            color: Colors.white38,
+          ),
+
           SizedBox(width: 16),
-          Icon(Icons.settings, color: Colors.white38),
+
+          Icon(
+            Icons.settings,
+            color: Colors.white38,
+          ),
         ],
       ),
 
@@ -41,16 +57,13 @@ class DashboardTopBar extends ConsumerWidget implements PreferredSizeWidget {
               ref.read(authProvider.notifier).logout();
               context.go('/login');
             },
+
             icon: const Icon(Icons.logout),
+
             label: const Text("Logout"),
-            style: ButtonStyle(
-              foregroundColor:
-              MaterialStateProperty.resolveWith((states) {
-                if (states.contains(MaterialState.hovered)) {
-                  return const Color(0xFFFF3B30);
-                }
-                return Colors.white70;
-              }),
+
+            style: const ButtonStyle(
+              foregroundColor: MaterialStatePropertyAll(Colors.white70),
             ),
           ),
         ),
