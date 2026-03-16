@@ -1,152 +1,269 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/ui/lib/core/ui/ttg_glow_border.dart';
 import '../models/training_folder.dart';
 import '../state/dashboard_provider.dart';
 import 'plan_tile.dart';
 
-class FolderCard extends ConsumerWidget {
+class FolderCard extends ConsumerStatefulWidget {
+
   final TrainingFolder folder;
 
   const FolderCard({super.key, required this.folder});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FolderCard> createState() => _FolderCardState();
+}
+
+class _FolderCardState extends ConsumerState<FolderCard> {
+
+  bool expanded = true;
+
+  @override
+  Widget build(BuildContext context) {
+
     final notifier = ref.read(dashboardProvider.notifier);
+    final folder = widget.folder;
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1B1F23), Color(0xFF121416)],
-        ),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0x33FF3B30)),
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
 
-      child: Column(
-        children: [
+      child: TTGGlowBorder(
 
-          /// PLAN HEADER
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: const BoxDecoration(
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(18),
-              ),
-              color: Color(0xFF20252A),
-            ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(18),
 
-            child: Row(
-              children: [
-
-                const Icon(
-                  Icons.folder,
-                  color: Color(0xFFFF3B30),
-                ),
-
-                const SizedBox(width: 10),
-
-                Expanded(
-                  child: Text(
-                    folder.name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-
-                PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert, color: Colors.white54),
-
-                  onSelected: (value) {
-                    if (value == 'archive') {
-                      notifier.archiveFolder(folder.id);
-                    }
-
-                    if (value == 'delete') {
-                      notifier.deleteFolder(folder.id);
-                    }
-                  },
-
-                  itemBuilder: (context) => const [
-
-                    PopupMenuItem(
-                      value: 'archive',
-                      child: Text("Plan archivieren"),
-                    ),
-
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Text("Plan löschen"),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-
-          ...folder.plans.map(
-                (p) => PlanTile(
-              folderId: folder.id,
-              plan: p,
-              onDelete: () => notifier.deletePlan(folder.id, p.id),
-              onMoveUp: () {},
-              onMoveDown: () {},
-              onArchive: () => notifier.archivePlan(folder.id, p.id),
-              onDuplicate: () {},
-            ),
-          ),
-
-          InkWell(
-            onTap: () {
-              final controller = TextEditingController();
-
-              showDialog(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    backgroundColor: const Color(0xFF1B1F23),
-                    title: const Text(
-                      "Neue Muskelgruppe",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    content: TextField(
-                      controller: controller,
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    actions: [
-
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text("Abbrechen"),
-                      ),
-
-                      ElevatedButton(
-                        onPressed: () {
-                          notifier.addPlan(folder.id, controller.text);
-                          Navigator.pop(context);
-                        },
-                        child: const Text("Erstellen"),
-                      )
-                    ],
-                  );
-                },
-              );
-            },
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
 
             child: Container(
-              padding: const EdgeInsets.all(16),
-              alignment: Alignment.center,
-              child: const Text(
-                "+ Muskelgruppe hinzufügen",
-                style: TextStyle(
-                  color: Color(0xFFFF3B30),
-                  fontWeight: FontWeight.w600,
+
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.08),
                 ),
+              ),
+
+              child: Column(
+                children: [
+
+                  /// HEADER
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        expanded = !expanded;
+                      });
+                    },
+
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.25),
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(18),
+                        ),
+                      ),
+
+                      child: Row(
+                        children: [
+
+                          const Icon(
+                            Icons.folder,
+                            color: Color(0xFFFF3B30),
+                          ),
+
+                          const SizedBox(width: 10),
+
+                          Expanded(
+                            child: Text(
+                              folder.name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+
+                          Icon(
+                            expanded
+                                ? Icons.keyboard_arrow_up
+                                : Icons.keyboard_arrow_down,
+                            color: Colors.white54,
+                          ),
+
+                          PopupMenuButton<String>(
+                            icon: const Icon(
+                              Icons.more_vert,
+                              color: Colors.white54,
+                            ),
+
+                            onSelected: (value) {
+
+                              if (value == 'archive') {
+                                notifier.archiveFolder(folder.id);
+                              }
+
+                              if (value == 'delete') {
+                                notifier.deleteFolder(folder.id);
+                              }
+
+                            },
+
+                            itemBuilder: (context) => const [
+
+                              PopupMenuItem(
+                                value: 'archive',
+                                child: Text("Plan archivieren"),
+                              ),
+
+                              PopupMenuItem(
+                                value: 'delete',
+                                child: Text("Plan löschen"),
+                              ),
+
+                            ],
+                          ),
+
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  /// MUSCLE GROUP LIST
+                  if (expanded) ...[
+
+                    ...folder.plans.map(
+                          (p) => PlanTile(
+                        folderId: folder.id,
+                        plan: p,
+                        onDelete: () => notifier.deletePlan(folder.id, p.id),
+                        onMoveUp: () => notifier.movePlanUp(folder.id, p.id),
+                        onMoveDown: () => notifier.movePlanDown(folder.id, p.id),
+                        onArchive: () => notifier.archivePlan(folder.id, p.id),
+                        onDuplicate: () => notifier.duplicatePlan(folder.id, p.id),
+                      ),
+                    ),
+
+                    /// ADD MUSCLE GROUP
+                    InkWell(
+                      onTap: () {
+
+                        final controller = TextEditingController();
+
+                        showDialog(
+                          context: context,
+                          builder: (context) {
+
+                            return AlertDialog(
+
+                              backgroundColor: const Color(0xFF161A1F),
+
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+
+                              title: const Text(
+                                "Neue Muskelgruppe",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                ),
+                              ),
+
+                              content: TextField(
+
+                                controller: controller,
+                                autofocus: false,
+
+                                style: const TextStyle(color: Colors.white),
+
+                                decoration: const InputDecoration(
+
+                                  hintText: "Name eingeben",
+                                  hintStyle: TextStyle(color: Colors.white38),
+
+                                  enabledBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: Color(0xFFFF3B30),
+                                    ),
+                                  ),
+
+                                  focusedBorder: UnderlineInputBorder(
+                                    borderSide: BorderSide(
+                                      color: Color(0xFFFF3B30),
+                                    ),
+                                  ),
+
+                                ),
+                              ),
+
+                              actions: [
+
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text(
+                                    "Abbrechen",
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                    ),
+                                  ),
+                                ),
+
+                                ElevatedButton(
+
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFFF3B30),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                      BorderRadius.circular(20),
+                                    ),
+                                  ),
+
+                                  onPressed: () {
+
+                                    final name = controller.text.trim();
+
+                                    if (name.isEmpty) return;
+
+                                    notifier.addPlan(folder.id, name);
+
+                                    Navigator.pop(context);
+
+                                  },
+
+                                  child: const Text("Erstellen"),
+                                ),
+
+                              ],
+                            );
+                          },
+                        );
+                      },
+
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        alignment: Alignment.center,
+
+                        child: const Text(
+                          "+ Muskelgruppe hinzufügen",
+                          style: TextStyle(
+                            color: Color(0xFFFF3B30),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
