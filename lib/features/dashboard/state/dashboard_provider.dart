@@ -49,7 +49,6 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     ),
   );
 
-  /// SWITCH VIEW
   void showPlans() {
     state = state.copyWith(showArchive: false);
   }
@@ -58,7 +57,6 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     state = state.copyWith(showArchive: true);
   }
 
-  /// CREATE FOLDER
   void addFolder(String name) {
 
     final folder = TrainingFolder(
@@ -72,7 +70,6 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     );
   }
 
-  /// DELETE FOLDER
   void deleteFolder(String folderId) {
 
     state = state.copyWith(
@@ -82,7 +79,6 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     );
   }
 
-  /// ARCHIVE FOLDER
   void archiveFolder(String folderId) {
 
     TrainingFolder? archived;
@@ -107,7 +103,6 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     );
   }
 
-  /// DRAG SORT FOLDERS
   void reorderFolders(int oldIndex, int newIndex) {
 
     final list = [...state.folders];
@@ -125,7 +120,6 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     );
   }
 
-  /// CREATE MUSCLE GROUP
   void addPlan(String folderId, String name) {
 
     state = state.copyWith(
@@ -157,7 +151,33 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     );
   }
 
-  /// DELETE MUSCLE GROUP
+  void renamePlan(
+      String folderId,
+      String planId,
+      String newName,
+      ) {
+
+    state = state.copyWith(
+
+      folders: state.folders.map((folder) {
+
+        if (folder.id != folderId) return folder;
+
+        final updatedPlans = folder.plans.map((plan) {
+
+          if (plan.id != planId) return plan;
+
+          return plan.copyWith(name: newName);
+
+        }).toList();
+
+        return folder.copyWith(plans: updatedPlans);
+
+      }).toList(),
+
+    );
+  }
+
   void deletePlan(String folderId, String planId) {
 
     state = state.copyWith(
@@ -179,7 +199,6 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     );
   }
 
-  /// ARCHIVE MUSCLE GROUP
   void archivePlan(String folderId, String planId) {
 
     TrainingPlan? archived;
@@ -211,7 +230,121 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     );
   }
 
-  /// ADD EXERCISE
+  void duplicatePlan(String folderId, String planId) {
+
+    state = state.copyWith(
+
+      folders: state.folders.map((folder) {
+
+        if (folder.id != folderId) return folder;
+
+        final plans = [...folder.plans];
+
+        final index = plans.indexWhere((p) => p.id == planId);
+
+        final original = plans[index];
+
+        final duplicate = TrainingPlan(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          name: original.name,
+          exercises: [...original.exercises],
+        );
+
+        plans.insert(index + 1, duplicate);
+
+        return folder.copyWith(plans: plans);
+
+      }).toList(),
+    );
+  }
+
+  void movePlanUp(String folderId, String planId) {
+
+    state = state.copyWith(
+
+      folders: state.folders.map((folder) {
+
+        if (folder.id != folderId) return folder;
+
+        final plans = [...folder.plans];
+
+        final index = plans.indexWhere((p) => p.id == planId);
+
+        if (index <= 0) return folder;
+
+        final item = plans.removeAt(index);
+
+        plans.insert(index - 1, item);
+
+        return folder.copyWith(plans: plans);
+
+      }).toList(),
+    );
+  }
+
+  void movePlanDown(String folderId, String planId) {
+
+    state = state.copyWith(
+
+      folders: state.folders.map((folder) {
+
+        if (folder.id != folderId) return folder;
+
+        final plans = [...folder.plans];
+
+        final index = plans.indexWhere((p) => p.id == planId);
+
+        if (index == plans.length - 1) return folder;
+
+        final item = plans.removeAt(index);
+
+        plans.insert(index + 1, item);
+
+        return folder.copyWith(plans: plans);
+
+      }).toList(),
+    );
+  }
+
+  void movePlanToFolder(
+      String sourceFolderId,
+      String targetFolderId,
+      String planId,
+      ) {
+
+    final folders = [...state.folders];
+
+    final sourceIndex =
+    folders.indexWhere((f) => f.id == sourceFolderId);
+
+    final targetIndex =
+    folders.indexWhere((f) => f.id == targetFolderId);
+
+    if (sourceIndex == -1 || targetIndex == -1) return;
+
+    final sourceFolder = folders[sourceIndex];
+    final targetFolder = folders[targetIndex];
+
+    final plans = [...sourceFolder.plans];
+
+    final planIndex =
+    plans.indexWhere((p) => p.id == planId);
+
+    if (planIndex == -1) return;
+
+    final movedPlan = plans.removeAt(planIndex);
+
+    folders[sourceIndex] =
+        sourceFolder.copyWith(plans: plans);
+
+    folders[targetIndex] =
+        targetFolder.copyWith(
+          plans: [...targetFolder.plans, movedPlan],
+        );
+
+    state = state.copyWith(folders: folders);
+  }
+
   void addExercise(
       String folderId,
       String planId,
@@ -252,7 +385,6 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     );
   }
 
-  /// DELETE EXERCISE
   void deleteExercise(
       String folderId,
       String planId,
@@ -277,53 +409,6 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
             exercises: plan.exercises
                 .where((e) => e.id != exerciseId)
                 .toList(),
-          );
-
-        }).toList();
-
-        return folder.copyWith(
-          plans: updatedPlans,
-        );
-
-      }).toList(),
-
-    );
-  }
-
-  /// DRAG SORT EXERCISES
-  void reorderExercises(
-      String folderId,
-      String planId,
-      int oldIndex,
-      int newIndex,
-      ) {
-
-    state = state.copyWith(
-
-      folders: state.folders.map((folder) {
-
-        if (folder.id != folderId) {
-          return folder;
-        }
-
-        final updatedPlans = folder.plans.map((plan) {
-
-          if (plan.id != planId) {
-            return plan;
-          }
-
-          final list = [...plan.exercises];
-
-          if (newIndex > oldIndex) {
-            newIndex--;
-          }
-
-          final item = list.removeAt(oldIndex);
-
-          list.insert(newIndex, item);
-
-          return plan.copyWith(
-            exercises: list,
           );
 
         }).toList();
