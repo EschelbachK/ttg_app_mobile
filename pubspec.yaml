@@ -28,3 +28,4 @@ flutter:
 
   assets:
     - assets/images/login_bg.png
+    - assets/images/dashboard_bg.png
