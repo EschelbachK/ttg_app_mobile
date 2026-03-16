@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
@@ -15,67 +16,126 @@ class DashboardActions extends ConsumerWidget {
     final result = await showDialog<String>(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          backgroundColor: const Color(0xFF1A1F26),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
+        return Dialog(
 
-          title: const Text(
-            "Neuer Trainingsplan",
-            style: TextStyle(color: Colors.white),
-          ),
+          backgroundColor: Colors.transparent,
 
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            cursorColor: AppTheme.primaryRed,
-            style: const TextStyle(color: Colors.white),
-            decoration: const InputDecoration(
-              hintText: "Name eingeben",
-              hintStyle: TextStyle(color: Colors.grey),
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(
-                  color: Color(0x44FF3B30),
-                ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+
+            child: BackdropFilter(
+              filter: ImageFilter.blur(
+                sigmaX: 20,
+                sigmaY: 20,
               ),
-              focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(
-                  color: Color(0xFFFF3B30),
-                  width: 2,
+
+              child: Container(
+                padding: const EdgeInsets.all(24),
+
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.35),
+                  borderRadius: BorderRadius.circular(24),
+
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.25),
+                  ),
+                ),
+
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+
+                    const Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Neuer Trainingsplan",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    TextField(
+
+                      controller: controller,
+                      autofocus: true,
+                      cursorColor: Colors.white,
+
+                      style: const TextStyle(
+                        color: Colors.white,
+                      ),
+
+                      decoration: const InputDecoration(
+
+                        hintText: "Name eingeben",
+                        hintStyle: TextStyle(color: Colors.white38),
+
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Color(0xFFFF3B30),
+                          ),
+                        ),
+
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(
+                            color: Color(0xFFFF3B30),
+                          ),
+                        ),
+
+                      ),
+                    ),
+
+                    const SizedBox(height: 22),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: const Text(
+                            "Abbrechen",
+                            style: TextStyle(
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(width: 10),
+
+                        ElevatedButton(
+
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFF3B30),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                          ),
+
+                          onPressed: () {
+                            Navigator.pop(context, controller.text);
+                          },
+
+                          child: const Text(
+                            "Erstellen",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
           ),
-
-          actions: [
-
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text(
-                "Abbrechen",
-                style: TextStyle(
-                  color: Colors.white70,
-                ),
-              ),
-            ),
-
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              onPressed: () {
-                Navigator.pop(context, controller.text);
-              },
-              child: const Text("Erstellen"),
-            ),
-          ],
         );
       },
     );
