@@ -1,9 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/ui/ttg_glow_border.dart';
-import '../../../core/theme/app_theme.dart';
-import '../state/dashboard_provider.dart';
+import '../../../../core/ui/ttg_glow_border.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../state/dashboard_provider.dart';
 
 class DashboardToggle extends ConsumerWidget {
   const DashboardToggle({super.key});
