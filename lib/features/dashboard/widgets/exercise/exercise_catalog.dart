@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../screens/exercise_category_screen.dart';
+import '../../screens/exercise_category_screen.dart';
 
 class ExerciseCatalog extends StatefulWidget {
 
