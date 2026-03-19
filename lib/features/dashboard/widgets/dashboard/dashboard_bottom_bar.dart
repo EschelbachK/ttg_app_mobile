@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../state/dashboard_provider.dart';
+import '../../state/dashboard_provider.dart';
 
 class DashboardBottomBar extends ConsumerWidget {
   const DashboardBottomBar({super.key});
