@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../models/exercise.dart';
+import '../../models/exercise.dart';
 
 class ArchivedExerciseTile extends StatelessWidget {
 
