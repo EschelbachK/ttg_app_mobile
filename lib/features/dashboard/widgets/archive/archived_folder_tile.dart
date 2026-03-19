@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../models/training_folder.dart';
-import '../screens/muscle_group_screen.dart';
-import '../state/dashboard_provider.dart';
+import '../../models/training_folder.dart';
+import '../../screens/muscle_group_screen.dart';
+import '../../state/dashboard_provider.dart';
 
 class ArchivedFolderTile extends ConsumerStatefulWidget {
 
