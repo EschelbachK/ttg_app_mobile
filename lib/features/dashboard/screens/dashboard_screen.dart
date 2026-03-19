@@ -3,14 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../state/dashboard_provider.dart';
-import '../widgets/dashboard_top_bar.dart';
-import '../widgets/dashboard_toggle.dart';
-import '../widgets/dashboard_actions.dart';
+import '../widgets/dashboard/dashboard_toggle.dart';
+import '../widgets/dashboard/dashboard_top_bar.dart';
+import '../widgets/dashboard/dashboard_actions.dart';
 import '../widgets/folder_card.dart';
-import '../widgets/archived_plan_tile.dart';
-import '../widgets/archived_muscle_group_tile.dart';
-import '../widgets/archived_folder_tile.dart';
-import 'muscle_group_screen.dart';
+import '../widgets/archive/archived_plan_tile.dart';
+import '../widgets/archive/archived_folder_tile.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
