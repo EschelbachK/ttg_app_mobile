@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/ui/lib/core/ui/ttg_glow_border.dart';
+import '../../../core/ui/ttg_glow_border.dart';
 import '../state/dashboard_provider.dart';
 
 class DashboardToggle extends ConsumerWidget {

@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/ui/lib/core/ui/ttg_glow_border.dart';
+import '../../../core/ui/ttg_glow_border.dart';
 import '../models/training_folder.dart';
 import '../state/dashboard_provider.dart';
 import 'plan_tile.dart';
@@ -272,16 +272,103 @@ class _FolderCardState extends ConsumerState<FolderCard> {
                               color: Colors.white54,
                             ),
 
-                            onSelected: (value) {
+                            onSelected: (value) async {
 
                               if (value == 'archive') {
                                 notifier.archiveFolder(folder.id);
                               }
 
                               if (value == 'delete') {
-                                notifier.deleteFolder(folder.id);
-                              }
 
+                                await Future.delayed(Duration.zero); // ✅ FIX
+
+                                final confirm = await showDialog<bool>(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (dialogContext) => Dialog( // ✅ FIX
+                                    backgroundColor: Colors.transparent,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(24),
+                                      child: BackdropFilter(
+                                        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                                        child: Container(
+                                          padding: const EdgeInsets.all(24),
+                                          decoration: BoxDecoration(
+                                            color: Colors.black.withOpacity(0.35),
+                                            borderRadius: BorderRadius.circular(24),
+                                            border: Border.all(
+                                              color: Colors.white.withOpacity(0.25),
+                                            ),
+                                          ),
+                                          child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+
+                                              const Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: Text(
+                                                  "Ordner löschen",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 20,
+                                                  ),
+                                                ),
+                                              ),
+
+                                              const SizedBox(height: 16),
+
+                                              const Align(
+                                                alignment: Alignment.centerLeft,
+                                                child: Text(
+                                                  "Wirklich löschen?",
+                                                  style: TextStyle(color: Colors.white54),
+                                                ),
+                                              ),
+
+                                              const SizedBox(height: 20),
+
+                                              const Divider(color: Color(0xFFFF3B30)),
+
+                                              const SizedBox(height: 20),
+
+                                              Row(
+                                                mainAxisAlignment: MainAxisAlignment.end,
+                                                children: [
+
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.of(dialogContext).pop(false), // ✅ FIX
+                                                    child: const Text(
+                                                      "Abbrechen",
+                                                      style: TextStyle(color: Colors.white70),
+                                                    ),
+                                                  ),
+
+                                                  const SizedBox(width: 10),
+
+                                                  ElevatedButton(
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor: const Color(0xFFFF3B30),
+                                                      foregroundColor: Colors.white,
+                                                    ),
+                                                    onPressed: () =>
+                                                        Navigator.of(dialogContext).pop(true), // ✅ FIX
+                                                    child: const Text("Löschen"),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+
+                                if (confirm == true) {
+                                  notifier.deleteFolder(folder.id);
+                                }
+                              }
                             },
 
                             itemBuilder: (context) => const [

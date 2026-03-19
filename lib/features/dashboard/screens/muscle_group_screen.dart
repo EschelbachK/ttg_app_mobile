@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/ui/lib/core/ui/ttg_glow_border.dart';
+import '../../../core/ui/ttg_glow_border.dart';
 import '../models/training_plan.dart';
 import '../state/dashboard_provider.dart';
 import '../widgets/exercise_selection_card.dart';
@@ -79,7 +79,7 @@ class _MuscleGroupScreenState extends ConsumerState<MuscleGroupScreen> {
             leading: IconButton(
               icon: const Icon(
                 Icons.arrow_back,
-                color: Color(0xFFFF3B30),
+                color: Colors.white54,
               ),
               onPressed: () => Navigator.pop(context),
             ),
@@ -88,10 +88,11 @@ class _MuscleGroupScreenState extends ConsumerState<MuscleGroupScreen> {
               currentPlan.name,
               style: const TextStyle(color: Colors.white),
             ),
+
+            actions: const [],
           ),
 
           body: Column(
-
             children: [
 
               const SizedBox(height: 20),

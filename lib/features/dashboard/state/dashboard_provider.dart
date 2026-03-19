@@ -107,6 +107,8 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
 
     }).toList();
 
+    if (archived == null) return; // ✅ FIX
+
     state = state.copyWith(
       folders: updated,
       archivedFolders: [
@@ -226,6 +228,8 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
 
       final index = plans.indexWhere((p) => p.id == planId);
 
+      if (index == -1) return folder; // ✅ FIX
+
       archived = plans.removeAt(index);
 
       return folder.copyWith(
@@ -233,6 +237,8 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       );
 
     }).toList();
+
+    if (archived == null) return; // ✅ FIX
 
     state = state.copyWith(
       folders: updatedFolders,
@@ -254,6 +260,8 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         final plans = [...folder.plans];
 
         final index = plans.indexWhere((p) => p.id == planId);
+
+        if (index == -1) return folder; // ✅ FIX
 
         final original = plans[index];
 
@@ -283,7 +291,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
 
         final index = plans.indexWhere((p) => p.id == planId);
 
-        if (index <= 0) return folder;
+        if (index <= 0) return folder; // ✅ FIX
 
         final item = plans.removeAt(index);
 
@@ -307,7 +315,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
 
         final index = plans.indexWhere((p) => p.id == planId);
 
-        if (index == plans.length - 1) return folder;
+        if (index == -1 || index == plans.length - 1) return folder; // ✅ FIX
 
         final item = plans.removeAt(index);
 
@@ -319,7 +327,6 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     );
   }
 
-  /// NEU: Übung nach oben verschieben
   void moveExerciseUp(
       String folderId,
       String planId,
@@ -341,7 +348,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
           final index =
           exercises.indexWhere((e) => e.id == exerciseId);
 
-          if (index <= 0) return plan;
+          if (index <= 0) return plan; // ✅ FIX
 
           final item = exercises.removeAt(index);
 
@@ -357,7 +364,6 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     );
   }
 
-  /// NEU: Übung nach unten verschieben
   void moveExerciseDown(
       String folderId,
       String planId,
@@ -379,7 +385,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
           final index =
           exercises.indexWhere((e) => e.id == exerciseId);
 
-          if (index == exercises.length - 1) return plan;
+          if (index == -1 || index == exercises.length - 1) return plan; // ✅ FIX
 
           final item = exercises.removeAt(index);
 
