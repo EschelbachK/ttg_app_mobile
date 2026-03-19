@@ -18,6 +18,8 @@ class PlanTile extends ConsumerWidget {
   final VoidCallback onArchive;
   final VoidCallback onDuplicate;
 
+  final bool isArchived; // 🔥 NEU
+
   const PlanTile({
     super.key,
     required this.folderId,
@@ -27,6 +29,7 @@ class PlanTile extends ConsumerWidget {
     required this.onMoveDown,
     required this.onArchive,
     required this.onDuplicate,
+    this.isArchived = false, // 🔥 NEU
   });
 
   Future<bool> _showDeleteDialog(BuildContext context) async {
@@ -142,11 +145,9 @@ class PlanTile extends ConsumerWidget {
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.05),
               borderRadius: BorderRadius.circular(16),
-
               border: Border.all(
                 color: Colors.white.withOpacity(0.08),
               ),
-
               boxShadow: [
                 BoxShadow(
                   color: Colors.white.withOpacity(0.08),
@@ -172,6 +173,7 @@ class PlanTile extends ConsumerWidget {
                             builder: (_) => MuscleGroupScreen(
                               folderId: folderId,
                               plan: plan,
+                              isArchived: isArchived, // 🔥 NEU
                             ),
                           ),
                         );
@@ -195,93 +197,191 @@ class PlanTile extends ConsumerWidget {
                     ),
                   ),
 
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
+                  /// 🔥 ACTIONS NUR WENN NICHT ARCHIV
+                  if (!isArchived)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
 
-                      /// EDIT (UNVERÄNDERT)
-                      GestureDetector(
-                        onTap: () {
-                          final controller =
-                          TextEditingController(text: plan.name);
+                        GestureDetector(
+                          onTap: () {
 
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder: (_) => Dialog(
-                              backgroundColor: Colors.transparent,
-                              child: Container(), // unchanged part omitted
+                            final controller =
+                            TextEditingController(text: plan.name);
+
+                            showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (dialogContext) => Dialog(
+                                backgroundColor: Colors.transparent,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(24),
+                                  child: BackdropFilter(
+                                    filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(24),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.35),
+                                        borderRadius: BorderRadius.circular(24),
+                                        border: Border.all(
+                                          color: Colors.white.withOpacity(0.25),
+                                        ),
+                                      ),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+
+                                          const Align(
+                                            alignment: Alignment.centerLeft,
+                                            child: Text(
+                                              "Muskelgruppe umbenennen",
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 20,
+                                              ),
+                                            ),
+                                          ),
+
+                                          const SizedBox(height: 20),
+
+                                          TextField(
+                                            controller: controller,
+                                            autofocus: true,
+                                            cursorColor: Colors.white,
+                                            style: const TextStyle(color: Colors.white),
+                                            decoration: const InputDecoration(
+                                              hintText: "Name eingeben",
+                                              hintStyle: TextStyle(color: Colors.white38),
+                                              enabledBorder: UnderlineInputBorder(
+                                                borderSide: BorderSide(color: Color(0xFFFF3B30)),
+                                              ),
+                                              focusedBorder: UnderlineInputBorder(
+                                                borderSide: BorderSide(color: Color(0xFFFF3B30)),
+                                              ),
+                                            ),
+                                          ),
+
+                                          const SizedBox(height: 22),
+
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.end,
+                                            children: [
+
+                                              TextButton(
+                                                onPressed: () =>
+                                                    Navigator.of(dialogContext).pop(),
+                                                child: const Text(
+                                                  "Abbrechen",
+                                                  style: TextStyle(color: Colors.white70),
+                                                ),
+                                              ),
+
+                                              const SizedBox(width: 10),
+
+                                              ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: const Color(0xFFFF3B30),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius: BorderRadius.circular(24),
+                                                  ),
+                                                ),
+                                                onPressed: () {
+
+                                                  final newName = controller.text.trim();
+                                                  if (newName.isEmpty) return;
+
+                                                  notifier.renamePlan(
+                                                    folderId,
+                                                    plan.id,
+                                                    newName,
+                                                  );
+
+                                                  Navigator.of(dialogContext).pop();
+                                                },
+                                                child: const Text(
+                                                  "Speichern",
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 6),
+                            child: Icon(
+                              Icons.edit,
+                              color: Color(0xFFFF3B30),
+                              size: 18,
                             ),
-                          );
-                        },
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 6),
-                          child: Icon(
-                            Icons.edit,
-                            color: Color(0xFFFF3B30),
-                            size: 18,
                           ),
                         ),
-                      ),
 
-                      /// ✅ DELETE FIX
-                      GestureDetector(
-                        onTap: () async {
-                          final confirm = await _showDeleteDialog(context);
-                          if (!confirm) return;
-
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            onDelete();
-                          });
-                        },
-                        child: const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 6),
-                          child: Icon(
-                            Icons.delete,
-                            color: Color(0xFFFF3B30),
-                            size: 18,
-                          ),
-                        ),
-                      ),
-
-                      /// ✅ POPUP FIX
-                      PopupMenuButton<String>(
-                        icon: const Icon(
-                          Icons.more_vert,
-                          color: Colors.white54,
-                          size: 20,
-                        ),
-                        onSelected: (value) async {
-
-                          if (value == 'archive') onArchive();
-                          if (value == 'duplicate') onDuplicate();
-                          if (value == 'up') onMoveUp();
-                          if (value == 'down') onMoveDown();
-
-                          if (value == 'delete') {
-
-                            await Future.delayed(Duration.zero);
-
+                        GestureDetector(
+                          onTap: () async {
                             final confirm = await _showDeleteDialog(context);
                             if (!confirm) return;
 
                             WidgetsBinding.instance.addPostFrameCallback((_) {
                               onDelete();
                             });
-                          }
-                        },
-                        itemBuilder: (context) => const [
-                          PopupMenuItem(value: 'archive', child: Text('Gruppe archivieren')),
-                          PopupMenuItem(value: 'duplicate', child: Text('Gruppe duplizieren')),
-                          PopupMenuDivider(),
-                          PopupMenuItem(value: 'up', child: Text('Nach oben')),
-                          PopupMenuItem(value: 'down', child: Text('Nach unten')),
-                          PopupMenuDivider(),
-                          PopupMenuItem(value: 'delete', child: Text('Löschen')),
-                        ],
-                      ),
-                    ],
-                  ),
+                          },
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 6),
+                            child: Icon(
+                              Icons.delete,
+                              color: Color(0xFFFF3B30),
+                              size: 18,
+                            ),
+                          ),
+                        ),
+
+                        PopupMenuButton<String>(
+                          icon: const Icon(
+                            Icons.more_vert,
+                            color: Colors.white54,
+                            size: 20,
+                          ),
+                          onSelected: (value) async {
+
+                            if (value == 'archive') onArchive();
+                            if (value == 'duplicate') onDuplicate();
+                            if (value == 'up') onMoveUp();
+                            if (value == 'down') onMoveDown();
+
+                            if (value == 'delete') {
+
+                              await Future.delayed(Duration.zero);
+
+                              final confirm = await _showDeleteDialog(context);
+                              if (!confirm) return;
+
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                onDelete();
+                              });
+                            }
+                          },
+                          itemBuilder: (context) => const [
+                            PopupMenuItem(value: 'archive', child: Text('Gruppe archivieren')),
+                            PopupMenuItem(value: 'duplicate', child: Text('Gruppe duplizieren')),
+                            PopupMenuDivider(),
+                            PopupMenuItem(value: 'up', child: Text('Nach oben')),
+                            PopupMenuItem(value: 'down', child: Text('Nach unten')),
+                            PopupMenuDivider(),
+                            PopupMenuItem(value: 'delete', child: Text('Löschen')),
+                          ],
+                        ),
+                      ],
+                    ),
                 ],
               ),
             ),
