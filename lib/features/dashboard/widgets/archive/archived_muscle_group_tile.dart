@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../models/training_plan.dart';
+import '../../models/training_plan.dart';
 
 class ArchivedMuscleGroupTile extends StatefulWidget {
 
