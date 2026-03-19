@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
-
 import '../models/training_plan.dart';
 import '../state/dashboard_provider.dart';
 
@@ -188,6 +187,11 @@ class ImportPlanSheet extends ConsumerWidget {
                                   ),
                                 ),
                                 child: ListTile(
+                                  leading: const Icon(
+                                    Icons.fitness_center,
+                                    size: 20,
+                                    color: AppTheme.primaryRed,
+                                  ),
                                   title: Text(
                                     folder.name,
                                     style: const TextStyle(color: Colors.white),
