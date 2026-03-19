@@ -2,10 +2,10 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/theme/app_theme.dart';
-import '../models/exercise.dart';
-import '../models/exercise_set.dart';
-import '../state/dashboard_provider.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../models/exercise.dart';
+import '../../models/exercise_set.dart';
+import '../../state/dashboard_provider.dart';
 import 'exercise_select_sheet.dart';
 
 class ExerciseSelectionCard extends ConsumerStatefulWidget {
