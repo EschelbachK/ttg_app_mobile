@@ -7,10 +7,12 @@ import '../models/exercise_set.dart';
 class ExerciseTile extends StatefulWidget {
 
   final Exercise exercise;
+  final bool isArchived; // 🔥 NEU
 
   const ExerciseTile({
     super.key,
     required this.exercise,
+    this.isArchived = false, // 🔥 NEU
   });
 
   @override
@@ -97,10 +99,12 @@ class _ExerciseTileState extends State<ExerciseTile> {
 
                           const SizedBox(width: 8),
 
-                          const Icon(
-                            Icons.more_vert,
-                            color: Colors.white38,
-                          ),
+                          /// 🔥 HIDE ACTIONS IN ARCHIVE
+                          if (!widget.isArchived)
+                            const Icon(
+                              Icons.more_vert,
+                              color: Colors.white38,
+                            ),
 
                         ],
                       ),
@@ -199,7 +203,19 @@ class _ExerciseTileState extends State<ExerciseTile> {
 
                     const SizedBox(height: 10),
 
-                    ReorderableListView(
+                    /// 🔥 NO REORDER IN ARCHIVE
+                    widget.isArchived
+                        ? Column(
+                      children: [
+                        for (int i = 0; i < exercise.sets.length; i++)
+                          _buildSetRow(
+                            exercise.sets[i],
+                            i,
+                            key: ValueKey(i),
+                          ),
+                      ],
+                    )
+                        : ReorderableListView(
 
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
