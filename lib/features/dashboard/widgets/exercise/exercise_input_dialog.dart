@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../models/exercise.dart';
-import '../models/exercise_set.dart';
-import '../state/dashboard_provider.dart';
+import '../../models/exercise.dart';
+import '../../models/exercise_set.dart';
+import '../../state/dashboard_provider.dart';
 
 class ExerciseInputDialog extends ConsumerStatefulWidget {
 
