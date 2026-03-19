@@ -1,8 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../../core/ui/ttg_glow_border.dart';
-import '../models/exercise.dart';
-import '../models/exercise_set.dart';
+import '../../../../core/ui/ttg_glow_border.dart';
+import '../../models/exercise.dart';
+import '../../models/exercise_set.dart';
 
 class ExerciseTile extends StatefulWidget {
 
