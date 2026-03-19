@@ -7,6 +7,10 @@ import '../widgets/dashboard_top_bar.dart';
 import '../widgets/dashboard_toggle.dart';
 import '../widgets/dashboard_actions.dart';
 import '../widgets/folder_card.dart';
+import '../widgets/archived_plan_tile.dart'; // 🔥 NEU
+import '../widgets/archived_muscle_group_tile.dart'; // 🔥 NEU
+import '../widgets/archived_folder_tile.dart'; // 🔥 NEU
+import 'muscle_group_screen.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -101,7 +105,7 @@ class DashboardScreen extends ConsumerWidget {
 
               const SizedBox(height: 10),
 
-              /// CONTAINER (jetzt unsichtbar)
+              /// CONTAINER
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 6),
@@ -125,45 +129,16 @@ class DashboardScreen extends ConsumerWidget {
 
                         child: state.showArchive
 
-                        /// ARCHIVE VIEW
+                        /// 🔥 ARCHIVE VIEW (REFACTORED)
                             ? ListView(
                           children: [
 
                             if (state.archivedFolders.isNotEmpty) ...[
                               _archiveSection("ARCHIVIERTE TRAININGSPLÄNE"),
 
+                              /// 🔥 HIER ERSETZT DURCH NEUES TILE
                               ...state.archivedFolders.map((folder) {
-                                return Container(
-                                  margin: const EdgeInsets.only(bottom: 16),
-                                  padding: const EdgeInsets.all(18),
-
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.05),
-                                    borderRadius: BorderRadius.circular(18),
-                                  ),
-
-                                  child: Row(
-                                    children: [
-
-                                      const Icon(
-                                        Icons.folder,
-                                        color: Color(0xFFFF3B30),
-                                      ),
-
-                                      const SizedBox(width: 12),
-
-                                      Expanded(
-                                        child: Text(
-                                          folder.name,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
+                                return ArchivedFolderTile(folder: folder);
                               }),
 
                               const SizedBox(height: 20),
@@ -172,38 +147,9 @@ class DashboardScreen extends ConsumerWidget {
                             if (state.archivedPlans.isNotEmpty) ...[
                               _archiveSection("ARCHIVIERTE MUSKELGRUPPEN"),
 
+                              /// 🔥 HIER NEUE TILES
                               ...state.archivedPlans.map((plan) {
-                                return Container(
-                                  margin: const EdgeInsets.only(bottom: 16),
-                                  padding: const EdgeInsets.all(18),
-
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.05),
-                                    borderRadius: BorderRadius.circular(18),
-                                  ),
-
-                                  child: Row(
-                                    children: [
-
-                                      const Icon(
-                                        Icons.archive,
-                                        color: Color(0xFFFF3B30),
-                                      ),
-
-                                      const SizedBox(width: 12),
-
-                                      Expanded(
-                                        child: Text(
-                                          plan.name,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                );
+                                return ArchivedPlanTile(plan: plan);
                               }),
                             ],
                           ],
