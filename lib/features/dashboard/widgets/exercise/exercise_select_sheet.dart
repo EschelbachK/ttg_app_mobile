@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../catalog/state/exercise_catalog_provider.dart';
-import '../../catalog/models/exercise_catalog_item.dart';
+import '../../../catalog/state/exercise_catalog_provider.dart';
+import '../../../catalog/models/exercise_catalog_item.dart';
 
 class ExerciseSelectSheet extends ConsumerWidget {
 
