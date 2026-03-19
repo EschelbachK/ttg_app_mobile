@@ -40,11 +40,11 @@ class _ArchivedPlanTileState extends ConsumerState<ArchivedPlanTile> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          /// 🔥 HEADER (LINKER BEREICH KLICKBAR)
+          /// 🔥 HEADER
           Row(
             children: [
 
-              /// 🔥 KLICKBEREICH
+              /// 🔥 CLICK AREA
               Expanded(
                 child: GestureDetector(
                   behavior: HitTestBehavior.opaque,
@@ -56,9 +56,11 @@ class _ArchivedPlanTileState extends ConsumerState<ArchivedPlanTile> {
                   child: Row(
                     children: [
 
+                      /// 🔥 ICON FIXED (kein Asset mehr!)
                       const Icon(
-                        Icons.archive,
+                        Icons.fitness_center,
                         color: Color(0xFFFF3B30),
+                        size: 18,
                       ),
 
                       const SizedBox(width: 12),
@@ -107,7 +109,7 @@ class _ArchivedPlanTileState extends ConsumerState<ArchivedPlanTile> {
                 ),
               ),
 
-              /// 🔥 IMPORT BUTTON (UNVERÄNDERT & SEPARAT)
+              /// 🔥 IMPORT BUTTON
               IconButton(
                 icon: const Icon(
                   Icons.file_download,
@@ -124,7 +126,7 @@ class _ArchivedPlanTileState extends ConsumerState<ArchivedPlanTile> {
             ],
           ),
 
-          /// 🔥 EXPANDED CONTENT (NUR MUSKELGRUPPEN)
+          /// 🔥 EXPANDED CONTENT
           if (expanded) ...[
 
             const SizedBox(height: 8),

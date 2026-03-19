@@ -9,7 +9,6 @@ class DashboardActions extends ConsumerWidget {
 
   static Future<void> showCreateFolderDialog(
       BuildContext context, WidgetRef ref) async {
-
     final notifier = ref.read(dashboardProvider.notifier);
     final controller = TextEditingController();
 
@@ -17,34 +16,23 @@ class DashboardActions extends ConsumerWidget {
       context: context,
       builder: (context) {
         return Dialog(
-
           backgroundColor: Colors.transparent,
-
           child: ClipRRect(
             borderRadius: BorderRadius.circular(24),
-
             child: BackdropFilter(
-              filter: ImageFilter.blur(
-                sigmaX: 20,
-                sigmaY: 20,
-              ),
-
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
               child: Container(
                 padding: const EdgeInsets.all(24),
-
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.35),
                   borderRadius: BorderRadius.circular(24),
-
                   border: Border.all(
                     color: Colors.white.withOpacity(0.25),
                   ),
                 ),
-
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-
                     const Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
@@ -55,72 +43,51 @@ class DashboardActions extends ConsumerWidget {
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
                     TextField(
-
                       controller: controller,
                       autofocus: true,
                       cursorColor: Colors.white,
-
-                      style: const TextStyle(
-                        color: Colors.white,
-                      ),
-
+                      style: const TextStyle(color: Colors.white),
                       decoration: const InputDecoration(
-
                         hintText: "Name eingeben",
                         hintStyle: TextStyle(color: Colors.white38),
-
                         enabledBorder: UnderlineInputBorder(
                           borderSide: BorderSide(
-                            color: Color(0xFFFF3B30),
+                            color: AppTheme.primaryRed,
                           ),
                         ),
-
                         focusedBorder: UnderlineInputBorder(
                           borderSide: BorderSide(
-                            color: Color(0xFFFF3B30),
+                            color: AppTheme.primaryRed,
                           ),
                         ),
-
                       ),
                     ),
-
                     const SizedBox(height: 22),
-
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-
                         TextButton(
                           onPressed: () {
                             Navigator.pop(context);
                           },
                           child: const Text(
                             "Abbrechen",
-                            style: TextStyle(
-                              color: Colors.white70,
-                            ),
+                            style: TextStyle(color: Colors.white70),
                           ),
                         ),
-
                         const SizedBox(width: 10),
-
                         ElevatedButton(
-
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFFF3B30),
+                            backgroundColor: AppTheme.primaryRed,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(24),
                             ),
                           ),
-
                           onPressed: () {
                             Navigator.pop(context, controller.text);
                           },
-
                           child: const Text(
                             "Erstellen",
                             style: TextStyle(
@@ -147,14 +114,12 @@ class DashboardActions extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-
         child: Container(
           decoration: BoxDecoration(
-            gradient: AppTheme.primaryButtonGradient,
+            color: AppTheme.primaryRed,
             borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
@@ -164,11 +129,9 @@ class DashboardActions extends ConsumerWidget {
               ),
             ],
           ),
-
           child: ElevatedButton.icon(
             icon: const Icon(Icons.add),
             label: const Text("Neuen Plan erstellen"),
-
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.transparent,
               shadowColor: Colors.transparent,
@@ -181,7 +144,6 @@ class DashboardActions extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(28),
               ),
             ),
-
             onPressed: () {
               DashboardActions.showCreateFolderDialog(context, ref);
             },

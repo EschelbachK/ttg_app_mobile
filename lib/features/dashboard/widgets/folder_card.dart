@@ -2,12 +2,12 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/ui/ttg_glow_border.dart';
+import '../../../core/theme/app_theme.dart';
 import '../models/training_folder.dart';
 import '../state/dashboard_provider.dart';
 import 'plan_tile.dart';
 
 class FolderCard extends ConsumerStatefulWidget {
-
   final TrainingFolder folder;
 
   const FolderCard({super.key, required this.folder});
@@ -17,73 +17,40 @@ class FolderCard extends ConsumerStatefulWidget {
 }
 
 class _FolderCardState extends ConsumerState<FolderCard> {
-
   bool expanded = true;
 
   @override
   Widget build(BuildContext context) {
-
     final notifier = ref.read(dashboardProvider.notifier);
     final folder = widget.folder;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
-
       child: TTGGlowBorder(
-
         child: ClipRRect(
           borderRadius: BorderRadius.circular(18),
-
           child: BackdropFilter(
-            filter: ImageFilter.blur(
-              sigmaX: 3,
-              sigmaY: 3,
-            ),
-
+            filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
             child: Container(
-
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.06),
                 borderRadius: BorderRadius.circular(25),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.25),
-                ),
+                border: Border.all(color: Colors.white.withOpacity(0.25)),
               ),
-
               child: Column(
                 children: [
-
-                  /// HEADER
                   GestureDetector(
                     onTap: () {
                       setState(() {
                         expanded = !expanded;
                       });
                     },
-
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 6,
-                      ),
-
-                      decoration: const BoxDecoration(
-                        color: Colors.transparent,
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(18),
-                        ),
-                      ),
-
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                       child: Row(
                         children: [
-
-                          const Icon(
-                            Icons.folder,
-                            color: Color(0xFFFF3B30),
-                          ),
-
+                          const Icon(Icons.folder, color: AppTheme.primaryRed),
                           const SizedBox(width: 10),
-
                           Expanded(
                             child: Text(
                               folder.name,
@@ -94,152 +61,82 @@ class _FolderCardState extends ConsumerState<FolderCard> {
                               ),
                             ),
                           ),
-
-                          /// Ordner umbenennen
                           InkWell(
                             onTap: () {
-
-                              final controller =
-                              TextEditingController(text: folder.name);
+                              final controller = TextEditingController(text: folder.name);
 
                               showDialog(
                                 context: context,
                                 barrierColor: Colors.black.withOpacity(0.6),
                                 builder: (context) {
-
                                   return Dialog(
                                     backgroundColor: Colors.transparent,
-
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(20),
-
                                       child: BackdropFilter(
-                                        filter: ImageFilter.blur(
-                                          sigmaX: 20,
-                                          sigmaY: 20,
-                                        ),
-
+                                        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                                         child: Container(
                                           padding: const EdgeInsets.all(20),
-
                                           decoration: BoxDecoration(
                                             color: Colors.black.withOpacity(0.25),
                                             borderRadius: BorderRadius.circular(20),
-                                            border: Border.all(
-                                              color: Colors.white.withOpacity(0.25),
-                                            ),
+                                            border: Border.all(color: Colors.white.withOpacity(0.25)),
                                           ),
-
                                           child: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-
                                               const Align(
                                                 alignment: Alignment.centerLeft,
                                                 child: Text(
                                                   "Ordner umbenennen",
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 20,
-                                                  ),
+                                                  style: TextStyle(color: Colors.white, fontSize: 20),
                                                 ),
                                               ),
-
                                               const SizedBox(height: 16),
-
                                               TextField(
-
                                                 controller: controller,
-                                                autofocus: false,
                                                 cursorColor: Colors.white,
-
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                ),
-
+                                                style: const TextStyle(color: Colors.white),
                                                 decoration: const InputDecoration(
-
                                                   hintText: "Name eingeben",
-                                                  hintStyle: TextStyle(
-                                                    color: Colors.white38,
-                                                  ),
-
+                                                  hintStyle: TextStyle(color: Colors.white38),
                                                   enabledBorder: UnderlineInputBorder(
-                                                    borderSide: BorderSide(
-                                                      color: Color(0xFFFF3B30),
-                                                    ),
+                                                    borderSide: BorderSide(color: AppTheme.primaryRed),
                                                   ),
-
                                                   focusedBorder: UnderlineInputBorder(
-                                                    borderSide: BorderSide(
-                                                      color: Color(0xFFFF3B30),
-                                                    ),
+                                                    borderSide: BorderSide(color: AppTheme.primaryRed),
                                                   ),
-
                                                 ),
                                               ),
-
                                               const SizedBox(height: 20),
-
                                               Row(
-                                                mainAxisAlignment:
-                                                MainAxisAlignment.end,
+                                                mainAxisAlignment: MainAxisAlignment.end,
                                                 children: [
-
                                                   TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.pop(context),
-                                                    child: const Text(
-                                                      "Abbrechen",
-                                                      style: TextStyle(
-                                                        color: Colors.white70,
-                                                      ),
-                                                    ),
+                                                    onPressed: () => Navigator.pop(context),
+                                                    child: const Text("Abbrechen", style: TextStyle(color: Colors.white70)),
                                                   ),
-
                                                   const SizedBox(width: 10),
-
                                                   ElevatedButton(
-
-                                                    style:
-                                                    ElevatedButton.styleFrom(
-                                                      backgroundColor:
-                                                      const Color(
-                                                          0xFFFF3B30),
-                                                      shape:
-                                                      RoundedRectangleBorder(
-                                                        borderRadius:
-                                                        BorderRadius.circular(
-                                                            20),
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor: AppTheme.primaryRed,
+                                                      shape: RoundedRectangleBorder(
+                                                        borderRadius: BorderRadius.circular(20),
                                                       ),
                                                     ),
-
                                                     onPressed: () {
-
-                                                      final name =
-                                                      controller.text.trim();
-
+                                                      final name = controller.text.trim();
                                                       if (name.isEmpty) return;
-
-                                                      notifier.renameFolder(
-                                                          folder.id, name);
-
+                                                      notifier.renameFolder(folder.id, name);
                                                       Navigator.pop(context);
                                                     },
-
                                                     child: const Text(
                                                       "Speichern",
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontWeight:
-                                                        FontWeight.w600,
-                                                      ),
+                                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
                                                     ),
                                                   ),
-
                                                 ],
                                               ),
-
                                             ],
                                           ),
                                         ),
@@ -251,41 +148,25 @@ class _FolderCardState extends ConsumerState<FolderCard> {
                             },
                             child: const Padding(
                               padding: EdgeInsets.only(right: 8),
-                              child: Icon(
-                                Icons.edit,
-                                color: Colors.white54,
-                                size: 18,
-                              ),
+                              child: Icon(Icons.edit, color: Colors.white54, size: 18),
                             ),
                           ),
-
                           Icon(
-                            expanded
-                                ? Icons.keyboard_arrow_up
-                                : Icons.keyboard_arrow_down,
+                            expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
                             color: Colors.white54,
                           ),
-
                           PopupMenuButton<String>(
-                            icon: const Icon(
-                              Icons.more_vert,
-                              color: Colors.white54,
-                            ),
-
+                            icon: const Icon(Icons.more_vert, color: Colors.white54),
                             onSelected: (value) async {
-
                               if (value == 'archive') {
                                 notifier.archiveFolder(folder.id);
                               }
-
                               if (value == 'delete') {
-
-                                await Future.delayed(Duration.zero); // ✅ FIX
-
+                                await Future.delayed(Duration.zero);
                                 final confirm = await showDialog<bool>(
                                   context: context,
                                   barrierDismissible: false,
-                                  builder: (dialogContext) => Dialog( // ✅ FIX
+                                  builder: (dialogContext) => Dialog(
                                     backgroundColor: Colors.transparent,
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(24),
@@ -296,27 +177,19 @@ class _FolderCardState extends ConsumerState<FolderCard> {
                                           decoration: BoxDecoration(
                                             color: Colors.black.withOpacity(0.35),
                                             borderRadius: BorderRadius.circular(24),
-                                            border: Border.all(
-                                              color: Colors.white.withOpacity(0.25),
-                                            ),
+                                            border: Border.all(color: Colors.white.withOpacity(0.25)),
                                           ),
                                           child: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-
                                               const Align(
                                                 alignment: Alignment.centerLeft,
                                                 child: Text(
                                                   "Ordner löschen",
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 20,
-                                                  ),
+                                                  style: TextStyle(color: Colors.white, fontSize: 20),
                                                 ),
                                               ),
-
                                               const SizedBox(height: 16),
-
                                               const Align(
                                                 alignment: Alignment.centerLeft,
                                                 child: Text(
@@ -324,35 +197,23 @@ class _FolderCardState extends ConsumerState<FolderCard> {
                                                   style: TextStyle(color: Colors.white54),
                                                 ),
                                               ),
-
                                               const SizedBox(height: 20),
-
-                                              const Divider(color: Color(0xFFFF3B30)),
-
+                                              const Divider(color: AppTheme.primaryRed),
                                               const SizedBox(height: 20),
-
                                               Row(
                                                 mainAxisAlignment: MainAxisAlignment.end,
                                                 children: [
-
                                                   TextButton(
-                                                    onPressed: () =>
-                                                        Navigator.of(dialogContext).pop(false), // ✅ FIX
-                                                    child: const Text(
-                                                      "Abbrechen",
-                                                      style: TextStyle(color: Colors.white70),
-                                                    ),
+                                                    onPressed: () => Navigator.of(dialogContext).pop(false),
+                                                    child: const Text("Abbrechen", style: TextStyle(color: Colors.white70)),
                                                   ),
-
                                                   const SizedBox(width: 10),
-
                                                   ElevatedButton(
                                                     style: ElevatedButton.styleFrom(
-                                                      backgroundColor: const Color(0xFFFF3B30),
+                                                      backgroundColor: AppTheme.primaryRed,
                                                       foregroundColor: Colors.white,
                                                     ),
-                                                    onPressed: () =>
-                                                        Navigator.of(dialogContext).pop(true), // ✅ FIX
+                                                    onPressed: () => Navigator.of(dialogContext).pop(true),
                                                     child: const Text("Löschen"),
                                                   ),
                                                 ],
@@ -364,36 +225,21 @@ class _FolderCardState extends ConsumerState<FolderCard> {
                                     ),
                                   ),
                                 );
-
                                 if (confirm == true) {
                                   notifier.deleteFolder(folder.id);
                                 }
                               }
                             },
-
                             itemBuilder: (context) => const [
-
-                              PopupMenuItem(
-                                value: 'archive',
-                                child: Text("Ordner archivieren"),
-                              ),
-
-                              PopupMenuItem(
-                                value: 'delete',
-                                child: Text("Ordner löschen"),
-                              ),
-
+                              PopupMenuItem(value: 'archive', child: Text("Ordner archivieren")),
+                              PopupMenuItem(value: 'delete', child: Text("Ordner löschen")),
                             ],
                           ),
-
                         ],
                       ),
                     ),
                   ),
-
-                  /// MUSCLE GROUP LIST
                   if (expanded) ...[
-
                     ...folder.plans.map(
                           (p) => PlanTile(
                         folderId: folder.id,
@@ -405,139 +251,82 @@ class _FolderCardState extends ConsumerState<FolderCard> {
                         onDuplicate: () => notifier.duplicatePlan(folder.id, p.id),
                       ),
                     ),
-
-                    /// ADD MUSCLE GROUP
                     InkWell(
                       onTap: () {
-
                         final controller = TextEditingController();
 
                         showDialog(
                           context: context,
                           barrierColor: Colors.black.withOpacity(0.6),
                           builder: (context) {
-
                             return Dialog(
                               backgroundColor: Colors.transparent,
-
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(20),
-
                                 child: BackdropFilter(
-                                  filter: ImageFilter.blur(
-                                    sigmaX: 20,
-                                    sigmaY: 20,
-                                  ),
-
+                                  filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                                   child: Container(
                                     padding: const EdgeInsets.all(20),
-
                                     decoration: BoxDecoration(
                                       color: Colors.black.withOpacity(0.25),
                                       borderRadius: BorderRadius.circular(20),
-                                      border: Border.all(
-                                        color: Colors.white.withOpacity(0.25),
-                                      ),
+                                      border: Border.all(color: Colors.white.withOpacity(0.25)),
                                     ),
-
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-
                                         const Align(
                                           alignment: Alignment.centerLeft,
                                           child: Text(
                                             "Neue Muskelgruppe",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 20,
-                                            ),
+                                            style: TextStyle(color: Colors.white, fontSize: 20),
                                           ),
                                         ),
-
                                         const SizedBox(height: 16),
-
                                         TextField(
-
                                           controller: controller,
-                                          autofocus: false,
                                           cursorColor: Colors.white,
-
                                           style: const TextStyle(color: Colors.white),
-
                                           decoration: const InputDecoration(
-
                                             hintText: "Name eingeben",
                                             hintStyle: TextStyle(color: Colors.white38),
-
                                             enabledBorder: UnderlineInputBorder(
-                                              borderSide: BorderSide(
-                                                color: Color(0xFFFF3B30),
-                                              ),
+                                              borderSide: BorderSide(color: AppTheme.primaryRed),
                                             ),
-
                                             focusedBorder: UnderlineInputBorder(
-                                              borderSide: BorderSide(
-                                                color: Color(0xFFFF3B30),
-                                              ),
+                                              borderSide: BorderSide(color: AppTheme.primaryRed),
                                             ),
-
                                           ),
                                         ),
-
                                         const SizedBox(height: 20),
-
                                         Row(
                                           mainAxisAlignment: MainAxisAlignment.end,
                                           children: [
-
                                             TextButton(
                                               onPressed: () => Navigator.pop(context),
-                                              child: const Text(
-                                                "Abbrechen",
-                                                style: TextStyle(
-                                                  color: Colors.white70,
-                                                ),
-                                              ),
+                                              child: const Text("Abbrechen", style: TextStyle(color: Colors.white70)),
                                             ),
-
                                             const SizedBox(width: 10),
-
                                             ElevatedButton(
-
                                               style: ElevatedButton.styleFrom(
-                                                backgroundColor: const Color(0xFFFF3B30),
+                                                backgroundColor: AppTheme.primaryRed,
                                                 shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                  BorderRadius.circular(20),
+                                                  borderRadius: BorderRadius.circular(20),
                                                 ),
                                               ),
-
                                               onPressed: () {
-
-                                                final name =
-                                                controller.text.trim();
-
+                                                final name = controller.text.trim();
                                                 if (name.isEmpty) return;
-
                                                 notifier.addPlan(folder.id, name);
-
                                                 Navigator.pop(context);
-
                                               },
-
                                               child: const Text(
                                                 "Erstellen",
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
+                                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
                                               ),
                                             ),
-
                                           ],
                                         ),
-
                                       ],
                                     ),
                                   ),
@@ -547,15 +336,13 @@ class _FolderCardState extends ConsumerState<FolderCard> {
                           },
                         );
                       },
-
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         alignment: Alignment.center,
-
                         child: const Text(
                           "+ Muskelgruppe hinzufügen",
                           style: TextStyle(
-                            color: Color(0xFFFF3B30),
+                            color: AppTheme.primaryRed,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
