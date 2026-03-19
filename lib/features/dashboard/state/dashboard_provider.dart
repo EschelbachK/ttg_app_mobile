@@ -9,7 +9,6 @@ StateNotifierProvider<DashboardNotifier, DashboardState>(
         (ref) => DashboardNotifier());
 
 class DashboardState {
-
   final List<TrainingFolder> folders;
   final List<TrainingFolder> archivedFolders;
   final List<TrainingPlan> archivedPlans;
@@ -58,7 +57,6 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
   }
 
   void addFolder(String name) {
-
     final folder = TrainingFolder(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: name,
@@ -71,20 +69,15 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
   }
 
   void renameFolder(String folderId, String newName) {
-
     state = state.copyWith(
       folders: state.folders.map((folder) {
-
         if (folder.id != folderId) return folder;
-
         return folder.copyWith(name: newName);
-
       }).toList(),
     );
   }
 
   void deleteFolder(String folderId) {
-
     state = state.copyWith(
       folders: state.folders
           .where((f) => f.id != folderId)
@@ -93,18 +86,14 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
   }
 
   void archiveFolder(String folderId) {
-
     TrainingFolder? archived;
 
     final updated = state.folders.where((f) {
-
       if (f.id == folderId) {
         archived = f;
         return false;
       }
-
       return true;
-
     }).toList();
 
     if (archived == null) return;
@@ -119,7 +108,6 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
   }
 
   void reorderFolders(int oldIndex, int newIndex) {
-
     final list = [...state.folders];
 
     if (newIndex > oldIndex) {
@@ -127,7 +115,6 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     }
 
     final item = list.removeAt(oldIndex);
-
     list.insert(newIndex, item);
 
     state = state.copyWith(
@@ -136,33 +123,25 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
   }
 
   void addPlan(String folderId, String name) {
-
     state = state.copyWith(
-
       folders: state.folders.map((folder) {
-
         if (folder.id != folderId) {
           return folder;
         }
 
         final updatedPlans = [
-
           ...folder.plans,
-
           TrainingPlan(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
             name: name,
             exercises: [],
           ),
-
         ];
 
         return folder.copyWith(
           plans: updatedPlans,
         );
-
       }).toList(),
-
     );
   }
 
@@ -171,34 +150,23 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       String planId,
       String newName,
       ) {
-
     state = state.copyWith(
-
       folders: state.folders.map((folder) {
-
         if (folder.id != folderId) return folder;
 
         final updatedPlans = folder.plans.map((plan) {
-
           if (plan.id != planId) return plan;
-
           return plan.copyWith(name: newName);
-
         }).toList();
 
         return folder.copyWith(plans: updatedPlans);
-
       }).toList(),
-
     );
   }
 
   void deletePlan(String folderId, String planId) {
-
     state = state.copyWith(
-
       folders: state.folders.map((folder) {
-
         if (folder.id != folderId) {
           return folder;
         }
@@ -208,24 +176,19 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
               .where((p) => p.id != planId)
               .toList(),
         );
-
       }).toList(),
-
     );
   }
 
   void archivePlan(String folderId, String planId) {
-
     TrainingPlan? archived;
 
     final updatedFolders = state.folders.map((folder) {
-
       if (folder.id != folderId) {
         return folder;
       }
 
       final plans = [...folder.plans];
-
       final index = plans.indexWhere((p) => p.id == planId);
 
       if (index == -1) return folder;
@@ -239,7 +202,6 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       return folder.copyWith(
         plans: plans,
       );
-
     }).toList();
 
     if (archived == null) return;
@@ -333,33 +295,46 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     );
   }
 
-  // 🔥 JETZT RICHTIG POSITIONIERT
+  void importExercise(
+      String folderId,
+      String planId,
+      Exercise exercise,
+      ) {
+    final updatedFolders = state.folders.map((folder) {
+      if (folder.id != folderId) return folder;
+
+      return folder.copyWith(
+        plans: folder.plans.map((plan) {
+          if (plan.id != planId) return plan;
+
+          return plan.copyWith(
+            exercises: [...plan.exercises, exercise],
+          );
+        }).toList(),
+      );
+    }).toList();
+
+    state = state.copyWith(folders: updatedFolders);
+  }
+
   void importPlan(String folderId, TrainingPlan plan) {
-
     state = state.copyWith(
-
       folders: state.folders.map((folder) {
-
         if (folder.id != folderId) return folder;
 
         return folder.copyWith(
           plans: [...folder.plans, plan],
         );
-
       }).toList(),
-
       archivedPlans: state.archivedPlans
           .where((p) => p.id != plan.id)
           .toList(),
     );
   }
-  // 🔥 IMPORT FOLDER (GANZER TRAININGSPLAN)
+
   void importFolder(TrainingFolder folder) {
-
     state = state.copyWith(
-
       folders: [...state.folders, folder],
-
       archivedFolders: state.archivedFolders
           .where((f) => f.id != folder.id)
           .toList(),
