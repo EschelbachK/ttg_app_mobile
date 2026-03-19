@@ -12,11 +12,13 @@ class MuscleGroupScreen extends ConsumerStatefulWidget {
 
   final String folderId;
   final TrainingPlan plan;
+  final bool isArchived; // 🔥 NEU
 
   const MuscleGroupScreen({
     super.key,
     required this.folderId,
     required this.plan,
+    this.isArchived = false, // 🔥 NEU
   });
 
   @override
@@ -34,20 +36,23 @@ class _MuscleGroupScreenState extends ConsumerState<MuscleGroupScreen> {
 
     TrainingPlan currentPlan = widget.plan;
 
-    for (final folder in dashboardState.folders) {
+    /// 🔥 Nur updaten wenn NICHT archiviert
+    if (!widget.isArchived) {
+      for (final folder in dashboardState.folders) {
 
-      if (folder.id == widget.folderId) {
+        if (folder.id == widget.folderId) {
 
-        for (final p in folder.plans) {
+          for (final p in folder.plans) {
 
-          if (p.id == widget.plan.id) {
-            currentPlan = p;
+            if (p.id == widget.plan.id) {
+              currentPlan = p;
+            }
+
           }
 
         }
 
       }
-
     }
 
     return Stack(
@@ -89,7 +94,19 @@ class _MuscleGroupScreenState extends ConsumerState<MuscleGroupScreen> {
               style: const TextStyle(color: Colors.white),
             ),
 
-            actions: const [],
+            actions: [
+              /// 🔥 IMPORT BUTTON (nur im Archiv)
+              if (widget.isArchived)
+                IconButton(
+                  icon: const Icon(
+                    Icons.file_download,
+                    color: Color(0xFFFF3B30),
+                  ),
+                  onPressed: () {
+                    // kommt im nächsten Schritt (BottomSheet)
+                  },
+                ),
+            ],
           ),
 
           body: Column(
@@ -114,144 +131,148 @@ class _MuscleGroupScreenState extends ConsumerState<MuscleGroupScreen> {
 
                   const SizedBox(width: 8),
 
-                  InkWell(
+                  /// 🔥 EDIT NUR WENN NICHT ARCHIV
+                  if (!widget.isArchived)
+                    InkWell(
 
-                    onTap: () async {
+                      onTap: () async {
 
-                      final controller =
-                      TextEditingController(text: currentPlan.name);
+                        final controller =
+                        TextEditingController(text: currentPlan.name);
 
-                      final newName = await showDialog<String>(
+                        final newName = await showDialog<String>(
 
-                        context: context,
+                          context: context,
 
-                        builder: (context) {
+                          builder: (context) {
 
-                          return AlertDialog(
+                            return AlertDialog(
 
-                            backgroundColor: const Color(0xFF1B1F23),
+                              backgroundColor: const Color(0xFF1B1F23),
 
-                            title: const Text(
-                              "Muskelgruppe umbenennen",
-                              style: TextStyle(color: Colors.white),
-                            ),
-
-                            content: TextField(
-                              controller: controller,
-                              style: const TextStyle(color: Colors.white),
-                            ),
-
-                            actions: [
-
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text("Abbrechen"),
+                              title: const Text(
+                                "Muskelgruppe umbenennen",
+                                style: TextStyle(color: Colors.white),
                               ),
 
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context, controller.text);
-                                },
-                                child: const Text("Speichern"),
+                              content: TextField(
+                                controller: controller,
+                                style: const TextStyle(color: Colors.white),
                               ),
 
-                            ],
-                          );
-                        },
-                      );
+                              actions: [
 
-                      if (newName != null && newName.isNotEmpty) {
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text("Abbrechen"),
+                                ),
 
-                        ref
-                            .read(dashboardProvider.notifier)
-                            .renamePlan(
-                          widget.folderId,
-                          currentPlan.id,
-                          newName,
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context, controller.text);
+                                  },
+                                  child: const Text("Speichern"),
+                                ),
+
+                              ],
+                            );
+                          },
                         );
 
-                      }
+                        if (newName != null && newName.isNotEmpty) {
 
-                    },
+                          ref
+                              .read(dashboardProvider.notifier)
+                              .renamePlan(
+                            widget.folderId,
+                            currentPlan.id,
+                            newName,
+                          );
 
-                    child: const Icon(
-                      Icons.edit,
-                      color: Colors.white54,
-                      size: 18,
+                        }
+
+                      },
+
+                      child: const Icon(
+                        Icons.edit,
+                        color: Colors.white54,
+                        size: 18,
+                      ),
                     ),
-                  ),
                 ],
               ),
 
               const SizedBox(height: 20),
 
-              /// ADD EXERCISE BUTTON
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+              /// 🔥 ADD EXERCISE NUR WENN NICHT ARCHIV
+              if (!widget.isArchived)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
 
-                child: TTGGlowBorder(
+                  child: TTGGlowBorder(
 
-                  child: ClipRRect(
+                    child: ClipRRect(
 
-                    borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(20),
 
-                    child: BackdropFilter(
+                      child: BackdropFilter(
 
-                      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
 
-                      child: Container(
+                        child: Container(
 
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.06),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.25),
-                          ),
-                        ),
-
-                        child: ExpansionTile(
-
-                          trailing: const Icon(
-                            Icons.add,
-                            color: Color(0xFFFF3B30),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.06),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.25),
+                            ),
                           ),
 
-                          onExpansionChanged: (v) {
-                            setState(() {
-                              addExerciseExpanded = v;
-                            });
-                          },
+                          child: ExpansionTile(
 
-                          collapsedIconColor: Colors.white54,
-                          iconColor: Colors.white,
+                            trailing: const Icon(
+                              Icons.add,
+                              color: Color(0xFFFF3B30),
+                            ),
 
-                          title: const Center(
-                            child: Text(
-                              "Übung hinzufügen",
-                              style: TextStyle(
-                                color: Color(0xFFFF3B30),
-                                fontWeight: FontWeight.bold,
+                            onExpansionChanged: (v) {
+                              setState(() {
+                                addExerciseExpanded = v;
+                              });
+                            },
+
+                            collapsedIconColor: Colors.white54,
+                            iconColor: Colors.white,
+
+                            title: const Center(
+                              child: Text(
+                                "Übung hinzufügen",
+                                style: TextStyle(
+                                  color: Color(0xFFFF3B30),
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
+
+                            children: [
+
+                              ExerciseSelectionCard(
+                                folderId: widget.folderId,
+                                planId: currentPlan.id,
+                              ),
+
+                            ],
+
                           ),
-
-                          children: [
-
-                            ExerciseSelectionCard(
-                              folderId: widget.folderId,
-                              planId: currentPlan.id,
-                            ),
-
-                          ],
-
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 10),
+              if (!widget.isArchived)
+                const SizedBox(height: 10),
 
               /// EXERCISES
               Expanded(
