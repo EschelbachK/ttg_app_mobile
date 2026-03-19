@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../models/training_plan.dart';
-import '../screens/muscle_group_screen.dart';
-import 'import_plan_sheet.dart';
+import '../../models/training_plan.dart';
+import '../../screens/muscle_group_screen.dart';
+import '../import_plan_sheet.dart';
 
 class ArchivedPlanTile extends ConsumerStatefulWidget {
 
