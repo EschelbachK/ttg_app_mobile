@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../state/exercise_catalog_provider.dart';
 import '../models/exercise_catalog_item.dart';
+import 'package:ttg_app_mobile/features/dashboard/models/training_folder.dart';
+import 'package:ttg_app_mobile/features/dashboard/models/training_plan.dart';
+import 'package:ttg_app_mobile/features/dashboard/models/exercise.dart';
 
 class ExerciseCatalogScreen extends ConsumerWidget {
   const ExerciseCatalogScreen({super.key});
