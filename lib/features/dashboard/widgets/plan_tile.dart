@@ -1,22 +1,19 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-
 import '../models/training_plan.dart';
+import '../state/active_plan_provider.dart';
 import '../screens/muscle_group_screen.dart';
 import '../state/dashboard_provider.dart';
 
 class PlanTile extends ConsumerStatefulWidget {
   final String folderId;
   final TrainingPlan plan;
-
   final VoidCallback onDelete;
   final VoidCallback onMoveUp;
   final VoidCallback onMoveDown;
   final VoidCallback onArchive;
   final VoidCallback onDuplicate;
-
   final bool isArchived;
 
   const PlanTile({
@@ -140,6 +137,8 @@ class _PlanTileState extends ConsumerState<PlanTile> {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(12),
                           onTap: () {
+                            ref.read(activePlanIdProvider.notifier).state = plan.id;
+
                             Navigator.push(
                               context,
                               MaterialPageRoute(

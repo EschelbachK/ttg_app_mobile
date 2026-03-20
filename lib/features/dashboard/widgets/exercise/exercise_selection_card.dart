@@ -3,10 +3,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../models/exercise.dart';
 import '../../models/exercise_set.dart';
 import '../../state/dashboard_provider.dart';
 import 'exercise_select_sheet.dart';
+import 'package:ttg_app_mobile/features/dashboard/models/exercise.dart';
 
 class ExerciseSelectionCard extends ConsumerStatefulWidget {
   final String folderId;
@@ -181,8 +181,6 @@ class _ExerciseSelectionCardState
                         selectedCategory == null) return;
 
                     final exercise = Exercise(
-                      id: DateTime.now().millisecondsSinceEpoch.toString(),
-                      category: selectedCategory!,
                       name: selectedExercise!,
                       sets: List.generate(
                         sets,

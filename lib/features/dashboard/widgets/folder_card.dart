@@ -1,11 +1,12 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/ui/ttg_glow_border.dart';
-import '../../../core/theme/app_theme.dart';
-import '../models/training_folder.dart';
-import '../state/dashboard_provider.dart';
-import 'plan_tile.dart';
+import 'package:ttg_app_mobile/core/ui/ttg_glow_border.dart';
+import 'package:ttg_app_mobile/core/theme/app_theme.dart';
+import 'package:ttg_app_mobile/features/dashboard/models/training_folder.dart';
+import 'package:ttg_app_mobile/features/dashboard/state/dashboard_provider.dart';
+import 'package:ttg_app_mobile/features/dashboard/state/active_plan_provider.dart';
+import 'package:ttg_app_mobile/features/dashboard/widgets/plan_tile.dart';
 
 class FolderCard extends ConsumerStatefulWidget {
   final TrainingFolder folder;
@@ -23,6 +24,7 @@ class _FolderCardState extends ConsumerState<FolderCard> {
   Widget build(BuildContext context) {
     final notifier = ref.read(dashboardProvider.notifier);
     final folder = widget.folder;
+    final planId = ref.read(activePlanIdProvider);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
@@ -52,13 +54,26 @@ class _FolderCardState extends ConsumerState<FolderCard> {
                           const Icon(Icons.folder, color: AppTheme.primaryRed),
                           const SizedBox(width: 10),
                           Expanded(
-                            child: Text(
-                              folder.name,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  folder.name,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  folder.bodyRegion,
+                                  style: const TextStyle(
+                                    color: Colors.white38,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                           InkWell(
@@ -225,8 +240,8 @@ class _FolderCardState extends ConsumerState<FolderCard> {
                                     ),
                                   ),
                                 );
-                                if (confirm == true) {
-                                  notifier.deleteFolder(folder.id);
+                                if (confirm == true && planId != null) {
+                                  notifier.deleteFolder(planId, folder.id);
                                 }
                               }
                             },

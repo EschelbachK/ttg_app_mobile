@@ -1,31 +1,37 @@
 import 'exercise_set.dart';
 
 class Exercise {
-
-  final String id;
-  final String category;
   final String name;
-
   final List<ExerciseSet> sets;
 
   Exercise({
-    required this.id,
-    required this.category,
     required this.name,
-    this.sets = const [],
+    required this.sets,
   });
 
   Exercise copyWith({
-    String? id,
-    String? category,
     String? name,
     List<ExerciseSet>? sets,
   }) {
     return Exercise(
-      id: id ?? this.id,
-      category: category ?? this.category,
       name: name ?? this.name,
       sets: sets ?? this.sets,
     );
+  }
+
+  factory Exercise.fromJson(Map<String, dynamic> json) {
+    return Exercise(
+      name: json['name'],
+      sets: (json['sets'] as List? ?? [])
+          .map((e) => ExerciseSet.fromJson(e))
+          .toList(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'sets': sets.map((e) => e.toJson()).toList(),
+    };
   }
 }

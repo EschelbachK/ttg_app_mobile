@@ -1,18 +1,17 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../../core/ui/ttg_glow_border.dart';
-import '../../models/exercise.dart';
+import 'package:ttg_app_mobile/features/dashboard/models/exercise.dart';
 import '../../models/exercise_set.dart';
 
 class ExerciseTile extends StatefulWidget {
-
   final Exercise exercise;
-  final bool isArchived; // 🔥 NEU
+  final bool isArchived;
 
   const ExerciseTile({
     super.key,
     required this.exercise,
-    this.isArchived = false, // 🔥 NEU
+    this.isArchived = false,
   });
 
   @override
@@ -20,65 +19,37 @@ class ExerciseTile extends StatefulWidget {
 }
 
 class _ExerciseTileState extends State<ExerciseTile> {
-
   bool expanded = false;
 
   @override
   Widget build(BuildContext context) {
-
     final exercise = widget.exercise;
 
     return Padding(
-
-      padding: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 10,
-      ),
-
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: TTGGlowBorder(
-
         child: ClipRRect(
-
           borderRadius: BorderRadius.circular(20),
-
           child: BackdropFilter(
-
-            filter: ImageFilter.blur(
-              sigmaX: 10,
-              sigmaY: 10,
-            ),
-
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
-
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.06),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.25),
-                ),
+                border: Border.all(color: Colors.white.withOpacity(0.25)),
               ),
-
               child: Column(
-
                 children: [
-
-                  /// HEADER
                   InkWell(
-
                     onTap: () {
                       setState(() {
                         expanded = !expanded;
                       });
                     },
-
                     child: Padding(
-
                       padding: const EdgeInsets.all(16),
-
                       child: Row(
-
                         children: [
-
                           Expanded(
                             child: Text(
                               exercise.name,
@@ -89,121 +60,78 @@ class _ExerciseTileState extends State<ExerciseTile> {
                               ),
                             ),
                           ),
-
                           Icon(
                             expanded
                                 ? Icons.keyboard_arrow_up
                                 : Icons.keyboard_arrow_down,
                             color: Colors.white54,
                           ),
-
                           const SizedBox(width: 8),
-
-                          /// 🔥 HIDE ACTIONS IN ARCHIVE
                           if (!widget.isArchived)
                             const Icon(
                               Icons.more_vert,
                               color: Colors.white38,
                             ),
-
                         ],
                       ),
                     ),
                   ),
-
                   if (expanded) ...[
-
                     const Divider(color: Colors.white12),
-
-                    /// IMAGE
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-
                       child: Container(
-
                         height: 160,
-
                         decoration: BoxDecoration(
                           color: Colors.black26,
                           borderRadius: BorderRadius.circular(16),
                         ),
-
                         alignment: Alignment.center,
-
                         child: const Text(
                           "Übungsbild",
                           style: TextStyle(color: Colors.white38),
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
-                    /// HEADER
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-
                       child: Row(
-
                         children: const [
-
-                          Icon(Icons.drag_indicator,
-                              color: Colors.white38, size: 18),
-
+                          Icon(Icons.drag_indicator, color: Colors.white38, size: 18),
                           SizedBox(width: 10),
-
                           Expanded(
                             child: Center(
                               child: Text(
                                 "SATZ",
-                                style: TextStyle(
-                                  color: Colors.white38,
-                                  fontSize: 12,
-                                ),
+                                style: TextStyle(color: Colors.white38, fontSize: 12),
                               ),
                             ),
                           ),
-
-                          Icon(Icons.fitness_center,
-                              color: Colors.white38, size: 16),
-
+                          Icon(Icons.fitness_center, color: Colors.white38, size: 16),
                           SizedBox(width: 4),
-
                           Expanded(
                             child: Center(
                               child: Text(
                                 "GEWICHT",
-                                style: TextStyle(
-                                  color: Colors.white38,
-                                  fontSize: 12,
-                                ),
+                                style: TextStyle(color: Colors.white38, fontSize: 12),
                               ),
                             ),
                           ),
-
-                          Icon(Icons.repeat,
-                              color: Colors.white38, size: 16),
-
+                          Icon(Icons.repeat, color: Colors.white38, size: 16),
                           SizedBox(width: 4),
-
                           Expanded(
                             child: Center(
                               child: Text(
                                 "WDH",
-                                style: TextStyle(
-                                  color: Colors.white38,
-                                  fontSize: 12,
-                                ),
+                                style: TextStyle(color: Colors.white38, fontSize: 12),
                               ),
                             ),
                           ),
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 10),
-
-                    /// 🔥 NO REORDER IN ARCHIVE
                     widget.isArchived
                         ? Column(
                       children: [
@@ -216,12 +144,9 @@ class _ExerciseTileState extends State<ExerciseTile> {
                       ],
                     )
                         : ReorderableListView(
-
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-
                       onReorder: (oldIndex, newIndex) {
-
                         final sets = [...exercise.sets];
 
                         if (newIndex > oldIndex) {
@@ -229,33 +154,25 @@ class _ExerciseTileState extends State<ExerciseTile> {
                         }
 
                         final item = sets.removeAt(oldIndex);
-
                         sets.insert(newIndex, item);
 
                         setState(() {
-                          widget.exercise.sets
+                          exercise.sets
                             ..clear()
                             ..addAll(sets);
                         });
                       },
-
                       children: [
-
                         for (int i = 0; i < exercise.sets.length; i++)
-
                           _buildSetRow(
                             exercise.sets[i],
                             i,
                             key: ValueKey(i),
                           ),
-
                       ],
                     ),
-
                     const SizedBox(height: 10),
-
                   ],
-
                 ],
               ),
             ),
@@ -266,63 +183,37 @@ class _ExerciseTileState extends State<ExerciseTile> {
   }
 
   Widget _buildSetRow(ExerciseSet set, int index, {required Key key}) {
-
     return Container(
-
       key: key,
-
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: 10,
-      ),
-
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
-
         children: [
-
-          const Icon(
-            Icons.drag_indicator,
-            color: Colors.white38,
-          ),
-
+          const Icon(Icons.drag_indicator, color: Colors.white38),
           const SizedBox(width: 10),
-
           Expanded(
             child: Center(
               child: Text(
                 "${index + 1}",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                ),
+                style: const TextStyle(color: Colors.white, fontSize: 16),
               ),
             ),
           ),
-
           Expanded(
             child: Center(
               child: Text(
                 "${set.weight} kg",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                ),
+                style: const TextStyle(color: Colors.white, fontSize: 16),
               ),
             ),
           ),
-
           Expanded(
             child: Center(
               child: Text(
                 "${set.reps}",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                ),
+                style: const TextStyle(color: Colors.white, fontSize: 16),
               ),
             ),
           ),
-
         ],
       ),
     );

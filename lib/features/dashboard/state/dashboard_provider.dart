@@ -1,12 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../models/training_folder.dart';
-import '../models/training_plan.dart';
-import '../models/exercise.dart';
+import 'package:ttg_app_mobile/features/dashboard/models/exercise.dart';
+import 'package:ttg_app_mobile/features/dashboard/models/training_folder.dart';
+import 'package:ttg_app_mobile/features/dashboard/models/training_plan.dart';
+import '../../../core/network/dio_provider.dart';
+import '../api/dashboard_api.dart';
 
 final dashboardProvider =
-StateNotifierProvider<DashboardNotifier, DashboardState>(
-        (ref) => DashboardNotifier());
+StateNotifierProvider<DashboardNotifier, DashboardState>((ref) {
+  final dio = ref.read(dioProvider);
+  return DashboardNotifier(DashboardApi(dio));
+});
 
 class DashboardState {
   final List<TrainingFolder> folders;
@@ -20,6 +23,15 @@ class DashboardState {
     required this.archivedPlans,
     required this.showArchive,
   });
+
+  factory DashboardState.initial() {
+    return DashboardState(
+      folders: [],
+      archivedFolders: [],
+      archivedPlans: [],
+      showArchive: false,
+    );
+  }
 
   DashboardState copyWith({
     List<TrainingFolder>? folders,
@@ -37,16 +49,20 @@ class DashboardState {
 }
 
 class DashboardNotifier extends StateNotifier<DashboardState> {
+  final DashboardApi api;
 
-  DashboardNotifier()
-      : super(
-    DashboardState(
-      folders: [],
-      archivedFolders: [],
-      archivedPlans: [],
-      showArchive: false,
-    ),
-  );
+  DashboardNotifier(this.api) : super(DashboardState.initial());
+
+  void reset() {
+    state = DashboardState.initial();
+  }
+
+  Future<void> loadFolders(String planId) async {
+    final data = await api.getFolders(planId);
+    final folders =
+    data.map<TrainingFolder>((e) => TrainingFolder.fromJson(e)).toList();
+    state = state.copyWith(folders: folders);
+  }
 
   void showPlans() {
     state = state.copyWith(showArchive: false);
@@ -56,16 +72,17 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     state = state.copyWith(showArchive: true);
   }
 
-  void addFolder(String name) {
-    final folder = TrainingFolder(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+  Future<void> addFolder(
+      String planId,
+      String name,
+      ) async {
+    await api.createFolder(
+      trainingPlanId: planId,
       name: name,
-      plans: [],
+      order: state.folders.length,
     );
 
-    state = state.copyWith(
-      folders: [...state.folders, folder],
-    );
+    await loadFolders(planId);
   }
 
   void renameFolder(String folderId, String newName) {
@@ -77,12 +94,9 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     );
   }
 
-  void deleteFolder(String folderId) {
-    state = state.copyWith(
-      folders: state.folders
-          .where((f) => f.id != folderId)
-          .toList(),
-    );
+  Future<void> deleteFolder(String planId, String folderId) async {
+    await api.deleteFolder(folderId);
+    await loadFolders(planId);
   }
 
   void archiveFolder(String folderId) {
@@ -100,10 +114,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
 
     state = state.copyWith(
       folders: updated,
-      archivedFolders: [
-        ...state.archivedFolders,
-        archived!,
-      ],
+      archivedFolders: [...state.archivedFolders, archived!],
     );
   }
 
@@ -117,17 +128,13 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     final item = list.removeAt(oldIndex);
     list.insert(newIndex, item);
 
-    state = state.copyWith(
-      folders: list,
-    );
+    state = state.copyWith(folders: list);
   }
 
   void addPlan(String folderId, String name) {
     state = state.copyWith(
       folders: state.folders.map((folder) {
-        if (folder.id != folderId) {
-          return folder;
-        }
+        if (folder.id != folderId) return folder;
 
         final updatedPlans = [
           ...folder.plans,
@@ -138,18 +145,12 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
           ),
         ];
 
-        return folder.copyWith(
-          plans: updatedPlans,
-        );
+        return folder.copyWith(plans: updatedPlans);
       }).toList(),
     );
   }
 
-  void renamePlan(
-      String folderId,
-      String planId,
-      String newName,
-      ) {
+  void renamePlan(String folderId, String planId, String newName) {
     state = state.copyWith(
       folders: state.folders.map((folder) {
         if (folder.id != folderId) return folder;
@@ -167,14 +168,10 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
   void deletePlan(String folderId, String planId) {
     state = state.copyWith(
       folders: state.folders.map((folder) {
-        if (folder.id != folderId) {
-          return folder;
-        }
+        if (folder.id != folderId) return folder;
 
         return folder.copyWith(
-          plans: folder.plans
-              .where((p) => p.id != planId)
-              .toList(),
+          plans: folder.plans.where((p) => p.id != planId).toList(),
         );
       }).toList(),
     );
@@ -184,9 +181,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     TrainingPlan? archived;
 
     final updatedFolders = state.folders.map((folder) {
-      if (folder.id != folderId) {
-        return folder;
-      }
+      if (folder.id != folderId) return folder;
 
       final plans = [...folder.plans];
       final index = plans.indexWhere((p) => p.id == planId);
@@ -195,23 +190,16 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
 
       final removed = plans.removeAt(index);
 
-      archived = removed.copyWith(
-        originFolderName: folder.name,
-      );
+      archived = removed.copyWith(originFolderName: folder.name);
 
-      return folder.copyWith(
-        plans: plans,
-      );
+      return folder.copyWith(plans: plans);
     }).toList();
 
     if (archived == null) return;
 
     state = state.copyWith(
       folders: updatedFolders,
-      archivedPlans: [
-        ...state.archivedPlans,
-        archived!,
-      ],
+      archivedPlans: [...state.archivedPlans, archived!],
     );
   }
 
@@ -273,11 +261,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     );
   }
 
-  void addExercise(
-      String folderId,
-      String planId,
-      Exercise exercise,
-      ) {
+  void addExercise(String folderId, String planId, Exercise exercise) {
     state = state.copyWith(
       folders: state.folders.map((folder) {
         if (folder.id != folderId) return folder;
@@ -295,11 +279,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     );
   }
 
-  void importExercise(
-      String folderId,
-      String planId,
-      Exercise exercise,
-      ) {
+  void importExercise(String folderId, String planId, Exercise exercise) {
     final updatedFolders = state.folders.map((folder) {
       if (folder.id != folderId) return folder;
 
@@ -317,6 +297,28 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     state = state.copyWith(folders: updatedFolders);
   }
 
+  void importMuscleGroup(
+      String folderId,
+      String planId,
+      List<Exercise> exercises,
+      ) {
+    final updatedFolders = state.folders.map((folder) {
+      if (folder.id != folderId) return folder;
+
+      return folder.copyWith(
+        plans: folder.plans.map((plan) {
+          if (plan.id != planId) return plan;
+
+          return plan.copyWith(
+            exercises: [...plan.exercises, ...exercises],
+          );
+        }).toList(),
+      );
+    }).toList();
+
+    state = state.copyWith(folders: updatedFolders);
+  }
+
   void importPlan(String folderId, TrainingPlan plan) {
     state = state.copyWith(
       folders: state.folders.map((folder) {
@@ -326,18 +328,16 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
           plans: [...folder.plans, plan],
         );
       }).toList(),
-      archivedPlans: state.archivedPlans
-          .where((p) => p.id != plan.id)
-          .toList(),
+      archivedPlans:
+      state.archivedPlans.where((p) => p.id != plan.id).toList(),
     );
   }
 
   void importFolder(TrainingFolder folder) {
     state = state.copyWith(
       folders: [...state.folders, folder],
-      archivedFolders: state.archivedFolders
-          .where((f) => f.id != folder.id)
-          .toList(),
+      archivedFolders:
+      state.archivedFolders.where((f) => f.id != folder.id).toList(),
     );
   }
 }

@@ -4,7 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../state/dashboard_provider.dart';
 
 class DashboardBottomBar extends ConsumerWidget {
-  const DashboardBottomBar({super.key});
+  final String planId;
+
+  const DashboardBottomBar({
+    super.key,
+    required this.planId,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -16,23 +21,18 @@ class DashboardBottomBar extends ConsumerWidget {
           sigmaX: 18,
           sigmaY: 18,
         ),
-
         child: Container(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
-
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.05),
-
             border: Border(
               top: BorderSide(
                 color: Colors.white.withOpacity(0.08),
               ),
             ),
           ),
-
           child: Row(
             children: [
-
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () => _createFolderDialog(context, notifier),
@@ -41,9 +41,7 @@ class DashboardBottomBar extends ConsumerWidget {
                   style: _style(),
                 ),
               ),
-
               const SizedBox(width: 12),
-
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () {},
@@ -52,7 +50,6 @@ class DashboardBottomBar extends ConsumerWidget {
                   style: _style(),
                 ),
               ),
-
             ],
           ),
         ),
@@ -81,38 +78,32 @@ class DashboardBottomBar extends ConsumerWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-
           title: const Text(
-            "Neuer Plan",
+            "Neuer Ordner",
             style: TextStyle(color: Colors.white),
           ),
-
           content: TextField(
             controller: controller,
             autofocus: true,
             style: const TextStyle(color: Colors.white),
-
             decoration: const InputDecoration(
-              hintText: "Ordnername eingeben",
+              hintText: "Name des Ordners eingeben",
               hintStyle: TextStyle(color: Colors.white38),
             ),
           ),
-
           actions: [
-
             TextButton(
               onPressed: () {
                 Navigator.of(dialogContext, rootNavigator: true).pop();
               },
               child: const Text("Abbrechen"),
             ),
-
             ElevatedButton(
               onPressed: () {
                 final name = controller.text.trim();
                 if (name.isEmpty) return;
 
-                notifier.addFolder(name);
+                notifier.addFolder(planId, name);
 
                 Navigator.of(dialogContext, rootNavigator: true).pop();
               },

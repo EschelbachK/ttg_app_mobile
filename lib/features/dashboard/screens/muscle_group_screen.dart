@@ -1,12 +1,14 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../core/ui/ttg_glow_border.dart';
-import '../models/training_plan.dart';
+import 'package:ttg_app_mobile/features/dashboard/models/training_plan.dart';
 import '../state/dashboard_provider.dart';
 import '../widgets/exercise/exercise_selection_card.dart';
 import '../widgets/exercise/exercise_tile.dart';
+import 'package:ttg_app_mobile/features/dashboard/models/training_folder.dart';
+import 'package:ttg_app_mobile/features/dashboard/models/training_plan.dart';
+import 'package:ttg_app_mobile/features/dashboard/models/exercise.dart';
 
 class MuscleGroupScreen extends ConsumerStatefulWidget {
   final String folderId;

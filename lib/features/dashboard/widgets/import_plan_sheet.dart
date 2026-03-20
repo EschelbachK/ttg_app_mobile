@@ -114,7 +114,7 @@ class ImportPlanSheet extends ConsumerWidget {
             color: Colors.transparent,
             child: Container(
               padding: const EdgeInsets.all(24),
-              constraints: const BoxConstraints(maxHeight: 400),
+              constraints: const BoxConstraints(maxHeight: 450),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
                 color: Colors.white.withOpacity(0.05),
@@ -171,48 +171,82 @@ class ImportPlanSheet extends ConsumerWidget {
                   Flexible(
                     child: ListView(
                       shrinkWrap: true,
-                      children: state.folders.map((folder) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.05),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.12),
+                      children: [
+                        ...state.folders.map((folder) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: BackdropFilter(
+                                filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.05),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: Colors.white.withOpacity(0.12),
+                                    ),
                                   ),
-                                ),
-                                child: ListTile(
-                                  leading: const Icon(
-                                    Icons.fitness_center,
-                                    size: 20,
-                                    color: AppTheme.primaryRed,
+                                  child: ListTile(
+                                    leading: const Icon(
+                                      Icons.fitness_center,
+                                      size: 20,
+                                      color: AppTheme.primaryRed,
+                                    ),
+                                    title: Text(
+                                      folder.name,
+                                      style: const TextStyle(color: Colors.white),
+                                    ),
+                                    trailing: const Icon(
+                                      Icons.arrow_forward_ios,
+                                      size: 14,
+                                      color: Colors.white38,
+                                    ),
+                                    onTap: () {
+                                      ref
+                                          .read(dashboardProvider.notifier)
+                                          .importPlan(folder.id, plan);
+                                      Navigator.pop(context);
+                                    },
                                   ),
-                                  title: Text(
-                                    folder.name,
-                                    style: const TextStyle(color: Colors.white),
-                                  ),
-                                  trailing: const Icon(
-                                    Icons.arrow_forward_ios,
-                                    size: 14,
-                                    color: Colors.white38,
-                                  ),
-                                  onTap: () {
-                                    ref
-                                        .read(dashboardProvider.notifier)
-                                        .importPlan(folder.id, plan);
-                                    Navigator.pop(context);
-                                  },
                                 ),
                               ),
                             ),
+                          );
+                        }),
+
+                        const SizedBox(height: 16),
+
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pop(context);
+                            ref.read(dashboardProvider.notifier).showPlans();
+                          },
+                          child: Container(
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryRed,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: const Center(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.add, color: Colors.white),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    "Plan erstellen",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                        );
-                      }).toList(),
+                        ),
+                      ],
                     ),
                   ),
                 ],

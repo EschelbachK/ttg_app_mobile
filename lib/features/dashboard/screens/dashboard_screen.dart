@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../state/dashboard_provider.dart';
+import '../state/active_plan_provider.dart';
 import '../widgets/dashboard/dashboard_toggle.dart';
 import '../widgets/dashboard/dashboard_top_bar.dart';
 import '../widgets/dashboard/dashboard_actions.dart';
@@ -10,8 +11,25 @@ import '../widgets/folder_card.dart';
 import '../widgets/archive/archived_plan_tile.dart';
 import '../widgets/archive/archived_folder_tile.dart';
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    Future.microtask(() {
+      final planId = ref.read(activePlanIdProvider);
+      if (planId != null) {
+        ref.read(dashboardProvider.notifier).loadFolders(planId);
+      }
+    });
+  }
 
   Widget _archiveSection(String title) {
     return Padding(
@@ -28,8 +46,9 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final state = ref.watch(dashboardProvider);
+    final planId = ref.watch(activePlanIdProvider);
 
     return Stack(
       children: [
@@ -53,7 +72,7 @@ class DashboardScreen extends ConsumerWidget {
               const DashboardToggle(),
               const SizedBox(height: 10),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: Row(
                   children: [
                     const Spacer(),
@@ -67,7 +86,7 @@ class DashboardScreen extends ConsumerWidget {
                       ),
                     ),
                     const Spacer(),
-                    if (!state.showArchive)
+                    if (!state.showArchive && planId != null)
                       IconButton(
                         icon: const Icon(
                           Icons.add,
@@ -75,7 +94,11 @@ class DashboardScreen extends ConsumerWidget {
                           size: 26,
                         ),
                         onPressed: () {
-                          DashboardActions.showCreateFolderDialog(context, ref);
+                          DashboardActions.showCreateFolderDialog(
+                            context,
+                            ref,
+                            planId,
+                          );
                         },
                       )
                     else
@@ -86,13 +109,14 @@ class DashboardScreen extends ConsumerWidget {
               const SizedBox(height: 10),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 6),
+                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 6),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 0, sigmaY: 0),
                       child: Container(
-                        padding: const EdgeInsets.all(18),
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: Colors.transparent,
                           borderRadius: BorderRadius.circular(20),
@@ -117,7 +141,9 @@ class DashboardScreen extends ConsumerWidget {
                           ],
                         )
                             : state.folders.isEmpty
-                            ? const DashboardActions()
+                            ? (planId != null
+                            ? DashboardActions(planId: planId)
+                            : const SizedBox())
                             : ListView.builder(
                           itemCount: state.folders.length,
                           itemBuilder: (context, index) {

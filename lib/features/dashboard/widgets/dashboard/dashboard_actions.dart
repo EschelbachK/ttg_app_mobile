@@ -5,10 +5,18 @@ import '../../../../core/theme/app_theme.dart';
 import '../../state/dashboard_provider.dart';
 
 class DashboardActions extends ConsumerWidget {
-  const DashboardActions({super.key});
+  final String planId;
+
+  const DashboardActions({
+    super.key,
+    required this.planId,
+  });
 
   static Future<void> showCreateFolderDialog(
-      BuildContext context, WidgetRef ref) async {
+      BuildContext context,
+      WidgetRef ref,
+      String planId,
+      ) async {
     final notifier = ref.read(dashboardProvider.notifier);
     final controller = TextEditingController();
 
@@ -26,9 +34,7 @@ class DashboardActions extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.35),
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.25),
-                  ),
+                  border: Border.all(color: Colors.white.withOpacity(0.25)),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -37,10 +43,7 @@ class DashboardActions extends ConsumerWidget {
                       alignment: Alignment.centerLeft,
                       child: Text(
                         "Neuer Trainingsplan",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                        ),
+                        style: TextStyle(color: Colors.white, fontSize: 20),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -53,14 +56,10 @@ class DashboardActions extends ConsumerWidget {
                         hintText: "Name eingeben",
                         hintStyle: TextStyle(color: Colors.white38),
                         enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(
-                            color: AppTheme.primaryRed,
-                          ),
+                          borderSide: BorderSide(color: AppTheme.primaryRed),
                         ),
                         focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(
-                            color: AppTheme.primaryRed,
-                          ),
+                          borderSide: BorderSide(color: AppTheme.primaryRed),
                         ),
                       ),
                     ),
@@ -69,9 +68,7 @@ class DashboardActions extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
+                          onPressed: () => Navigator.pop(context),
                           child: const Text(
                             "Abbrechen",
                             style: TextStyle(color: Colors.white70),
@@ -108,7 +105,7 @@ class DashboardActions extends ConsumerWidget {
     );
 
     if (result != null && result.trim().isNotEmpty) {
-      notifier.addFolder(result.trim());
+      await notifier.addFolder(planId, result.trim());
     }
   }
 
@@ -145,7 +142,11 @@ class DashboardActions extends ConsumerWidget {
               ),
             ),
             onPressed: () {
-              DashboardActions.showCreateFolderDialog(context, ref);
+              DashboardActions.showCreateFolderDialog(
+                context,
+                ref,
+                planId,
+              );
             },
           ),
         ),
