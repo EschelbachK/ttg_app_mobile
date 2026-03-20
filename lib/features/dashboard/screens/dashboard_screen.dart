@@ -140,9 +140,27 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             ],
                           ],
                         )
+                            : state.isLoading
+                            ? const Center(
+                          child: CircularProgressIndicator(),
+                        )
+                            : state.error != null
+                            ? Center(
+                          child: Text(
+                            state.error!,
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        )
                             : state.folders.isEmpty
                             ? (planId != null
-                            ? DashboardActions(planId: planId)
+                            ? const Center(
+                          child: Text(
+                            'Keine Ordner vorhanden',
+                            style: TextStyle(
+                              color: Colors.white70,
+                            ),
+                          ),
+                        )
                             : const SizedBox())
                             : ListView.builder(
                           itemCount: state.folders.length,
