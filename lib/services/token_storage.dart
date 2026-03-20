@@ -6,20 +6,17 @@ final tokenStorageProvider = Provider<TokenStorage>(
 );
 
 class TokenStorage {
-  final FlutterSecureStorage _storage =
-  const FlutterSecureStorage();
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   static const _accessTokenKey = 'access_token';
   static const _refreshTokenKey = 'refresh_token';
 
-  Future<void> saveTokens(
-      String accessToken,
-      String refreshToken,
-      ) async {
-    await _storage.write(
-        key: _accessTokenKey, value: accessToken);
-    await _storage.write(
-        key: _refreshTokenKey, value: refreshToken);
+  Future<void> saveAccessToken(String token) async {
+    await _storage.write(key: _accessTokenKey, value: token);
+  }
+
+  Future<void> saveRefreshToken(String token) async {
+    await _storage.write(key: _refreshTokenKey, value: token);
   }
 
   Future<String?> getAccessToken() async {
@@ -30,7 +27,7 @@ class TokenStorage {
     return _storage.read(key: _refreshTokenKey);
   }
 
-  Future<void> clearTokens() async {
+  Future<void> clear() async {
     await _storage.delete(key: _accessTokenKey);
     await _storage.delete(key: _refreshTokenKey);
   }
