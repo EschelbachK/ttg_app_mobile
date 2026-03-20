@@ -1,4 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../features/dashboard/state/active_plan_provider.dart';
+import '../../services/token_storage.dart';
+import '../network/dio_provider.dart';
 
 class AuthState {
   final bool isLoggedIn;
@@ -25,35 +28,59 @@ class AuthState {
 }
 
 class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier() : super(const AuthState(isLoggedIn: false));
+  final Ref ref;
 
-  void login({
+  AuthNotifier(this.ref) : super(const AuthState(isLoggedIn: false));
+
+  Future<void> login({
     required String accessToken,
     required String refreshToken,
-  }) {
+  }) async {
+    final storage = ref.read(tokenStorageProvider);
+
+    await storage.saveAccessToken(accessToken);
+    await storage.saveRefreshToken(refreshToken);
+
     state = AuthState(
       isLoggedIn: true,
       accessToken: accessToken,
       refreshToken: refreshToken,
     );
+
+    ref.read(activePlanIdProvider.notifier).state = 'default-plan-id';
   }
 
-  void logout() {
+  Future<void> logout() async {
+    final storage = ref.read(tokenStorageProvider);
+    await storage.clear();
+
     state = const AuthState(isLoggedIn: false);
   }
 
   Future<void> refreshToken() async {
-    final token = state.refreshToken;
-    if (token == null) return;
+    final storage = ref.read(tokenStorageProvider);
+    final refreshToken = await storage.getRefreshToken();
+    if (refreshToken == null) return;
 
-    await Future.delayed(const Duration(milliseconds: 300));
+    final dio = ref.read(dioProvider);
+
+    final response = await dio.post(
+      '/auth/refresh',
+      data: {'refreshToken': refreshToken},
+    );
+
+    final newAccessToken = response.data['data']['accessToken'];
+
+    await storage.saveAccessToken(newAccessToken);
 
     state = state.copyWith(
-      accessToken: 'refreshed_access_token',
+      accessToken: newAccessToken,
       isLoggedIn: true,
     );
   }
 }
 
 final authProvider =
-StateNotifierProvider<AuthNotifier, AuthState>((ref) => AuthNotifier());
+StateNotifierProvider<AuthNotifier, AuthState>(
+      (ref) => AuthNotifier(ref),
+);
