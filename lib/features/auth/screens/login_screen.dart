@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/auth/auth_provider.dart';
 import '../../../core/auth/auth_service.dart';
 import '../../../core/network/dio_provider.dart';
+import '../../../core/error/global_error_handler.dart';
 
 const kPrimaryRed = Color(0xFFE10600);
 const kTextColor = Colors.white;
@@ -20,6 +21,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -63,21 +66,41 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   SizedBox(height: s(36)),
 
                   _LoginButton(
-                    onTap: () async {
-                      final dio = ref.read(dioProvider);
-                      final authService = AuthService(dio);
+                    onTap: isLoading
+                        ? null
+                        : () async {
+                      setState(() => isLoading = true);
 
-                      final response = await authService.login(
-                        emailController.text,
-                        passwordController.text,
-                      );
+                      try {
+                        final dio = ref.read(dioProvider);
+                        final authService = AuthService(dio);
 
-                      await ref.read(authProvider.notifier).login(
-                        accessToken: response.accessToken,
-                        refreshToken: response.refreshToken,
-                      );
+                        final response = await authService.login(
+                          emailController.text,
+                          passwordController.text,
+                        );
 
-                      context.go('/dashboard');
+                        await ref.read(authProvider.notifier).login(
+                          accessToken: response.accessToken,
+                          refreshToken: response.refreshToken,
+                        );
+
+                        if (context.mounted) {
+                          context.go('/dashboard');
+                        }
+                      } catch (e) {
+                        final error = GlobalErrorHandler.handle(e);
+
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(error.message)),
+                          );
+                        }
+                      } finally {
+                        if (mounted) {
+                          setState(() => isLoading = false);
+                        }
+                      }
                     },
                   ),
 
@@ -114,6 +137,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ),
           ),
+
+          if (isLoading)
+            const Center(
+              child: CircularProgressIndicator(),
+            ),
         ],
       ),
     );
@@ -195,69 +223,73 @@ class _GlowInputState extends State<_GlowInput> {
 }
 
 class _LoginButton extends StatelessWidget {
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+
   const _LoginButton({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        height: s(56),
-        alignment: Alignment.center,
-        child: Stack(
+      child: Opacity(
+        opacity: onTap == null ? 0.6 : 1,
+        child: Container(
+          width: double.infinity,
+          height: s(56),
           alignment: Alignment.center,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(s(40)),
-                boxShadow: [
-                  BoxShadow(
-                    color: kPrimaryRed.withOpacity(0.5),
-                    blurRadius: s(25),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(s(40)),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF5A0000), Color(0xFF2A0000)],
-                ),
-                border: Border.all(color: kPrimaryRed, width: s(1.6)),
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.all(s(2)),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(s(38)),
-                gradient: LinearGradient(
-                  colors: [
-                    kPrimaryRed.withOpacity(0.6),
-                    kPrimaryRed,
-                    kPrimaryRed.withOpacity(0.6),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(s(40)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: kPrimaryRed.withOpacity(0.5),
+                      blurRadius: s(25),
+                    ),
                   ],
                 ),
               ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.login, color: Colors.white, size: s(20)),
-                SizedBox(width: s(10)),
-                Text(
-                  'einloggen',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: s(16),
-                    fontWeight: FontWeight.w600,
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(s(40)),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF5A0000), Color(0xFF2A0000)],
+                  ),
+                  border: Border.all(color: kPrimaryRed, width: s(1.6)),
+                ),
+              ),
+              Container(
+                margin: EdgeInsets.all(s(2)),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(s(38)),
+                  gradient: LinearGradient(
+                    colors: [
+                      kPrimaryRed.withOpacity(0.6),
+                      kPrimaryRed,
+                      kPrimaryRed.withOpacity(0.6),
+                    ],
                   ),
                 ),
-              ],
-            ),
-          ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.login, color: Colors.white, size: s(20)),
+                  SizedBox(width: s(10)),
+                  Text(
+                    'einloggen',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: s(16),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
