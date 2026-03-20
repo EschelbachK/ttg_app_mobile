@@ -4,6 +4,7 @@ import '../../../services/token_storage.dart';
 import '../auth/auth_provider.dart';
 import '../error/api_exceptions.dart';
 import '../error/dio_error_mapper.dart';
+import 'dio_provider.dart';
 
 class AuthInterceptor extends Interceptor {
   final Ref ref;
@@ -11,10 +12,7 @@ class AuthInterceptor extends Interceptor {
   AuthInterceptor(this.ref);
 
   @override
-  void onRequest(
-      RequestOptions options,
-      RequestInterceptorHandler handler,
-      ) async {
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     if (options.path.contains('/auth/login') ||
         options.path.contains('/auth/register') ||
         options.path.contains('/auth/refresh')) {
@@ -33,10 +31,7 @@ class AuthInterceptor extends Interceptor {
   }
 
   @override
-  void onError(
-      DioException err,
-      ErrorInterceptorHandler handler,
-      ) async {
+  void onError(DioException err, ErrorInterceptorHandler handler) async {
     final path = err.requestOptions.path;
 
     if (path.contains('/auth/login') ||
@@ -61,7 +56,9 @@ class AuthInterceptor extends Interceptor {
         final requestOptions = err.requestOptions;
         requestOptions.headers['Authorization'] = 'Bearer $newToken';
 
-        final response = await Dio().fetch(requestOptions);
+        final dio = ref.read(dioProvider);
+        final response = await dio.fetch(requestOptions);
+
         handler.resolve(response);
         return;
       } catch (_) {
