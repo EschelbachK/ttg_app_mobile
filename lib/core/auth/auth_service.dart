@@ -1,16 +1,22 @@
 import 'package:dio/dio.dart';
-
 import '../../features/auth/models/auth_response.dart';
-import '../network/dio_provider.dart';
 
 class AuthService {
-  final Dio _dio = Dio(
-    BaseOptions(
-      baseUrl: 'http://localhost:8080/api',
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
-    ),
-  );
+  final Dio _dio;
+
+  AuthService(this._dio);
+
+  Future<AuthResponse> login(String email, String password) async {
+    final response = await _dio.post(
+      '/auth/login',
+      data: {
+        'email': email,
+        'password': password,
+      },
+    );
+
+    return AuthResponse.fromJson(response.data['data']);
+  }
 
   Future<AuthResponse> refresh(String refreshToken) async {
     final response = await _dio.post(
@@ -20,6 +26,6 @@ class AuthService {
       },
     );
 
-    return AuthResponse.fromJson(response.data);
+    return AuthResponse.fromJson(response.data['data']);
   }
 }
