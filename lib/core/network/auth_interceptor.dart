@@ -15,12 +15,18 @@ class AuthInterceptor extends Interceptor {
       RequestOptions options,
       RequestInterceptorHandler handler,
       ) async {
-    final tokenStorage = ref.read(tokenStorageProvider);
-    final accessToken = await tokenStorage.getAccessToken();
+    if (options.path.contains('/auth/login') ||
+        options.path.contains('/auth/register') ||
+        options.path.contains('/auth/refresh')) {
+      handler.next(options);
+      return;
+    }
 
-    if (accessToken != null) {
-      options.headers['Authorization'] =
-      'Bearer $accessToken';
+    final storage = ref.read(tokenStorageProvider);
+    final token = await storage.getAccessToken();
+
+    if (token != null && token.isNotEmpty) {
+      options.headers['Authorization'] = 'Bearer $token';
     }
 
     handler.next(options);
@@ -31,34 +37,41 @@ class AuthInterceptor extends Interceptor {
       DioException err,
       ErrorInterceptorHandler handler,
       ) async {
+    final path = err.requestOptions.path;
+
+    if (path.contains('/auth/login') ||
+        path.contains('/auth/register') ||
+        path.contains('/auth/refresh')) {
+      handler.next(err);
+      return;
+    }
+
     if (err.response?.statusCode == 401) {
       try {
-        final authNotifier =
-        ref.read(authProvider.notifier);
-
+        final authNotifier = ref.read(authProvider.notifier);
         await authNotifier.refreshToken();
 
-        final tokenStorage =
-        ref.read(tokenStorageProvider);
-        final newToken =
-        await tokenStorage.getAccessToken();
+        final storage = ref.read(tokenStorageProvider);
+        final newToken = await storage.getAccessToken();
+
+        if (newToken == null || newToken.isEmpty) {
+          throw UnauthorizedException();
+        }
 
         final requestOptions = err.requestOptions;
+        requestOptions.headers['Authorization'] = 'Bearer $newToken';
 
-        requestOptions.headers['Authorization'] =
-        'Bearer $newToken';
-
-        final cloneReq =
-        await Dio().fetch(requestOptions);
-
-        return handler.resolve(cloneReq);
+        final response = await Dio().fetch(requestOptions);
+        handler.resolve(response);
+        return;
       } catch (_) {
-        return handler.reject(
+        handler.reject(
           DioException(
             requestOptions: err.requestOptions,
             error: UnauthorizedException(),
           ),
         );
+        return;
       }
     }
 
@@ -70,4 +83,5 @@ class AuthInterceptor extends Interceptor {
         error: mappedError,
       ),
     );
-  }}
+  }
+}
