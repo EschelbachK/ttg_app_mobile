@@ -214,4 +214,126 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       }).toList(),
     );
   }
+
+  void importExercise(String folderId, String planId, Exercise exercise) {
+    final updatedFolders = state.folders.map((folder) {
+      if (folder.id != folderId) return folder;
+
+      return folder.copyWith(
+        plans: folder.plans.map((plan) {
+          if (plan.id != planId) return plan;
+          return plan.copyWith(
+            exercises: [...plan.exercises, exercise],
+          );
+        }).toList(),
+      );
+    }).toList();
+
+    state = state.copyWith(folders: updatedFolders);
+  }
+
+  void importFolder(TrainingFolder folder) {
+    state = state.copyWith(
+      folders: [...state.folders, folder],
+      archivedFolders:
+      state.archivedFolders.where((f) => f.id != folder.id).toList(),
+    );
+  }
+
+  void importPlan(String folderId, TrainingPlan plan) {
+    state = state.copyWith(
+      folders: state.folders.map((folder) {
+        if (folder.id != folderId) return folder;
+
+        return folder.copyWith(
+          plans: [...folder.plans, plan],
+        );
+      }).toList(),
+      archivedPlans:
+      state.archivedPlans.where((p) => p.id != plan.id).toList(),
+    );
+  }
+
+  void archivePlan(String folderId, String planId) {
+    TrainingPlan? archived;
+
+    final updatedFolders = state.folders.map((folder) {
+      if (folder.id != folderId) return folder;
+
+      final plans = [...folder.plans];
+      final index = plans.indexWhere((p) => p.id == planId);
+
+      if (index == -1) return folder;
+
+      final removed = plans.removeAt(index);
+      archived = removed.copyWith(originFolderName: folder.name);
+
+      return folder.copyWith(plans: plans);
+    }).toList();
+
+    if (archived == null) return;
+
+    state = state.copyWith(
+      folders: updatedFolders,
+      archivedPlans: [...state.archivedPlans, archived!],
+    );
+  }
+
+  void duplicatePlan(String folderId, String planId) {
+    state = state.copyWith(
+      folders: state.folders.map((folder) {
+        if (folder.id != folderId) return folder;
+
+        final plans = [...folder.plans];
+        final index = plans.indexWhere((p) => p.id == planId);
+        if (index == -1) return folder;
+
+        final original = plans[index];
+
+        final duplicate = TrainingPlan(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          name: original.name,
+          exercises: [...original.exercises],
+        );
+
+        plans.insert(index + 1, duplicate);
+
+        return folder.copyWith(plans: plans);
+      }).toList(),
+    );
+  }
+
+  void movePlanUp(String folderId, String planId) {
+    state = state.copyWith(
+      folders: state.folders.map((folder) {
+        if (folder.id != folderId) return folder;
+
+        final plans = [...folder.plans];
+        final index = plans.indexWhere((p) => p.id == planId);
+        if (index <= 0) return folder;
+
+        final item = plans.removeAt(index);
+        plans.insert(index - 1, item);
+
+        return folder.copyWith(plans: plans);
+      }).toList(),
+    );
+  }
+
+  void movePlanDown(String folderId, String planId) {
+    state = state.copyWith(
+      folders: state.folders.map((folder) {
+        if (folder.id != folderId) return folder;
+
+        final plans = [...folder.plans];
+        final index = plans.indexWhere((p) => p.id == planId);
+        if (index == -1 || index == plans.length - 1) return folder;
+
+        final item = plans.removeAt(index);
+        plans.insert(index + 1, item);
+
+        return folder.copyWith(plans: plans);
+      }).toList(),
+    );
+  }
 }
