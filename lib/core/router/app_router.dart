@@ -1,37 +1,68 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../features/auth/screens/loading_screen.dart';
+import '../../features/dashboard/screens/dashboard_screen.dart';
 import '../auth/auth_provider.dart';
-import '../../screens/login_screen.dart';
-import '../../screens/home_screen.dart';
+import '../navigation/main_navigation.dart';
+import '../../features/auth/screens/login_screen.dart' as screens;
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
-
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: '/loading',
+    refreshListenable: _RouterRefresh(ref),
+    routes: [
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => const screens.LoginScreen(),
+      ),
+      GoRoute(
+        path: '/loading',
+        builder: (context, state) => const LoadingScreen(),
+      ),
+      ShellRoute(
+        builder: (context, state, child) {
+          return MainNavigation(child: child);
+        },
+        routes: [
+          GoRoute(
+            path: '/dashboard',
+            builder: (context, state) => const DashboardScreen(),
+          ),
+          GoRoute(
+            path: '/workout',
+            builder: (context, state) => const DashboardScreen(),
+          ),
+        ],
+      ),
+    ],
     redirect: (context, state) {
-      final isLoggedIn = authState.isLoggedIn;
-      final isGoingToLogin = state.matchedLocation == '/login';
+      final auth = ref.read(authProvider);
+      final loggedIn = auth.isLoggedIn;
 
-      if (!isLoggedIn && !isGoingToLogin) {
+      final location = state.uri.toString();
+      final loggingIn = location == '/login';
+      final loading = location == '/loading';
+
+      if (!loggedIn && !loggingIn) {
         return '/login';
       }
 
-      if (isLoggedIn && isGoingToLogin) {
-        return '/home';
+      if (loggedIn && (loggingIn || loading)) {
+        return '/dashboard';
       }
 
       return null;
     },
-    routes: [
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
-      GoRoute(
-        path: '/home',
-        builder: (context, state) => const HomeScreen(),
-      ),
-    ],
   );
 });
+
+class _RouterRefresh extends ChangeNotifier {
+  _RouterRefresh(this.ref) {
+    ref.listen(authProvider, (_, __) {
+      notifyListeners();
+    });
+  }
+
+  final Ref ref;
+}

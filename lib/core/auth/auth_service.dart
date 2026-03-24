@@ -1,14 +1,31 @@
-import '../../services/token_storage.dart';
+import 'package:dio/dio.dart';
+import '../../features/auth/models/auth_response.dart';
 
 class AuthService {
-  final TokenStorage _tokenStorage = TokenStorage();
+  final Dio _dio;
 
-  Future<void> logout() async {
-    await _tokenStorage.clearTokens();
+  AuthService(this._dio);
+
+  Future<AuthResponse> login(String email, String password) async {
+    final response = await _dio.post(
+      '/auth/login',
+      data: {
+        'email': email,
+        'password': password,
+      },
+    );
+
+    return AuthResponse.fromJson(response.data['data']);
   }
 
-  Future<bool> isLoggedIn() async {
-    final token = await _tokenStorage.getAccessToken();
-    return token != null;
+  Future<AuthResponse> refresh(String refreshToken) async {
+    final response = await _dio.post(
+      '/auth/refresh',
+      data: {
+        'refreshToken': refreshToken,
+      },
+    );
+
+    return AuthResponse.fromJson(response.data['data']);
   }
 }
