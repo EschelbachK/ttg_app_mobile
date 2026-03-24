@@ -41,14 +41,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final loggedIn = auth.isLoggedIn;
 
       final location = state.uri.toString();
-      final loggingIn = location == '/login';
-      final loading = location == '/loading';
+      final isLogin = location == '/login';
+      final isLoading = location == '/loading';
 
-      if (!loggedIn && !loggingIn) {
+      if (isLoading) {
+        return loggedIn ? '/dashboard' : '/login';
+      }
+
+      if (!loggedIn && !isLogin) {
         return '/login';
       }
 
-      if (loggedIn && (loggingIn || loading)) {
+      if (loggedIn && isLogin) {
         return '/dashboard';
       }
 
