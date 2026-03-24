@@ -30,7 +30,23 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   final Ref ref;
 
-  AuthNotifier(this.ref) : super(const AuthState(isLoggedIn: false));
+  AuthNotifier(this.ref) : super(const AuthState(isLoggedIn: false)) {
+    _init();
+  }
+
+  Future<void> _init() async {
+    final storage = ref.read(tokenStorageProvider);
+    final accessToken = await storage.getAccessToken();
+    final refreshToken = await storage.getRefreshToken();
+
+    if (accessToken != null && refreshToken != null) {
+      state = AuthState(
+        isLoggedIn: true,
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+      );
+    }
+  }
 
   Future<void> login({
     required String accessToken,
