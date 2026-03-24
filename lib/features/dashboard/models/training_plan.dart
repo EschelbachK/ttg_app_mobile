@@ -36,8 +36,8 @@ class TrainingPlan {
         .toList();
 
     return TrainingPlan(
-      id: json['id'],
-      name: json['title'] ?? json['name'],
+      id: json['id'].toString(),
+      name: (json['title'] ?? json['name'] ?? '').toString(),
       exercises: exercises,
       originFolderName: null,
     );
