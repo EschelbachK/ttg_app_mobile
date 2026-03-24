@@ -15,28 +15,23 @@ class MainNavigation extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final location = GoRouterState.of(context).matchedLocation;
+    final location = GoRouter.of(context).location;
     final index = _indexFromLocation(location);
 
     return Scaffold(
       body: child,
       backgroundColor: Colors.black,
-
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-
         child: ClipRRect(
           borderRadius: BorderRadius.circular(22),
-
           child: BackdropFilter(
             filter: ImageFilter.blur(
               sigmaX: 20,
               sigmaY: 20,
             ),
-
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 2),
-
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.06),
                 borderRadius: BorderRadius.circular(22),
@@ -51,25 +46,24 @@ class MainNavigation extends ConsumerWidget {
                   ),
                 ],
               ),
-
               child: BottomNavigationBar(
                 currentIndex: index,
                 elevation: 0,
                 backgroundColor: Colors.transparent,
                 type: BottomNavigationBarType.fixed,
-
                 iconSize: 20,
                 selectedFontSize: 11,
                 unselectedFontSize: 11,
-
                 selectedItemColor: const Color(0xFFFF3B30),
                 unselectedItemColor: Colors.grey,
-
                 onTap: (i) {
-                  if (i == 0) context.go('/dashboard');
-                  if (i == 1) context.go('/workout');
+                  if (i == 0 && location != '/dashboard') {
+                    context.go('/dashboard');
+                  }
+                  if (i == 1 && location != '/workout') {
+                    context.go('/workout');
+                  }
                 },
-
                 items: const [
                   BottomNavigationBarItem(
                     icon: Icon(Icons.grid_view),
