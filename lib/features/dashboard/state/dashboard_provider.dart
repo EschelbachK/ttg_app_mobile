@@ -77,7 +77,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final data = await api.getFolders(planId);
+      final data = await api.getFolders(planId) ?? [];
       final folders =
       data.map<TrainingFolder>((e) => TrainingFolder.fromJson(e)).toList();
 
