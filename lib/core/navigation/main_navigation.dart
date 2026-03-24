@@ -15,7 +15,7 @@ class MainNavigation extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final location = GoRouter.of(context).location;
+    final location = GoRouterState.of(context).uri.toString();
     final index = _indexFromLocation(location);
 
     return Scaffold(
@@ -57,10 +57,10 @@ class MainNavigation extends ConsumerWidget {
                 selectedItemColor: const Color(0xFFFF3B30),
                 unselectedItemColor: Colors.grey,
                 onTap: (i) {
-                  if (i == 0 && location != '/dashboard') {
+                  if (i == 0 && !location.startsWith('/dashboard')) {
                     context.go('/dashboard');
                   }
-                  if (i == 1 && location != '/workout') {
+                  if (i == 1 && !location.startsWith('/workout')) {
                     context.go('/workout');
                   }
                 },
