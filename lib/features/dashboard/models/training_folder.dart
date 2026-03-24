@@ -17,14 +17,18 @@ class TrainingFolder {
     final exercises = (json['exercises'] as List?) ?? [];
 
     return TrainingFolder(
-      id: json['id'],
-      name: json['name'] ?? json['title'] ?? '',
-      bodyRegion: json['bodyRegion'] ?? '',
+      id: json['id'].toString(),
+      name: (json['name'] ?? json['title'] ?? '').toString(),
+      bodyRegion: (json['bodyRegion'] ?? '').toString(),
       plans: exercises
           .map((e) => TrainingPlan.fromJson({
         'id': json['id'],
         'name': json['name'] ?? json['title'],
-        'exercises': [e],
+        'folders': [
+          {
+            'exercises': [e]
+          }
+        ],
       }))
           .toList(),
     );
