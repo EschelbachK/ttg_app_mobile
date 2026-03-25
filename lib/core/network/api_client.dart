@@ -52,22 +52,18 @@ class ApiClient {
         );
       }
 
-      // 🔥 Handle 401 → try refresh
       if (response.statusCode == 401) {
         final refreshed = await _refreshToken();
 
         if (refreshed) {
-          // Retry original request
           return _sendRequest(method, endpoint, body: body);
         } else {
-          // Refresh failed → logout globally
           await _tokenStorage.clearTokens();
           ref.read(authProvider.notifier).logout();
           throw const UnauthorizedException("Session expired.");
         }
       }
 
-      // 🔥 Structured Error Handling
       if (response.statusCode >= 500) {
         throw const ServerException("Server error occurred.");
       }

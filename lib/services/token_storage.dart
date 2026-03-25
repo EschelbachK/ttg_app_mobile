@@ -19,6 +19,11 @@ class TokenStorage {
     await _storage.write(key: _refreshTokenKey, value: token);
   }
 
+  Future<void> saveTokens(String accessToken, String refreshToken) async {
+    await saveAccessToken(accessToken);
+    await saveRefreshToken(refreshToken);
+  }
+
   Future<String?> getAccessToken() async {
     return _storage.read(key: _accessTokenKey);
   }
@@ -30,5 +35,9 @@ class TokenStorage {
   Future<void> clear() async {
     await _storage.delete(key: _accessTokenKey);
     await _storage.delete(key: _refreshTokenKey);
+  }
+
+  Future<void> clearTokens() async {
+    await clear();
   }
 }

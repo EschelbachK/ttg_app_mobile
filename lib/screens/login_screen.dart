@@ -41,8 +41,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         result.refreshToken,
       );
 
-      // 🔥 State-driven Login (kein Navigator)
-      ref.read(authProvider.notifier).login();
+      ref.read(authProvider.notifier).login(
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+      );
 
     } on UnauthorizedException {
       setState(() {
@@ -85,16 +87,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-
             TextField(
               controller: _emailController,
               decoration: const InputDecoration(
                 labelText: "Email",
               ),
             ),
-
             const SizedBox(height: 16),
-
             TextField(
               controller: _passwordController,
               obscureText: true,
@@ -102,9 +101,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 labelText: "Password",
               ),
             ),
-
             const SizedBox(height: 24),
-
             if (_errorMessage != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
@@ -113,7 +110,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   style: const TextStyle(color: Colors.red),
                 ),
               ),
-
             _isLoading
                 ? const CircularProgressIndicator()
                 : ElevatedButton(

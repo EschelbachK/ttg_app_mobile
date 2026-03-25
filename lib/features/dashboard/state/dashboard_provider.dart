@@ -77,7 +77,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final data = await api.getFolders(planId) ?? [];
+      final data = await api.getFolders(planId);
       final folders =
       data.map<TrainingFolder>((e) => TrainingFolder.fromJson(e)).toList();
 
@@ -109,6 +109,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       state = state.copyWith(error: error.message);
     }
   }
+
   Future<void> createTrainingPlan(String name) async {
     try {
       state = state.copyWith(isLoading: true, error: null);
@@ -132,6 +133,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
             name: name,
             bodyRegion: '',
             plans: [],
+            exercises: [],
           )
         ]);
       }
@@ -203,6 +205,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
             id: DateTime.now().millisecondsSinceEpoch.toString(),
             name: name,
             exercises: [],
+            folders: [],
           ),
         ];
 
@@ -332,6 +335,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
           id: DateTime.now().millisecondsSinceEpoch.toString(),
           name: original.name,
           exercises: [...original.exercises],
+          folders: [],
         );
 
         plans.insert(index + 1, duplicate);
