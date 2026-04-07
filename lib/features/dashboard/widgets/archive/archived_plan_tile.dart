@@ -1,25 +1,169 @@
+// 🔥 FINAL:
+// - TTG Glow Confirm Dialog
+// - moderner Gradient + Glow
+// - bessere Button Styles
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../models/training_plan.dart';
 import '../../state/dashboard_provider.dart';
-import '../../screens/muscle_group_screen.dart';
 import '../import_plan_sheet.dart';
 
 class ArchivedPlanTile extends ConsumerStatefulWidget {
   final TrainingPlan plan;
 
-  const ArchivedPlanTile({
-    super.key,
-    required this.plan,
-  });
+  const ArchivedPlanTile({super.key, required this.plan});
 
   @override
-  ConsumerState<ArchivedPlanTile> createState() => _ArchivedPlanTileState();
+  ConsumerState<ArchivedPlanTile> createState() =>
+      _ArchivedPlanTileState();
 }
 
-class _ArchivedPlanTileState extends ConsumerState<ArchivedPlanTile> {
+class _ArchivedPlanTileState
+    extends ConsumerState<ArchivedPlanTile> {
   bool expanded = false;
+  bool isRemoving = false;
+
+  void _showDeleteDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.6),
+      builder: (dialogContext) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+
+                /// 🔥 GRADIENT (TTG STYLE)
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.black.withOpacity(0.85),
+                    const Color(0xFF1A0000).withOpacity(0.85),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+
+                /// 🔥 BORDER
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.12),
+                ),
+
+                /// 🔥 GLOW UNTEN
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFF3B30).withOpacity(0.25),
+                    blurRadius: 30,
+                    spreadRadius: -10,
+                    offset: const Offset(0, 15),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "Plan löschen?",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  Text(
+                    'Möchtest du "${widget.plan.name}" endgültig löschen?',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.7),
+                      fontSize: 13,
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  Row(
+                    children: [
+                      /// 🔥 CANCEL
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () =>
+                              Navigator.pop(dialogContext),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 14),
+                            alignment: Alignment.center,
+                            child: Text(
+                              "Abbrechen",
+                              style: TextStyle(
+                                color:
+                                Colors.white.withOpacity(0.6),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 10),
+
+                      /// 🔥 DELETE BUTTON (PILL)
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () async {
+                            Navigator.pop(dialogContext);
+
+                            setState(() => isRemoving = true);
+
+                            await Future.delayed(
+                                const Duration(milliseconds: 200));
+
+                            await ref
+                                .read(
+                                dashboardProvider.notifier)
+                                .deletePlan(widget.plan.id);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 14),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFF3B30),
+                              borderRadius:
+                              BorderRadius.circular(30),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFFF3B30)
+                                      .withOpacity(0.4),
+                                  blurRadius: 12,
+                                ),
+                              ],
+                            ),
+                            child: const Text(
+                              "Löschen",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,27 +174,91 @@ class _ArchivedPlanTileState extends ConsumerState<ArchivedPlanTile> {
         .where((f) => f.trainingPlanId == plan.id)
         .toList();
 
-    return Container(
-      key: ValueKey(plan.id),
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 300),
+      opacity: isRemoving ? 0 : 1,
+      child: AnimatedScale(
+        duration: const Duration(milliseconds: 300),
+        scale: isRemoving ? 0.95 : 1,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(.05),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Column(
             children: [
-              Expanded(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () {
-                    setState(() {
-                      expanded = !expanded;
-                    });
-                  },
+              /// 🔥 HEADER
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () =>
+                          setState(() => expanded = !expanded),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.folder,
+                              color: Color(0xFFFF3B30), size: 18),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(plan.name,
+                                style: const TextStyle(
+                                    color: Colors.white)),
+                          ),
+                          Icon(
+                            expanded
+                                ? Icons.keyboard_arrow_up
+                                : Icons.keyboard_arrow_down,
+                            color: Colors.white54,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      /// RESTORE
+                      IconButton(
+                        icon: const Icon(Icons.file_download,
+                            color: Color(0xFFFF3B30)),
+                        onPressed: () async {
+                          setState(() => isRemoving = true);
+
+                          await Future.delayed(
+                              const Duration(milliseconds: 250));
+
+                          await ref
+                              .read(
+                              dashboardProvider.notifier)
+                              .restorePlan(plan.id);
+                        },
+                      ),
+
+                      /// DELETE
+                      IconButton(
+                        icon: const Icon(Icons.close,
+                            color: Colors.redAccent),
+                        onPressed: () =>
+                            _showDeleteDialog(context),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+
+              if (expanded) ...[
+                const SizedBox(height: 10),
+
+                ...folders.map((f) => Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   child: Row(
                     children: [
                       const Icon(
@@ -61,89 +269,62 @@ class _ArchivedPlanTileState extends ConsumerState<ArchivedPlanTile> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
-                          plan.name,
+                          f.name,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 16,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 6),
-                      Icon(
-                        expanded
-                            ? Icons.keyboard_arrow_up
-                            : Icons.keyboard_arrow_down,
-                        color: Colors.white54,
+                      IconButton(
+                        icon: const Icon(Icons.file_download,
+                            color: Color(0xFFFF3B30)),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            barrierColor:
+                            Colors.transparent,
+                            builder: (_) =>
+                                ImportPlanSheet(
+                                  plan: TrainingPlan(
+                                    id: f.trainingPlanId,
+                                    name: f.name,
+                                    exercises: f.exercises,
+                                  ),
+                                  folderId: f.id,
+                                ),
+                          );
+                        },
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            barrierColor:
+                            Colors.transparent,
+                            builder: (_) =>
+                                ImportPlanSheet(
+                                  plan: TrainingPlan(
+                                    id: f.trainingPlanId,
+                                    name: f.name,
+                                    exercises: f.exercises,
+                                  ),
+                                  folderId: f.id,
+                                ),
+                          );
+                        },
+                        child: const Icon(
+                          Icons.arrow_forward_ios,
+                          color: Colors.white54,
+                          size: 14,
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ),
-              IconButton(
-                icon: const Icon(
-                  Icons.file_download,
-                  color: Color(0xFFFF3B30),
-                ),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    barrierColor: Colors.transparent,
-                    builder: (_) => ImportPlanSheet(plan: plan),
-                  );
-                },
-              ),
+                )),
+              ]
             ],
           ),
-          if (expanded) ...[
-            const SizedBox(height: 10),
-            if (folders.isEmpty)
-              const Text(
-                "Keine Muskelgruppen vorhanden",
-                style: TextStyle(color: Colors.white38),
-              ),
-            ...folders.map((folder) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => MuscleGroupScreen(
-                          folderId: folder.id,
-                          plan: TrainingPlan(
-                            id: folder.trainingPlanId,
-                            name: folder.name,
-                            exercises: folder.exercises,
-                          ),
-                          isArchived: true,
-                        ),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.04),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      folder.name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            }),
-          ],
-        ],
+        ),
       ),
     );
   }

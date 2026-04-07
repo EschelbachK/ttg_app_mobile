@@ -1,390 +1,141 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ttg_app_mobile/features/dashboard/widgets/training_folder_plan_tile.dart';
-
 import '../../../core/theme/app_theme.dart';
-import '../../../core/ui/ttg_glow_border.dart';
+import '../../../core/ui/ttg_input_dialog.dart';
 import '../models/training_plan.dart';
 import '../state/dashboard_provider.dart';
+import 'training_folder_plan_tile.dart';
 
-class TrainingPlanCard extends ConsumerWidget {
+class TrainingPlanCard extends ConsumerStatefulWidget {
   final TrainingPlan plan;
-
-  const TrainingPlanCard({
-    super.key,
-    required this.plan,
-  });
+  const TrainingPlanCard({super.key, required this.plan});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(dashboardProvider);
-    final notifier = ref.read(dashboardProvider.notifier);
+  ConsumerState<TrainingPlanCard> createState() => _S();
+}
 
-    final muscleGroups = state.folders
-        .where((f) =>
-    f.trainingPlanId == plan.id &&
+class _S extends ConsumerState<TrainingPlanCard> {
+  bool open = false;
+  static const w = 36.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = ref.watch(dashboardProvider);
+    final n = ref.read(dashboardProvider.notifier);
+    final p = widget.plan;
+
+    final groups = s.folders.where((f) =>
+    f.trainingPlanId == p.id &&
         f.name.trim().isNotEmpty &&
-        f.name.toLowerCase() != "allgemein")
-        .toList();
+        f.name.toLowerCase() != "allgemein");
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: TTGGlowBorder(
-        child: ClipRRect(
+      padding: EdgeInsets.only(bottom: open ? 16 : 12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                color: Colors.white.withOpacity(0.05),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                ),
+          color: Colors.white.withOpacity(.015),
+          border: Border.all(color: Colors.white.withOpacity(.15)),
+        ),
+        child: Column(children: [
+          GestureDetector(
+            onTap: () => setState(() => open = !open),
+            child: Row(children: [
+              const SizedBox(
+                width: 30,
+                child: Icon(Icons.folder,
+                    color: AppTheme.primaryRed, size: 20),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.folder,
-                          color: AppTheme.primaryRed),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          plan.name,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.edit,
-                            color: Colors.white54, size: 18),
-                        onPressed: () {
-                          final controller =
-                          TextEditingController(text: plan.name);
-
-                          showDialog(
-                            context: context,
-                            builder: (dialogContext) => Dialog(
-                              backgroundColor: Colors.transparent,
-                              insetPadding:
-                              const EdgeInsets.symmetric(horizontal: 20),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(24),
-                                child: BackdropFilter(
-                                  filter: ImageFilter.blur(
-                                      sigmaX: 20, sigmaY: 20),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(24),
-                                    decoration: BoxDecoration(
-                                      color:
-                                      Colors.black.withOpacity(0.35),
-                                      borderRadius:
-                                      BorderRadius.circular(24),
-                                      border: Border.all(
-                                        color: Colors.white
-                                            .withOpacity(0.25),
-                                      ),
-                                    ),
-                                    child: Column(
-                                      mainAxisSize:
-                                      MainAxisSize.min,
-                                      children: [
-                                        const Align(
-                                          alignment:
-                                          Alignment.centerLeft,
-                                          child: Text(
-                                            "Trainingsplan umbenennen",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 20,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 20),
-                                        TextField(
-                                          controller: controller,
-                                          cursorColor: Colors.white,
-                                          style: const TextStyle(
-                                              color: Colors.white),
-                                          decoration:
-                                          const InputDecoration(
-                                            hintText:
-                                            "Name eingeben",
-                                            hintStyle: TextStyle(
-                                                color:
-                                                Colors.white38),
-                                            enabledBorder:
-                                            UnderlineInputBorder(
-                                              borderSide: BorderSide(
-                                                color: AppTheme
-                                                    .primaryRed,
-                                              ),
-                                            ),
-                                            focusedBorder:
-                                            UnderlineInputBorder(
-                                              borderSide: BorderSide(
-                                                color: AppTheme
-                                                    .primaryRed,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 22),
-                                        Row(
-                                          mainAxisAlignment:
-                                          MainAxisAlignment.end,
-                                          children: [
-                                            TextButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(
-                                                      dialogContext),
-                                              child: const Text(
-                                                "Abbrechen",
-                                                style: TextStyle(
-                                                    color:
-                                                    Colors.white70),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 10),
-                                            ElevatedButton(
-                                              style:
-                                              ElevatedButton.styleFrom(
-                                                backgroundColor:
-                                                AppTheme.primaryRed,
-                                                shape:
-                                                RoundedRectangleBorder(
-                                                  borderRadius:
-                                                  BorderRadius.circular(
-                                                      24),
-                                                ),
-                                              ),
-                                              onPressed: () {
-                                                final name =
-                                                controller.text
-                                                    .trim();
-                                                if (name.isEmpty)
-                                                  return;
-
-                                                Navigator.pop(
-                                                    dialogContext);
-                                                notifier.renamePlan(
-                                                    plan.id, name);
-                                              },
-                                              child: const Text(
-                                                "Speichern",
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight:
-                                                  FontWeight.w600,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      PopupMenuButton<String>(
-                        icon: const Icon(Icons.more_vert,
-                            color: Colors.white54),
-                        onSelected: (value) {
-                          if (value == 'delete') {
-                            notifier.deletePlan(plan.id);
-                          }
-                          if (value == 'archive') {
-                            notifier.archivePlan(plan.id);
-                          }
-                        },
-                        itemBuilder: (context) => const [
-                          PopupMenuItem(
-                              value: 'archive',
-                              child: Text('Archivieren')),
-                          PopupMenuItem(
-                              value: 'delete',
-                              child: Text('Löschen')),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  ...muscleGroups.map((group) {
-                    return PlanTile(
-                      folder: group,
-                      onDelete: () =>
-                          notifier.deleteFolder(group.id),
-                      onMoveUp: () =>
-                          notifier.moveFolderUp(group.id),
-                      onMoveDown: () =>
-                          notifier.moveFolderDown(group.id),
-                      onArchive: () =>
-                          notifier.archiveFolder(group.id),
-                      onDuplicate: () =>
-                          notifier.duplicateFolder(group.id),
-                    );
-                  }),
-                  const SizedBox(height: 10),
-                  GestureDetector(
-                    onTap: () {
-                      final controller = TextEditingController();
-
-                      showDialog(
-                        context: context,
-                        builder: (dialogContext) => Dialog(
-                          backgroundColor: Colors.transparent,
-                          insetPadding:
-                          const EdgeInsets.symmetric(horizontal: 20),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(24),
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(
-                                  sigmaX: 20, sigmaY: 20),
-                              child: Container(
-                                padding: const EdgeInsets.all(24),
-                                decoration: BoxDecoration(
-                                  color:
-                                  Colors.black.withOpacity(0.35),
-                                  borderRadius:
-                                  BorderRadius.circular(24),
-                                  border: Border.all(
-                                    color: Colors.white
-                                        .withOpacity(0.25),
-                                  ),
-                                ),
-                                child: Column(
-                                  mainAxisSize:
-                                  MainAxisSize.min,
-                                  children: [
-                                    const Align(
-                                      alignment:
-                                      Alignment.centerLeft,
-                                      child: Text(
-                                        "Neue Muskelgruppe",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 20,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 20),
-                                    TextField(
-                                      controller: controller,
-                                      cursorColor: Colors.white,
-                                      style: const TextStyle(
-                                          color: Colors.white),
-                                      decoration:
-                                      const InputDecoration(
-                                        hintText:
-                                        "Name eingeben",
-                                        hintStyle: TextStyle(
-                                            color:
-                                            Colors.white38),
-                                        enabledBorder:
-                                        UnderlineInputBorder(
-                                          borderSide: BorderSide(
-                                            color: AppTheme
-                                                .primaryRed,
-                                          ),
-                                        ),
-                                        focusedBorder:
-                                        UnderlineInputBorder(
-                                          borderSide: BorderSide(
-                                            color: AppTheme
-                                                .primaryRed,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 22),
-                                    Row(
-                                      mainAxisAlignment:
-                                      MainAxisAlignment.end,
-                                      children: [
-                                        TextButton(
-                                          onPressed: () =>
-                                              Navigator.pop(
-                                                  dialogContext),
-                                          child: const Text(
-                                            "Abbrechen",
-                                            style: TextStyle(
-                                                color:
-                                                Colors.white70),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 10),
-                                        ElevatedButton(
-                                          style:
-                                          ElevatedButton.styleFrom(
-                                            backgroundColor:
-                                            AppTheme.primaryRed,
-                                            shape:
-                                            RoundedRectangleBorder(
-                                              borderRadius:
-                                              BorderRadius.circular(
-                                                  24),
-                                            ),
-                                          ),
-                                          onPressed: () {
-                                            final name =
-                                            controller.text
-                                                .trim();
-                                            if (name.isEmpty)
-                                              return;
-
-                                            Navigator.pop(
-                                                dialogContext);
-                                            notifier.addFolder(
-                                                plan.id, name);
-                                          },
-                                          child: const Text(
-                                            "Erstellen",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight:
-                                              FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(12),
-                        child: Text(
-                          "+ Muskelgruppe hinzufügen",
-                          style: TextStyle(
-                            color: AppTheme.primaryRed,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(p.name,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600)),
+              ),
+              Row(mainAxisSize: MainAxisSize.min, children: [
+                SizedBox(
+                  width: w,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    icon: const Icon(Icons.edit,
+                        size: 18, color: Colors.white54),
+                    onPressed: () => showTTGInputDialog(
+                      context: context,
+                      title: "Trainingsplan umbenennen",
+                      buttonText: "Speichern",
+                      initialValue: p.name,
+                      onSubmit: (v) => n.renamePlan(p.id, v),
                     ),
                   ),
-                ],
-              ),
-            ),
+                ),
+                SizedBox(
+                  width: w,
+                  child: IconButton(
+                    padding: EdgeInsets.zero,
+                    icon: AnimatedRotation(
+                      turns: open ? .5 : 0,
+                      duration: const Duration(milliseconds: 180),
+                      child: const Icon(Icons.keyboard_arrow_down,
+                          color: Colors.white54),
+                    ),
+                    onPressed: () => setState(() => open = !open),
+                  ),
+                ),
+                SizedBox(
+                  width: w,
+                  child: PopupMenuButton<String>(
+                    padding: EdgeInsets.zero,
+                    icon: const Icon(Icons.more_vert,
+                        color: Colors.white54),
+                    onSelected: (v) {
+                      if (v == 'delete') n.deletePlan(p.id);
+                      if (v == 'archive') n.archivePlan(p.id);
+                    },
+                    itemBuilder: (_) => const [
+                      PopupMenuItem(value: 'archive', child: Text('Archivieren')),
+                      PopupMenuItem(value: 'delete', child: Text('Löschen')),
+                    ],
+                  ),
+                ),
+              ])
+            ]),
           ),
-        ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 180),
+            child: open
+                ? Column(children: [
+              const SizedBox(height: 8),
+              ...groups.map((g) => PlanTile(
+                folder: g,
+                onDelete: () => n.deleteFolder(g.id),
+                onMoveUp: () => n.moveFolderUp(g.id),
+                onMoveDown: () => n.moveFolderDown(g.id),
+                onArchive: () => n.archiveFolder(g.id),
+                onDuplicate: () => n.duplicateFolder(g.id),
+              )),
+              const SizedBox(height: 6),
+              GestureDetector(
+                onTap: () => showTTGInputDialog(
+                  context: context,
+                  title: "Neue Muskelgruppe",
+                  buttonText: "Erstellen",
+                  onSubmit: (v) => n.addFolder(p.id, v),
+                ),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Text("+ Muskelgruppe hinzufügen",
+                      style: TextStyle(
+                          color: AppTheme.primaryRed,
+                          fontWeight: FontWeight.bold)),
+                ),
+              )
+            ])
+                : const SizedBox(),
+          )
+        ]),
       ),
     );
   }

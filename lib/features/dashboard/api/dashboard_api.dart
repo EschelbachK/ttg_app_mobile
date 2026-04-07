@@ -109,4 +109,21 @@ class DashboardApi {
     );
     return _extractList(res.data);
   }
+  Future<void> createExercise({
+    required String planId,
+    required String folderId,
+    required String name,
+  }) async {
+    await dio.post(
+      '/training-plans/$planId/folders/$folderId/exercises',
+      data: {
+        'name': name,
+      },
+    );
+  }
+  Future<void> restoreTrainingPlan(String id) async {
+    await dio.patch('/training-plans/$id', data: {
+      'archived': false,
+    });
+  }
 }
