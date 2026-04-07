@@ -6,9 +6,7 @@ import 'package:ttg_app_mobile/features/dashboard/models/training_plan.dart';
 import '../state/dashboard_provider.dart';
 import '../widgets/exercise/exercise_selection_card.dart';
 import '../widgets/exercise/exercise_tile.dart';
-import 'package:ttg_app_mobile/features/dashboard/models/training_folder.dart';
-import 'package:ttg_app_mobile/features/dashboard/models/training_plan.dart';
-import 'package:ttg_app_mobile/features/dashboard/models/exercise.dart';
+import '../../../core/theme/app_theme.dart';
 
 class MuscleGroupScreen extends ConsumerStatefulWidget {
   final String folderId;
@@ -23,29 +21,17 @@ class MuscleGroupScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<MuscleGroupScreen> createState() => _MuscleGroupScreenState();
+  ConsumerState<MuscleGroupScreen> createState() =>
+      _MuscleGroupScreenState();
 }
 
-class _MuscleGroupScreenState extends ConsumerState<MuscleGroupScreen> {
+class _MuscleGroupScreenState
+    extends ConsumerState<MuscleGroupScreen> {
   bool addExerciseExpanded = false;
 
   @override
   Widget build(BuildContext context) {
-    final dashboardState = ref.watch(dashboardProvider);
-
-    TrainingPlan currentPlan = widget.plan;
-
-    if (!widget.isArchived) {
-      for (final folder in dashboardState.folders) {
-        if (folder.id == widget.folderId) {
-          for (final p in folder.plans) {
-            if (p.id == widget.plan.id) {
-              currentPlan = p;
-            }
-          }
-        }
-      }
-    }
+    final currentPlan = widget.plan;
 
     return Stack(
       children: [
@@ -66,30 +52,20 @@ class _MuscleGroupScreenState extends ConsumerState<MuscleGroupScreen> {
             backgroundColor: Colors.transparent,
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(
-                Icons.arrow_back,
-                color: Colors.white54,
-              ),
+              icon: const Icon(Icons.arrow_back,
+                  color: Colors.white54),
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
               currentPlan.name,
               style: const TextStyle(color: Colors.white),
             ),
-            actions: [
-              if (widget.isArchived)
-                IconButton(
-                  icon: const Icon(
-                    Icons.file_download,
-                    color: Color(0xFFFF3B30),
-                  ),
-                  onPressed: () {},
-                ),
-            ],
           ),
           body: Column(
             children: [
               const SizedBox(height: 20),
+
+              /// TITLE + EDIT
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -102,49 +78,91 @@ class _MuscleGroupScreenState extends ConsumerState<MuscleGroupScreen> {
                       letterSpacing: 1.2,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
+
                   if (!widget.isArchived)
-                    InkWell(
-                      onTap: () async {
+                    GestureDetector(
+                      onTap: () {
                         final controller =
-                        TextEditingController(text: currentPlan.name);
+                        TextEditingController(
+                            text: currentPlan.name);
 
-                        final newName = await showDialog<String>(
+                        showDialog(
                           context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              backgroundColor: const Color(0xFF1B1F23),
-                              title: const Text(
-                                "Muskelgruppe umbenennen",
-                                style: TextStyle(color: Colors.white),
+                          builder: (dialogContext) => Dialog(
+                            backgroundColor: Colors.transparent,
+                            child: Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.8),
+                                borderRadius:
+                                BorderRadius.circular(16),
                               ),
-                              content: TextField(
-                                controller: controller,
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: const Text("Abbrechen"),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.pop(context, controller.text);
-                                  },
-                                  child: const Text("Speichern"),
-                                ),
-                              ],
-                            );
-                          },
-                        );
+                              child: Column(
+                                mainAxisSize:
+                                MainAxisSize.min,
+                                children: [
+                                  const Text(
+                                    "Muskelgruppe umbenennen",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  TextField(
+                                    controller: controller,
+                                    style: const TextStyle(
+                                        color: Colors.white),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Row(
+                                    children: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(
+                                                dialogContext),
+                                        child:
+                                        const Text("Abbrechen"),
+                                      ),
+                                      const Spacer(),
+                                      ElevatedButton(
+                                        style:
+                                        ElevatedButton
+                                            .styleFrom(
+                                          backgroundColor:
+                                          AppTheme
+                                              .primaryRed,
+                                        ),
+                                        onPressed: () {
+                                          final newName =
+                                          controller.text
+                                              .trim();
+                                          if (newName
+                                              .isEmpty) return;
 
-                        if (newName != null && newName.isNotEmpty) {
-                          ref.read(dashboardProvider.notifier).renamePlan(
-                            widget.folderId,
-                            currentPlan.id,
-                            newName,
-                          );
-                        }
+                                          Navigator.pop(
+                                              dialogContext);
+
+                                          ref
+                                              .read(
+                                              dashboardProvider
+                                                  .notifier)
+                                              .renameFolder(
+                                            widget.folderId,
+                                            newName,
+                                          );
+                                        },
+                                        child: const Text(
+                                            "Speichern"),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
                       },
                       child: const Icon(
                         Icons.edit,
@@ -154,41 +172,50 @@ class _MuscleGroupScreenState extends ConsumerState<MuscleGroupScreen> {
                     ),
                 ],
               ),
+
               const SizedBox(height: 20),
+
+              /// ADD EXERCISE
               if (!widget.isArchived)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 20),
                   child: TTGGlowBorder(
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius:
+                      BorderRadius.circular(20),
                       child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                        filter: ImageFilter.blur(
+                            sigmaX: 8, sigmaY: 8),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.06),
-                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.black
+                                .withOpacity(0.06),
+                            borderRadius:
+                            BorderRadius.circular(20),
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.25),
+                              color: Colors.white
+                                  .withOpacity(0.25),
                             ),
                           ),
                           child: ExpansionTile(
                             trailing: const Icon(
                               Icons.add,
-                              color: Color(0xFFFF3B30),
+                              color: AppTheme.primaryRed,
                             ),
                             onExpansionChanged: (v) {
                               setState(() {
                                 addExerciseExpanded = v;
                               });
                             },
-                            collapsedIconColor: Colors.white54,
-                            iconColor: Colors.white,
                             title: const Center(
                               child: Text(
                                 "Übung hinzufügen",
                                 style: TextStyle(
-                                  color: Color(0xFFFF3B30),
-                                  fontWeight: FontWeight.bold,
+                                  color:
+                                  AppTheme.primaryRed,
+                                  fontWeight:
+                                  FontWeight.bold,
                                 ),
                               ),
                             ),
@@ -204,48 +231,29 @@ class _MuscleGroupScreenState extends ConsumerState<MuscleGroupScreen> {
                     ),
                   ),
                 ),
-              if (!widget.isArchived) const SizedBox(height: 10),
+
+              if (!widget.isArchived)
+                const SizedBox(height: 10),
+
+              /// LIST
               Expanded(
                 child: currentPlan.exercises.isEmpty
                     ? const Center(
                   child: Text(
                     "Noch keine Übungen hinzugefügt",
-                    style: TextStyle(color: Colors.white38),
+                    style: TextStyle(
+                        color: Colors.white38),
                   ),
                 )
                     : ListView.builder(
-                  itemCount: currentPlan.exercises.length,
+                  itemCount:
+                  currentPlan.exercises.length,
                   itemBuilder: (context, index) {
-                    final exercise = currentPlan.exercises[index];
+                    final exercise =
+                    currentPlan.exercises[index];
 
-                    return Row(
-                      children: [
-                        Expanded(
-                          child: ExerciseTile(
-                            exercise: exercise,
-                          ),
-                        ),
-                        if (widget.isArchived)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 12),
-                            child: GestureDetector(
-                              onTap: () {
-                                ref
-                                    .read(dashboardProvider.notifier)
-                                    .importExercise(
-                                  widget.folderId,
-                                  currentPlan.id,
-                                  exercise,
-                                );
-                              },
-                              child: const Icon(
-                                Icons.download,
-                                color: Color(0xFFFF3B30),
-                                size: 20,
-                              ),
-                            ),
-                          ),
-                      ],
+                    return ExerciseTile(
+                      exercise: exercise,
                     );
                   },
                 ),

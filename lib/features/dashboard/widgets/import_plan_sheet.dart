@@ -149,103 +149,26 @@ class ImportPlanSheet extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  RichText(
-                    text: TextSpan(
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Colors.white54,
-                      ),
-                      children: [
-                        const TextSpan(text: 'Für "'),
-                        TextSpan(
-                          text: plan.name,
-                          style: const TextStyle(
-                            color: AppTheme.primaryRed,
-                          ),
-                        ),
-                        const TextSpan(text: '" auswählen'),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
                   Flexible(
                     child: ListView(
                       shrinkWrap: true,
                       children: [
                         ...state.folders.map((folder) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: BackdropFilter(
-                                filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.05),
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: Colors.white.withOpacity(0.12),
-                                    ),
-                                  ),
-                                  child: ListTile(
-                                    leading: const Icon(
-                                      Icons.fitness_center,
-                                      size: 20,
-                                      color: AppTheme.primaryRed,
-                                    ),
-                                    title: Text(
-                                      folder.name,
-                                      style: const TextStyle(color: Colors.white),
-                                    ),
-                                    trailing: const Icon(
-                                      Icons.arrow_forward_ios,
-                                      size: 14,
-                                      color: Colors.white38,
-                                    ),
-                                    onTap: () {
-                                      ref
-                                          .read(dashboardProvider.notifier)
-                                          .importPlan(folder.id, plan);
-                                      Navigator.pop(context);
-                                    },
-                                  ),
-                                ),
-                              ),
+                          return ListTile(
+                            title: Text(
+                              folder.name,
+                              style: const TextStyle(color: Colors.white),
                             ),
+                            onTap: () {
+                              // ✅ FIX
+                              ref
+                                  .read(dashboardProvider.notifier)
+                                  .importPlan(plan);
+
+                              Navigator.pop(context);
+                            },
                           );
                         }),
-
-                        const SizedBox(height: 16),
-
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pop(context);
-                            ref.read(dashboardProvider.notifier).showPlans();
-                          },
-                          child: Container(
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryRed,
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: const Center(
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.add, color: Colors.white),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    "Plan erstellen",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ),

@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../features/dashboard/state/active_plan_provider.dart';
 import '../../services/token_storage.dart';
 import '../network/dio_provider.dart';
 
@@ -46,8 +45,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
       accessToken: accessToken,
       refreshToken: refreshToken,
     );
-
-    ref.read(activePlanIdProvider.notifier).state = null;
   }
 
   Future<void> logout() async {

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/auth/screens/loading_screen.dart';
 import '../../features/dashboard/screens/dashboard_screen.dart';
+import '../../features/workout/screens/training_folders_screen.dart';
 import '../auth/auth_provider.dart';
 import '../navigation/main_navigation.dart';
 import '../../features/auth/screens/login_screen.dart' as screens;
@@ -31,7 +32,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/workout',
-            builder: (context, state) => const DashboardScreen(),
+            builder: (context, state) =>
+            const TrainingFoldersScreen(),
           ),
         ],
       ),

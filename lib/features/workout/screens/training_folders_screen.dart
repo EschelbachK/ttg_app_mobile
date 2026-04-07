@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/layout/app_layout.dart';
-import '../state/workout_provider.dart';
+import '../providers/workout_providers.dart';
 
 class TrainingFoldersScreen extends ConsumerWidget {
   const TrainingFoldersScreen({super.key});
@@ -14,18 +15,9 @@ class TrainingFoldersScreen extends ConsumerWidget {
     return AppLayout(
       title: 'Workout',
       child: plansAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Text(
-            'Fehler beim Laden',
-            style: const TextStyle(color: Colors.red),
-          ),
-        ),
         data: (plans) {
           if (plans.isEmpty) {
-            return const Center(
-              child: Text('Keine Trainingspläne vorhanden'),
-            );
+            return const Center(child: Text('Keine Trainingspläne'));
           }
 
           return ListView.builder(
@@ -35,14 +27,14 @@ class TrainingFoldersScreen extends ConsumerWidget {
 
               return ListTile(
                 title: Text(plan.name),
-                subtitle: Text('ID: ${plan.id}'),
-                onTap: () {
-                  // nächster Schritt später
-                },
+                onTap: () => context.go('/workout/plans/${plan.id}'),
               );
             },
           );
         },
+        loading: () =>
+        const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Center(child: Text('Fehler: $e')),
       ),
     );
   }
