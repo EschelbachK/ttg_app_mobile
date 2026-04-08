@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/auth/auth_provider.dart';
-import '../../../core/auth/auth_service.dart';
-import '../../../core/network/dio_provider.dart';
 import '../../../core/error/global_error_handler.dart';
 
 const kPrimaryRed = Color(0xFFE10600);
@@ -23,6 +21,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final passwordController = TextEditingController();
 
   bool isLoading = false;
+
+  Future<void> _login() async {
+    setState(() => isLoading = true);
+
+    try {
+      await ref.read(authProvider.notifier).login(
+        emailController.text.trim(),
+        passwordController.text.trim(),
+      );
+
+      if (context.mounted) context.go('/dashboard');
+    } catch (e) {
+      final error = GlobalErrorHandler.handle(e);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error.message)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,63 +70,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               child: Column(
                 children: [
                   SizedBox(height: screenHeight * 0.44),
-
                   _GlowInput(
                     hint: 'E-Mail-Adresse',
                     controller: emailController,
                   ),
-
                   SizedBox(height: s(22)),
-
                   _GlowInput(
                     hint: 'Passwort',
                     obscure: true,
                     controller: passwordController,
                   ),
-
                   SizedBox(height: s(36)),
-
-                  _LoginButton(
-                    onTap: isLoading
-                        ? null
-                        : () async {
-                      setState(() => isLoading = true);
-
-                      try {
-                        final dio = ref.read(dioProvider);
-                        final authService = AuthService(dio);
-
-                        final response = await authService.login(
-                          emailController.text,
-                          passwordController.text,
-                        );
-
-                        await ref.read(authProvider.notifier).login(
-                          accessToken: response.accessToken,
-                          refreshToken: response.refreshToken,
-                        );
-
-                        if (context.mounted) {
-                          context.go('/dashboard');
-                        }
-                      } catch (e) {
-                        final error = GlobalErrorHandler.handle(e);
-
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(error.message)),
-                          );
-                        }
-                      } finally {
-                        if (mounted) {
-                          setState(() => isLoading = false);
-                        }
-                      }
-                    },
-                  ),
-
+                  _LoginButton(onTap: isLoading ? null : _login),
                   SizedBox(height: s(18)),
-
                   Text(
                     'oder',
                     style: TextStyle(
@@ -113,35 +90,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       fontSize: s(14),
                     ),
                   ),
-
                   SizedBox(height: s(18)),
-
                   const _GlassButton(
                     icon: Icons.person,
                     label: 'kostenlosen Account erstellen',
                   ),
-
                   SizedBox(height: s(10)),
-
                   const _GlassButton(
                     icon: Icons.key,
                     label: 'Passwort vergessen?',
                   ),
-
                   SizedBox(height: s(24)),
-
                   const _LanguageSwitch(),
-
                   SizedBox(height: s(40)),
                 ],
               ),
             ),
           ),
-
           if (isLoading)
-            const Center(
-              child: CircularProgressIndicator(),
-            ),
+            const Center(child: CircularProgressIndicator()),
         ],
       ),
     );

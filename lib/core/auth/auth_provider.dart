@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/token_storage.dart';
-import '../network/dio_provider.dart';
+import '../../features/auth/models/auth_response.dart';
+import 'auth_service.dart';
 
 class AuthState {
   final bool isLoggedIn;
@@ -31,47 +32,36 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   AuthNotifier(this.ref) : super(const AuthState(isLoggedIn: false));
 
-  Future<void> login({
-    required String accessToken,
-    required String refreshToken,
-  }) async {
-    final storage = ref.read(tokenStorageProvider);
+  Future<void> login(String email, String password) async {
+    final res = await ref.read(authServiceProvider).login(email, password);
 
-    await storage.saveAccessToken(accessToken);
-    await storage.saveRefreshToken(refreshToken);
+    final storage = ref.read(tokenStorageProvider);
+    await storage.saveAccessToken(res.accessToken);
+    await storage.saveRefreshToken(res.refreshToken);
 
     state = AuthState(
       isLoggedIn: true,
-      accessToken: accessToken,
-      refreshToken: refreshToken,
+      accessToken: res.accessToken,
+      refreshToken: res.refreshToken,
     );
   }
 
   Future<void> logout() async {
-    final storage = ref.read(tokenStorageProvider);
-    await storage.clear();
-
+    await ref.read(tokenStorageProvider).clear();
     state = const AuthState(isLoggedIn: false);
   }
 
   Future<void> refreshToken() async {
     final storage = ref.read(tokenStorageProvider);
-    final refreshToken = await storage.getRefreshToken();
-    if (refreshToken == null) return;
+    final token = await storage.getRefreshToken();
+    if (token == null) return;
 
-    final dio = ref.read(dioProvider);
+    final res = await ref.read(authServiceProvider).refresh(token);
 
-    final response = await dio.post(
-      '/auth/refresh',
-      data: {'refreshToken': refreshToken},
-    );
-
-    final newAccessToken = response.data['data']['accessToken'];
-
-    await storage.saveAccessToken(newAccessToken);
+    await storage.saveAccessToken(res.accessToken);
 
     state = state.copyWith(
-      accessToken: newAccessToken,
+      accessToken: res.accessToken,
       isLoggedIn: true,
     );
   }

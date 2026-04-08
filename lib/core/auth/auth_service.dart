@@ -4,33 +4,26 @@ import '../../features/auth/models/auth_response.dart';
 import '../network/dio_provider.dart';
 
 class AuthService {
-  final Dio _dio;
+  final Dio dio;
 
-  AuthService(this._dio);
+  AuthService(this.dio);
 
   Future<AuthResponse> login(String email, String password) async {
-    final response = await _dio.post(
-      '/auth/login',
-      data: {
-        'email': email,
-        'password': password,
-      },
-    );
-    return AuthResponse.fromJson(response.data['data']);
+    final res = await dio.post('/auth/login', data: {
+      'email': email,
+      'password': password,
+    });
+    return AuthResponse.fromJson(res.data['data']);
   }
 
   Future<AuthResponse> refresh(String refreshToken) async {
-    final response = await _dio.post(
-      '/auth/refresh',
-      data: {
-        'refreshToken': refreshToken,
-      },
-    );
-    return AuthResponse.fromJson(response.data['data']);
+    final res = await dio.post('/auth/refresh', data: {
+      'refreshToken': refreshToken,
+    });
+    return AuthResponse.fromJson(res.data['data']);
   }
 }
 
-final authServiceProvider = Provider<AuthService>((ref) {
-  final dio = ref.read(dioProvider);
-  return AuthService(dio);
-});
+final authServiceProvider = Provider<AuthService>(
+      (ref) => AuthService(ref.read(dioProvider)),
+);
