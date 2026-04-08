@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import '../../dashboard/models/training_plan.dart';
 import '../models/set_entry.dart';
-import '../models/training_folder.dart';
+import '../models/training_folder2.dart';
 import '../models/training_exercise.dart';
 
 class WorkoutApiService {

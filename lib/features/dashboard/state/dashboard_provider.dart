@@ -90,9 +90,10 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         .map<TrainingFolder>((e) => TrainingFolder.fromJson(e))
         .toList();
 
-    final allPlans = [...plans, ...archivedPlans];
-
-    final foldersNested = await Future.wait(allPlans.map((p) async {
+    final foldersNested = await Future.wait([
+      ...plans,
+      ...archivedPlans
+    ].map((p) async {
       final folderData = await api.getFolders(p.id);
       return Future.wait(folderData.map((e) async {
         final f = TrainingFolder.fromJson(e);

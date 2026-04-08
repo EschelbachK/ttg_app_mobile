@@ -110,24 +110,25 @@ class _S extends ConsumerState<TrainingPlanCard> {
             child: open
                 ? Column(children: [
               const SizedBox(height: 8),
-              ...groups.map((g) => TrainingFolderPlanTile(
-                folder: g,
-                onDelete: () =>
-                    ref.read(dashboardProvider.notifier)
+              ...groups.map((g) =>
+                  TrainingFolderPlanTile(
+                    folder: g,
+                    onDelete: () => ref
+                        .read(dashboardProvider.notifier)
                         .deleteFolder(g.id),
-                onMoveUp: () =>
-                    ref.read(dashboardProvider.notifier)
+                    onMoveUp: () => ref
+                        .read(dashboardProvider.notifier)
                         .moveFolderUp(g.id),
-                onMoveDown: () =>
-                    ref.read(dashboardProvider.notifier)
+                    onMoveDown: () => ref
+                        .read(dashboardProvider.notifier)
                         .moveFolderDown(g.id),
-                onArchive: () =>
-                    ref.read(dashboardProvider.notifier)
+                    onArchive: () => ref
+                        .read(dashboardProvider.notifier)
                         .archiveFolder(g.id),
-                onDuplicate: () =>
-                    ref.read(dashboardProvider.notifier)
+                    onDuplicate: () => ref
+                        .read(dashboardProvider.notifier)
                         .duplicateFolder(g.id),
-              )),
+                  )),
               const SizedBox(height: 6),
               GestureDetector(
                 onTap: () =>

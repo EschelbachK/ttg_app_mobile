@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/dio_provider.dart';
 import '../../dashboard/models/training_plan.dart';
 import '../data/workout_api_service.dart';
-import '../models/training_folder.dart';
+import '../models/training_folder2.dart';
 import '../models/training_exercise.dart';
 import '../models/set_entry.dart';
 
