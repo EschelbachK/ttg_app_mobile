@@ -2,7 +2,6 @@ import 'package:dio/dio.dart';
 
 class DashboardApi {
   final Dio dio;
-
   DashboardApi(this.dio);
 
   Future<List<dynamic>> _extractList(dynamic data) async {
@@ -88,8 +87,7 @@ class DashboardApi {
     required String folderId,
   }) =>
       _getList(
-        '/training-plans/$planId/exercises',
-        query: {'folderId': folderId},
+        '/training-plans/$planId/folders/$folderId/exercises',
       );
 
   Future<void> createExercise({

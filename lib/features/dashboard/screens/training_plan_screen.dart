@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/ui/ttg_confirm_dialog.dart';
 import '../../../core/ui/ttg_list_tile.dart';
+import '../../../core/ui/ttg_input_dialog.dart';
 import '../models/training_plan.dart';
 import '../state/dashboard_provider.dart';
 import '../widgets/training_muscle_folder_tile.dart';
@@ -44,7 +45,6 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
       title: "Trainingsplan löschen",
       subtitle: "Wirklich löschen?",
     );
-
     if (confirmed) {
       ref.read(dashboardProvider.notifier).deletePlan(widget.plan.id);
     }
@@ -85,29 +85,18 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                       icon: const Icon(Icons.edit, size: 18, color: Colors.white54),
                       onPressed: () async {
                         final controller = TextEditingController(text: widget.plan.name);
-
                         final result = await showDialog<String>(
                           context: context,
                           builder: (c) => AlertDialog(
                             backgroundColor: Colors.black,
                             title: const Text("Umbenennen", style: TextStyle(color: Colors.white)),
-                            content: TextField(
-                              controller: controller,
-                              style: const TextStyle(color: Colors.white),
-                            ),
+                            content: TextField(controller: controller, style: const TextStyle(color: Colors.white)),
                             actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(c),
-                                child: const Text("Abbrechen"),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(c, controller.text),
-                                child: const Text("Speichern"),
-                              ),
+                              TextButton(onPressed: () => Navigator.pop(c), child: const Text("Abbrechen")),
+                              TextButton(onPressed: () => Navigator.pop(c, controller.text), child: const Text("Speichern")),
                             ],
                           ),
                         );
-
                         if (result != null && result.trim().isNotEmpty) {
                           ref.read(dashboardProvider.notifier).renamePlan(widget.plan.id, result.trim());
                         }
@@ -165,7 +154,19 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                   const SizedBox(height: 6),
                   GestureDetector(
                     behavior: HitTestBehavior.opaque,
-                    onTap: () {},
+                    onTap: () {
+                      showTTGInputDialog(
+                        context: context,
+                        title: "Muskelgruppe hinzufügen",
+                        buttonText: "Hinzufügen",
+                        onSubmit: (value) {
+                          if (value.trim().isNotEmpty) {
+                            ref.read(dashboardProvider.notifier)
+                                .addFolder(widget.plan.id, value.trim());
+                          }
+                        },
+                      );
+                    },
                     child: const Padding(
                       padding: EdgeInsets.symmetric(vertical: 8),
                       child: Text(
@@ -176,7 +177,7 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                         ),
                       ),
                     ),
-                  ),
+                  )
                 ],
               )
                   : const SizedBox(),

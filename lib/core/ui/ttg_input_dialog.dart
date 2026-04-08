@@ -20,7 +20,7 @@ Future<void> showTTGInputDialog({
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(0.35),
               borderRadius: BorderRadius.circular(24),
@@ -28,41 +28,63 @@ Future<void> showTTGInputDialog({
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(title,
-                      style: const TextStyle(
-                          color: Colors.white, fontSize: 20)),
-                ),
+                Text(title,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600)),
                 const SizedBox(height: 16),
                 TextField(
                   controller: controller,
+                  autofocus: true,
                   style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
+                  cursorColor: AppTheme.primaryRed,
+                  onSubmitted: (v) {
+                    final text = v.trim();
+                    if (text.isEmpty) return;
+                    onSubmit(text);
+                    Navigator.pop(c);
+                  },
+                  decoration: InputDecoration(
                     hintText: "Eingeben...",
-                    hintStyle: TextStyle(color: Colors.white38),
+                    hintStyle:
+                    const TextStyle(color: Colors.white38),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(
+                          color: Colors.white.withOpacity(0.3)),
+                    ),
+                    focusedBorder: const UnderlineInputBorder(
+                      borderSide: BorderSide(
+                          color: AppTheme.primaryRed, width: 2),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 20),
-                const Divider(color: AppTheme.primaryRed),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
                       onPressed: () => Navigator.pop(c),
                       child: const Text("Abbrechen",
-                          style: TextStyle(color: Colors.white70)),
+                          style:
+                          TextStyle(color: Colors.white70)),
                     ),
                     const SizedBox(width: 10),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryRed,
                         foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                          BorderRadius.circular(12),
+                        ),
                       ),
                       onPressed: () {
-                        onSubmit(controller.text.trim());
+                        final text = controller.text.trim();
+                        if (text.isEmpty) return;
+                        onSubmit(text);
                         Navigator.pop(c);
                       },
                       child: Text(buttonText),
