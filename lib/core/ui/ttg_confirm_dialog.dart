@@ -40,6 +40,7 @@ Future<void> showTTGInputDialog({
                 const SizedBox(height: 20),
                 TextField(
                   controller: controller,
+                  autofocus: true,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     hintText: "Name eingeben",
