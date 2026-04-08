@@ -6,6 +6,7 @@ class TrainingPlan {
   final List<Exercise> exercises;
   final List<dynamic> folders;
   final String? originFolderName;
+  final bool isArchived;
 
   const TrainingPlan({
     required this.id,
@@ -13,6 +14,7 @@ class TrainingPlan {
     required this.exercises,
     this.originFolderName,
     this.folders = const [],
+    this.isArchived = false,
   });
 
   TrainingPlan copyWith({
@@ -21,6 +23,7 @@ class TrainingPlan {
     List<Exercise>? exercises,
     String? originFolderName,
     List<dynamic>? folders,
+    bool? isArchived,
   }) =>
       TrainingPlan(
         id: id ?? this.id,
@@ -28,6 +31,7 @@ class TrainingPlan {
         exercises: exercises ?? this.exercises,
         originFolderName: originFolderName ?? this.originFolderName,
         folders: folders ?? this.folders,
+        isArchived: isArchived ?? this.isArchived,
       );
 
   factory TrainingPlan.fromJson(Map<String, dynamic> json) {
@@ -38,6 +42,7 @@ class TrainingPlan {
       exercises: ex.map((e) => Exercise.fromJson(e)).toList(),
       originFolderName: json['originFolderName']?.toString(),
       folders: (json['folders'] as List?) ?? [],
+      isArchived: json['isArchived'] == true,
     );
   }
 
@@ -47,5 +52,6 @@ class TrainingPlan {
     'exercises': exercises.map((e) => e.toJson()).toList(),
     'originFolderName': originFolderName,
     'folders': folders,
+    'isArchived': isArchived,
   };
 }

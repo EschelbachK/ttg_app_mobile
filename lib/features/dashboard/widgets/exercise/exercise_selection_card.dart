@@ -23,8 +23,7 @@ class ExerciseSelectionCard extends ConsumerStatefulWidget {
       _ExerciseSelectionCardState();
 }
 
-class _ExerciseSelectionCardState
-    extends ConsumerState<ExerciseSelectionCard> {
+class _ExerciseSelectionCardState extends ConsumerState<ExerciseSelectionCard> {
   String? selectedCategory;
   String? selectedExercise;
 
@@ -63,158 +62,34 @@ class _ExerciseSelectionCardState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "KATEGORIE",
-                style: TextStyle(color: Colors.white38, fontSize: 12),
-              ),
+              const Text("KATEGORIE", style: TextStyle(color: Colors.white38, fontSize: 12)),
               const SizedBox(height: 6),
               GestureDetector(
-                onTap: () {
-                  showModalBottomSheet(
-                    context: context,
-                    backgroundColor: const Color(0xFF1B1F23),
-                    builder: (_) {
-                      return ListView.builder(
-                        itemCount: categories.length,
-                        itemBuilder: (context, index) {
-                          final category = categories[index];
-                          return ListTile(
-                            title: Text(
-                              category,
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                            trailing: const Icon(
-                              Icons.chevron_right,
-                              color: Colors.white38,
-                            ),
-                            onTap: () {
-                              setState(() {
-                                selectedCategory = category;
-                                selectedExercise = null;
-                              });
-                              Navigator.pop(context);
-                            },
-                          );
-                        },
-                      );
-                    },
-                  );
-                },
-                child: Text(
-                  selectedCategory ?? "Hier tippen",
-                  style: const TextStyle(color: Colors.white, fontSize: 18),
-                ),
+                onTap: () => _selectCategory(context),
+                child: Text(selectedCategory ?? "Hier tippen", style: const TextStyle(color: Colors.white, fontSize: 18)),
               ),
               const Divider(color: Colors.white12, height: 30),
-              const Text(
-                "ÜBUNG",
-                style: TextStyle(color: Colors.white38, fontSize: 12),
-              ),
+              const Text("ÜBUNG", style: TextStyle(color: Colors.white38, fontSize: 12)),
               const SizedBox(height: 6),
               GestureDetector(
-                onTap: () async {
-                  if (selectedCategory == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Bitte zuerst eine Kategorie auswählen"),
-                      ),
-                    );
-                    return;
-                  }
-
-                  final result = await showModalBottomSheet<String>(
-                    context: context,
-                    backgroundColor: Colors.transparent,
-                    builder: (_) => ExerciseSelectSheet(
-                      category: selectedCategory!,
-                    ),
-                  );
-
-                  if (result != null) {
-                    setState(() {
-                      selectedExercise = result;
-                    });
-                  }
-                },
-                child: Text(
-                  selectedExercise ?? "Hier tippen",
-                  style: const TextStyle(color: Colors.white, fontSize: 18),
-                ),
+                onTap: () => _selectExercise(context),
+                child: Text(selectedExercise ?? "Hier tippen", style: const TextStyle(color: Colors.white, fontSize: 18)),
               ),
               const Divider(color: Colors.white12, height: 30),
               Row(
                 children: [
-                  Expanded(
-                    child: buildField(
-                      "GEWICHT (KG)",
-                      weight.toStringAsFixed(1),
-                          () => openWeightPicker(),
-                    ),
-                  ),
-                  Expanded(
-                    child: buildField(
-                      "WIEDERHOLUNGEN",
-                      reps.toString(),
-                          () => openIntPicker("Wiederholungen", reps, 50,
-                              (v) => setState(() => reps = v)),
-                    ),
-                  ),
-                  Expanded(
-                    child: buildField(
-                      "SÄTZE",
-                      sets.toString(),
-                          () => openIntPicker("Sätze", sets, 20,
-                              (v) => setState(() => sets = v)),
-                    ),
-                  ),
+                  Expanded(child: buildField("GEWICHT (KG)", weight.toStringAsFixed(1), () => openWeightPicker())),
+                  Expanded(child: buildField("WIEDERHOLUNGEN", reps.toString(), () => openIntPicker("Wiederholungen", reps, 50, (v) => setState(() => reps = v)))),
+                  Expanded(child: buildField("SÄTZE", sets.toString(), () => openIntPicker("Sätze", sets, 20, (v) => setState(() => sets = v)))),
                 ],
               ),
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryRed,
-                  ),
-                  onPressed: () {
-                    if (selectedExercise == null ||
-                        selectedCategory == null) return;
-
-                    final exercise = Exercise(
-                      name: selectedExercise!,
-                      sets: List.generate(
-                        sets,
-                            (index) => ExerciseSet(
-                          weight: weight,
-                          reps: reps,
-                        ),
-                      ),
-                    );
-
-                    ref.read(dashboardProvider.notifier).addExercise(
-                      widget.folderId,
-                      widget.planId,
-                      exercise,
-                    );
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Übung erfolgreich hinzugefügt"),
-                      ),
-                    );
-
-                    setState(() {
-                      selectedCategory = null;
-                      selectedExercise = null;
-                      weight = 0;
-                      reps = 0;
-                      sets = 0;
-                    });
-                  },
-                  child: const Text(
-                    "hinzufügen",
-                    style: TextStyle(color: Colors.white),
-                  ),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryRed),
+                  onPressed: () => _addExercise(),
+                  child: const Text("hinzufügen", style: TextStyle(color: Colors.white)),
                 ),
               ),
             ],
@@ -224,37 +99,48 @@ class _ExerciseSelectionCardState
     );
   }
 
-  Widget buildField(
-      String title,
-      String value,
-      VoidCallback onTap,
-      ) {
+  void _addExercise() {
+    if (selectedExercise == null || selectedCategory == null) return;
+
+    final exercise = Exercise(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      name: selectedExercise!,
+      sets: List.generate(
+        sets,
+            (index) => ExerciseSet(weight: weight, reps: reps),
+      ),
+    );
+
+    ref.read(dashboardProvider.notifier).addExercise(widget.folderId, widget.planId, exercise);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Übung erfolgreich hinzugefügt")),
+    );
+
+    setState(() {
+      selectedCategory = null;
+      selectedExercise = null;
+      weight = 0;
+      reps = 0;
+      sets = 0;
+    });
+  }
+
+  Widget buildField(String title, String value, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
         children: [
-          Text(
-            title,
-            style: const TextStyle(color: Colors.white38, fontSize: 11),
-          ),
+          Text(title, style: const TextStyle(color: Colors.white38, fontSize: 11)),
           const SizedBox(height: 6),
-          Text(
-            value,
-            style: const TextStyle(color: Colors.white, fontSize: 20),
-          ),
+          Text(value, style: const TextStyle(color: Colors.white, fontSize: 20)),
         ],
       ),
     );
   }
 
-  void openIntPicker(
-      String title,
-      int current,
-      int max,
-      Function(int) onSelected,
-      ) {
+  void openIntPicker(String title, int current, int max, Function(int) onSelected) {
     int selected = current;
-
     showModalBottomSheet(
       context: context,
       builder: (_) => Container(
@@ -262,44 +148,25 @@ class _ExerciseSelectionCardState
         color: const Color(0xFF1B1F23),
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(title, style: const TextStyle(color: Colors.white)),
-            ),
+            Padding(padding: const EdgeInsets.all(16), child: Text(title, style: const TextStyle(color: Colors.white))),
             Expanded(
               child: CupertinoPicker(
                 itemExtent: 40,
-                scrollController:
-                FixedExtentScrollController(initialItem: current),
-                onSelectedItemChanged: (index) {
-                  selected = index;
-                },
-                children: List.generate(
-                  max,
-                      (i) => Center(
-                    child: Text(
-                      "$i",
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ),
+                scrollController: FixedExtentScrollController(initialItem: current),
+                onSelectedItemChanged: (index) => selected = index,
+                children: List.generate(max, (i) => Center(child: Text("$i", style: const TextStyle(color: Colors.white)))),
               ),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text("Abbrechen",
-                      style: TextStyle(color: Colors.white70)),
-                ),
+                TextButton(onPressed: () => Navigator.pop(context), child: const Text("Abbrechen", style: TextStyle(color: Colors.white70))),
                 TextButton(
                   onPressed: () {
                     onSelected(selected);
                     Navigator.pop(context);
                   },
-                  child: const Text("OK",
-                      style: TextStyle(color: AppTheme.primaryRed)),
+                  child: const Text("OK", style: TextStyle(color: AppTheme.primaryRed)),
                 ),
               ],
             )
@@ -312,7 +179,6 @@ class _ExerciseSelectionCardState
   void openWeightPicker() {
     int kg = weight.floor();
     int decimal = (weight * 10).toInt() % 10;
-
     showModalBottomSheet(
       context: context,
       builder: (_) => Container(
@@ -320,50 +186,24 @@ class _ExerciseSelectionCardState
         color: const Color(0xFF1B1F23),
         child: Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text("Gewicht",
-                  style: TextStyle(color: Colors.white)),
-            ),
+            const Padding(padding: EdgeInsets.all(16), child: Text("Gewicht", style: TextStyle(color: Colors.white))),
             Expanded(
               child: Row(
                 children: [
                   Expanded(
                     child: CupertinoPicker(
                       itemExtent: 40,
-                      scrollController:
-                      FixedExtentScrollController(initialItem: kg),
-                      onSelectedItemChanged: (v) {
-                        kg = v;
-                      },
-                      children: List.generate(
-                        300,
-                            (i) => Center(
-                          child: Text(
-                            "$i",
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ),
+                      scrollController: FixedExtentScrollController(initialItem: kg),
+                      onSelectedItemChanged: (v) => kg = v,
+                      children: List.generate(300, (i) => Center(child: Text("$i", style: const TextStyle(color: Colors.white)))),
                     ),
                   ),
                   Expanded(
                     child: CupertinoPicker(
                       itemExtent: 40,
-                      scrollController:
-                      FixedExtentScrollController(initialItem: decimal),
-                      onSelectedItemChanged: (v) {
-                        decimal = v;
-                      },
-                      children: List.generate(
-                        10,
-                            (i) => Center(
-                          child: Text(
-                            ".$i",
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ),
+                      scrollController: FixedExtentScrollController(initialItem: decimal),
+                      onSelectedItemChanged: (v) => decimal = v,
+                      children: List.generate(10, (i) => Center(child: Text(".$i", style: const TextStyle(color: Colors.white)))),
                     ),
                   ),
                 ],
@@ -372,20 +212,13 @@ class _ExerciseSelectionCardState
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text("Abbrechen",
-                      style: TextStyle(color: Colors.white70)),
-                ),
+                TextButton(onPressed: () => Navigator.pop(context), child: const Text("Abbrechen", style: TextStyle(color: Colors.white70))),
                 TextButton(
                   onPressed: () {
-                    setState(() {
-                      weight = kg + decimal / 10;
-                    });
+                    setState(() => weight = kg + decimal / 10);
                     Navigator.pop(context);
                   },
-                  child: const Text("OK",
-                      style: TextStyle(color: AppTheme.primaryRed)),
+                  child: const Text("OK", style: TextStyle(color: AppTheme.primaryRed)),
                 ),
               ],
             )
@@ -393,5 +226,46 @@ class _ExerciseSelectionCardState
         ),
       ),
     );
+  }
+
+  void _selectCategory(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1B1F23),
+      builder: (_) => ListView.builder(
+        itemCount: categories.length,
+        itemBuilder: (context, index) {
+          final category = categories[index];
+          return ListTile(
+            title: Text(category, style: const TextStyle(color: Colors.white)),
+            trailing: const Icon(Icons.chevron_right, color: Colors.white38),
+            onTap: () {
+              setState(() {
+                selectedCategory = category;
+                selectedExercise = null;
+              });
+              Navigator.pop(context);
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  void _selectExercise(BuildContext context) async {
+    if (selectedCategory == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Bitte zuerst eine Kategorie auswählen")));
+      return;
+    }
+
+    final result = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => ExerciseSelectSheet(category: selectedCategory!),
+    );
+
+    if (result != null) {
+      setState(() => selectedExercise = result);
+    }
   }
 }

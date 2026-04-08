@@ -23,18 +23,13 @@ class ExerciseInputDialog extends ConsumerStatefulWidget {
       _ExerciseInputDialogState();
 }
 
-class _ExerciseInputDialogState
-    extends ConsumerState<ExerciseInputDialog> {
+class _ExerciseInputDialogState extends ConsumerState<ExerciseInputDialog> {
   double weight = 0;
   int reps = 0;
   int sets = 0;
 
-  Future<void> pickNumber(
-      String title,
-      Function(int) onSelected,
-      ) async {
+  Future<void> pickNumber(String title, Function(int) onSelected) async {
     final controller = TextEditingController();
-
     await showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -44,10 +39,7 @@ class _ExerciseInputDialogState
           keyboardType: TextInputType.number,
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Abbrechen"),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Abbrechen")),
           ElevatedButton(
             onPressed: () {
               final value = int.tryParse(controller.text) ?? 0;
@@ -67,91 +59,52 @@ class _ExerciseInputDialogState
 
     return AlertDialog(
       backgroundColor: const Color(0xFF1B1F23),
-      title: Text(
-        widget.name,
-        style: const TextStyle(color: Colors.white),
-      ),
+      title: Text(widget.name, style: const TextStyle(color: Colors.white)),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              buildField("GEWICHT (KG)", weight.toInt(), (v) {
-                setState(() => weight = v.toDouble());
-              }),
-              buildField("WIEDERHOLUNGEN", reps, (v) {
-                setState(() => reps = v);
-              }),
-              buildField("SÄTZE", sets, (v) {
-                setState(() => sets = v);
-              }),
+              buildField("GEWICHT (KG)", weight.toInt(), (v) => setState(() => weight = v.toDouble())),
+              buildField("WIEDERHOLUNGEN", reps, (v) => setState(() => reps = v)),
+              buildField("SÄTZE", sets, (v) => setState(() => sets = v)),
             ],
           ),
           const SizedBox(height: 20),
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text("Abbrechen"),
-        ),
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text("Abbrechen")),
         ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFFF3B30),
-          ),
+          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFF3B30)),
           onPressed: () {
             final exercise = Exercise(
+              id: DateTime.now().millisecondsSinceEpoch.toString(),
               name: widget.name,
               sets: List.generate(
                 sets,
-                    (index) => ExerciseSet(
-                  weight: weight,
-                  reps: reps,
-                ),
+                    (index) => ExerciseSet(weight: weight, reps: reps),
               ),
             );
 
-            notifier.addExercise(
-              widget.folderId,
-              widget.planId,
-              exercise,
-            );
-
+            notifier.addExercise(widget.folderId, widget.planId, exercise);
             Navigator.pop(context);
           },
           child: const Text("hinzufügen"),
-        )
+        ),
       ],
     );
   }
 
-  Widget buildField(
-      String title,
-      int value,
-      Function(int) onSelected,
-      ) {
+  Widget buildField(String title, int value, Function(int) onSelected) {
     return GestureDetector(
-      onTap: () {
-        pickNumber(title, onSelected);
-      },
+      onTap: () => pickNumber(title, onSelected),
       child: Column(
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white38,
-              fontSize: 11,
-            ),
-          ),
+          Text(title, style: const TextStyle(color: Colors.white38, fontSize: 11)),
           const SizedBox(height: 6),
-          Text(
-            value.toString(),
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 20,
-            ),
-          ),
+          Text(value.toString(), style: const TextStyle(color: Colors.white, fontSize: 20)),
         ],
       ),
     );

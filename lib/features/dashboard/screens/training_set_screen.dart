@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/layout/app_layout.dart';
-import '../providers/workout_providers.dart';
+import '../../workout/providers/workout_providers.dart';
 
 class TrainingSetScreen extends ConsumerWidget {
   final String exerciseId;

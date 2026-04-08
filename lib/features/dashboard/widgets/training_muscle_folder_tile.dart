@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/ui/ttg_list_tile.dart';
+import '../models/training_plan.dart';
 import '../models/training_folder.dart';
 
 class TrainingFolderPlanTile extends StatelessWidget {
   final TrainingFolder folder;
+  final TrainingPlan plan;
   final VoidCallback onDelete;
   final VoidCallback onMoveUp;
   final VoidCallback onMoveDown;
@@ -15,6 +18,7 @@ class TrainingFolderPlanTile extends StatelessWidget {
   const TrainingFolderPlanTile({
     super.key,
     required this.folder,
+    required this.plan,
     required this.onDelete,
     required this.onMoveUp,
     required this.onMoveDown,
@@ -26,41 +30,25 @@ class TrainingFolderPlanTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () =>
-          context.go('/workout/folders/${folder.id}/exercises'),
+      onTap: () => context.go('/dashboard/plans/${plan.id}/folders/${folder.id}/exercises', extra: plan),
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(14),
           color: Colors.white.withOpacity(0.05),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.1),
-          ),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
         ),
         child: TTGListTile(
           title: folder.name,
           actions: [
-            IconButton(
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              icon: const Icon(Icons.arrow_upward,
-                  size: 16, color: AppTheme.primaryRed),
-              onPressed: onMoveUp,
-            ),
+            IconButton(padding: EdgeInsets.zero, constraints: const BoxConstraints(), icon: const Icon(Icons.arrow_upward, size: 16, color: AppTheme.primaryRed), onPressed: onMoveUp),
             const SizedBox(width: 6),
-            IconButton(
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              icon: const Icon(Icons.arrow_downward,
-                  size: 16, color: AppTheme.primaryRed),
-              onPressed: onMoveDown,
-            ),
+            IconButton(padding: EdgeInsets.zero, constraints: const BoxConstraints(), icon: const Icon(Icons.arrow_downward, size: 16, color: AppTheme.primaryRed), onPressed: onMoveDown),
             const SizedBox(width: 6),
             PopupMenuButton<String>(
               padding: EdgeInsets.zero,
-              icon: const Icon(Icons.more_vert,
-                  size: 18, color: Colors.white54),
+              icon: const Icon(Icons.more_vert, size: 18, color: Colors.white54),
               onSelected: (v) {
                 if (v == 'copy') onDuplicate();
                 if (v == 'archive') onArchive();
