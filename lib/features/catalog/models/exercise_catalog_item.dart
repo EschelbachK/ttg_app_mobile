@@ -1,10 +1,7 @@
 class ExerciseCatalogItem {
-
   final String id;
   final String name;
   final String imageUrl;
-
-  // NEUE FELDER
   final String bodyRegion;
   final String equipment;
   final String primaryMuscle;
@@ -13,12 +10,10 @@ class ExerciseCatalogItem {
   final String difficulty;
   final String animationUrl;
 
-  ExerciseCatalogItem({
+  const ExerciseCatalogItem({
     required this.id,
     required this.name,
     required this.imageUrl,
-
-    // NEU
     required this.bodyRegion,
     required this.equipment,
     required this.primaryMuscle,
@@ -28,21 +23,18 @@ class ExerciseCatalogItem {
     required this.animationUrl,
   });
 
-  factory ExerciseCatalogItem.fromJson(Map<String, dynamic> json) {
-    return ExerciseCatalogItem(
-      id: json["id"],
-      name: json["name"],
-      imageUrl: json["imageUrl"] ?? "",
-
-      // NEU
-      bodyRegion: json["bodyRegion"] ?? "",
-      equipment: json["equipment"] ?? "",
-      primaryMuscle: json["primaryMuscle"] ?? "",
-      secondaryMuscles:
-      List<String>.from(json["secondaryMuscles"] ?? []),
-      exerciseType: json["exerciseType"] ?? "",
-      difficulty: json["difficulty"] ?? "",
-      animationUrl: json["animationUrl"] ?? "",
-    );
-  }
+  factory ExerciseCatalogItem.fromJson(Map<String, dynamic> json) =>
+      ExerciseCatalogItem(
+        id: json["id"],
+        name: json["name"],
+        imageUrl: json["imageUrl"] ?? "",
+        bodyRegion: json["bodyRegion"] ?? "",
+        equipment: json["equipment"] ?? "",
+        primaryMuscle: json["primaryMuscle"] ?? "",
+        secondaryMuscles:
+        List<String>.from(json["secondaryMuscles"] ?? []),
+        exerciseType: json["exerciseType"] ?? "",
+        difficulty: json["difficulty"] ?? "",
+        animationUrl: json["animationUrl"] ?? "",
+      );
 }
