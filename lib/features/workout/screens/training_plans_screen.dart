@@ -10,11 +10,11 @@ class TrainingPlansScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final async = ref.watch(trainingPlansProvider);
+    final plansAsync = ref.watch(trainingPlansProvider);
 
     return AppLayout(
       title: 'Workout',
-      child: async.when(
+      child: plansAsync.when(
         data: (plans) => plans.isEmpty
             ? const Center(child: Text('Keine Trainingspläne'))
             : ListView(
