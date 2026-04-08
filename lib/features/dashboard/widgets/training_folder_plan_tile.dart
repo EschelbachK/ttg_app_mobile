@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../workout/models/training_folder2.dart';
+import '../models/training_folder.dart';
 
 class TrainingFolderPlanTile extends StatelessWidget {
   final TrainingFolder folder;
