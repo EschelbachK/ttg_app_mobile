@@ -11,19 +11,18 @@ class AuthInterceptor extends Interceptor {
 
   AuthInterceptor(this.ref);
 
+  bool _isAuthPath(String path) =>
+      path.contains('/auth/login') ||
+          path.contains('/auth/register') ||
+          path.contains('/auth/refresh');
+
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
-    if (options.path.contains('/auth/login') ||
-        options.path.contains('/auth/register') ||
-        options.path.contains('/auth/refresh')) {
-      handler.next(options);
-      return;
-    }
+    if (_isAuthPath(options.path)) return handler.next(options);
 
-    final storage = ref.read(tokenStorageProvider);
-    final token = await storage.getAccessToken();
+    final token = await ref.read(tokenStorageProvider).getAccessToken();
 
-    if (token != null && token.isNotEmpty) {
+    if (token?.isNotEmpty == true) {
       options.headers['Authorization'] = 'Bearer $token';
     }
 
@@ -32,52 +31,35 @@ class AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    final path = err.requestOptions.path;
-
-    if (path.contains('/auth/login') ||
-        path.contains('/auth/register') ||
-        path.contains('/auth/refresh')) {
-      handler.next(err);
-      return;
+    if (_isAuthPath(err.requestOptions.path)) {
+      return handler.next(err);
     }
 
     if (err.response?.statusCode == 401) {
       try {
-        final authNotifier = ref.read(authProvider.notifier);
-        await authNotifier.refreshToken();
+        await ref.read(authProvider.notifier).refreshToken();
 
-        final storage = ref.read(tokenStorageProvider);
-        final newToken = await storage.getAccessToken();
+        final token = await ref.read(tokenStorageProvider).getAccessToken();
+        if (token == null || token.isEmpty) throw UnauthorizedException();
 
-        if (newToken == null || newToken.isEmpty) {
-          throw UnauthorizedException();
-        }
+        final request = err.requestOptions..headers['Authorization'] = 'Bearer $token';
 
-        final requestOptions = err.requestOptions;
-        requestOptions.headers['Authorization'] = 'Bearer $newToken';
-
-        final dio = ref.read(dioProvider);
-        final response = await dio.fetch(requestOptions);
-
-        handler.resolve(response);
-        return;
+        final response = await ref.read(dioProvider).fetch(request);
+        return handler.resolve(response);
       } catch (_) {
-        handler.reject(
+        return handler.reject(
           DioException(
             requestOptions: err.requestOptions,
             error: UnauthorizedException(),
           ),
         );
-        return;
       }
     }
-
-    final mappedError = DioErrorMapper.map(err);
 
     handler.reject(
       DioException(
         requestOptions: err.requestOptions,
-        error: mappedError,
+        error: DioErrorMapper.map(err),
       ),
     );
   }

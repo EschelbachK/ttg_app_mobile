@@ -8,11 +8,13 @@ final dioProvider = Provider<Dio>((ref) {
       baseUrl: 'http://10.0.2.2:8080/api',
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
-      contentType: 'application/json',
+      contentType: Headers.jsonContentType,
     ),
   );
 
-  dio.interceptors.add(AuthInterceptor(ref));
+  dio.interceptors.addAll([
+    AuthInterceptor(ref),
+  ]);
 
   return dio;
 });

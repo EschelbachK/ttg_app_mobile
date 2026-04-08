@@ -1,113 +1,30 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../services/token_storage.dart';
-import '../auth/auth_provider.dart';
-import '../error/api_exceptions.dart';
+import 'dio_provider.dart';
+
+final apiClientProvider = Provider<ApiClient>((ref) {
+  return ApiClient(ref.read(dioProvider));
+});
 
 class ApiClient {
-  final Ref ref;
-  final String baseUrl = "http://10.0.2.2:8080";
-  final TokenStorage _tokenStorage = TokenStorage();
+  final Dio dio;
 
-  ApiClient(this.ref);
+  ApiClient(this.dio);
 
-  Future<http.Response> get(String endpoint) async {
-    return _sendRequest("GET", endpoint);
+  Future<Response> get(String path, {Map<String, dynamic>? query}) {
+    return dio.get(path, queryParameters: query);
   }
 
-  Future<http.Response> post(
-      String endpoint, {
-        Map<String, dynamic>? body,
-      }) async {
-    return _sendRequest("POST", endpoint, body: body);
+  Future<Response> post(String path, {Map<String, dynamic>? data}) {
+    return dio.post(path, data: data);
   }
 
-  Future<http.Response> _sendRequest(
-      String method,
-      String endpoint, {
-        Map<String, dynamic>? body,
-      }) async {
-    try {
-      String? accessToken = await _tokenStorage.getAccessToken();
-
-      final headers = {
-        "Content-Type": "application/json",
-        if (accessToken != null)
-          "Authorization": "Bearer $accessToken",
-      };
-
-      final uri = Uri.parse("$baseUrl$endpoint");
-
-      http.Response response;
-
-      if (method == "GET") {
-        response = await http.get(uri, headers: headers);
-      } else {
-        response = await http.post(
-          uri,
-          headers: headers,
-          body: body != null ? jsonEncode(body) : null,
-        );
-      }
-
-      if (response.statusCode == 401) {
-        final refreshed = await _refreshToken();
-
-        if (refreshed) {
-          return _sendRequest(method, endpoint, body: body);
-        } else {
-          await _tokenStorage.clearTokens();
-          ref.read(authProvider.notifier).logout();
-          throw const UnauthorizedException("Session expired.");
-        }
-      }
-
-      if (response.statusCode >= 500) {
-        throw const ServerException("Server error occurred.");
-      }
-
-      if (response.statusCode >= 400) {
-        throw const NetworkException("Request failed.");
-      }
-
-      return response;
-    } on UnauthorizedException {
-      rethrow;
-    } on ServerException {
-      rethrow;
-    } on NetworkException {
-      rethrow;
-    } catch (e) {
-      throw const NetworkException("Unexpected network error.");
-    }
+  Future<Response> put(String path, {Map<String, dynamic>? data}) {
+    return dio.put(path, data: data);
   }
 
-  Future<bool> _refreshToken() async {
-    final refreshToken = await _tokenStorage.getRefreshToken();
-    if (refreshToken == null) return false;
-
-    final response = await http.post(
-      Uri.parse("$baseUrl/api/auth/refresh"),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"refreshToken": refreshToken}),
-    );
-
-    if (response.statusCode == 200) {
-      final json = jsonDecode(response.body);
-
-      final newAccessToken = json["data"]["accessToken"];
-      final newRefreshToken = json["data"]["refreshToken"];
-
-      await _tokenStorage.saveTokens(
-        newAccessToken,
-        newRefreshToken,
-      );
-
-      return true;
-    }
-
-    return false;
+  Future<Response> delete(String path) {
+    return dio.delete(path);
   }
 }
