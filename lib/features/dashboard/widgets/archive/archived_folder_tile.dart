@@ -1,11 +1,7 @@
-// 🔧 FIX: Badge + Layout wie Bild 2 + sauberer Row Aufbau
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/training_folder.dart';
-import '../../screens/muscle_group_screen.dart';
-import '../../models/training_plan.dart';
-import '../import_plan_sheet.dart';
+import '../../utils/archive_actions.dart';
 
 class ArchivedFolderTile extends ConsumerWidget {
   final TrainingFolder folder;
@@ -29,8 +25,6 @@ class ArchivedFolderTile extends ConsumerWidget {
           const Icon(Icons.fitness_center,
               color: Color(0xFFFF3B30)),
           const SizedBox(width: 12),
-
-          /// NAME + BADGE
           Expanded(
             child: Row(
               children: [
@@ -41,8 +35,6 @@ class ArchivedFolderTile extends ConsumerWidget {
                         color: Colors.white, fontSize: 16),
                   ),
                 ),
-
-                /// 🔥 BADGE FIX
                 Container(
                   padding: const EdgeInsets.symmetric(
                       horizontal: 10, vertical: 4),
@@ -62,26 +54,17 @@ class ArchivedFolderTile extends ConsumerWidget {
               ],
             ),
           ),
-
           IconButton(
             icon: const Icon(Icons.file_download,
                 color: Color(0xFFFF3B30)),
-            onPressed: () {
-              showDialog(
-                context: context,
-                barrierColor: Colors.transparent,
-                builder: (_) => ImportPlanSheet(
-                  plan: TrainingPlan(
-                    id: folder.trainingPlanId,
-                    name: folder.name,
-                    exercises: folder.exercises,
-                  ),
-                  folderId: folder.id,
-                ),
-              );
-            },
+            onPressed: () => ArchiveActions.openImport(
+              context,
+              folderId: folder.id,
+              planId: folder.trainingPlanId,
+              name: folder.name,
+              exercises: folder.exercises,
+            ),
           ),
-
           const Icon(Icons.arrow_forward_ios,
               color: Colors.white54, size: 16),
         ],
