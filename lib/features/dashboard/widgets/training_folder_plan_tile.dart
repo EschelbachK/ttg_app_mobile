@@ -26,7 +26,7 @@ class TrainingFolderPlanTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: Colors.black.withOpacity(0.35),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
@@ -34,27 +34,35 @@ class TrainingFolderPlanTile extends StatelessWidget {
           Expanded(
             child: Text(
               folder.name,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.3,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
           IconButton(
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
-            icon: const Icon(Icons.arrow_upward, size: 16, color: AppTheme.primaryRed),
+            icon: const Icon(Icons.arrow_upward,
+                size: 16, color: AppTheme.primaryRed),
             onPressed: onMoveUp,
           ),
           const SizedBox(width: 6),
           IconButton(
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
-            icon: const Icon(Icons.arrow_downward, size: 16, color: AppTheme.primaryRed),
+            icon: const Icon(Icons.arrow_downward,
+                size: 16, color: AppTheme.primaryRed),
             onPressed: onMoveDown,
           ),
           const SizedBox(width: 6),
           PopupMenuButton<String>(
             padding: EdgeInsets.zero,
-            icon: const Icon(Icons.more_vert, size: 18, color: Colors.white54),
+            icon: const Icon(Icons.more_vert,
+                size: 18, color: Colors.white54),
             onSelected: (v) {
               if (v == 'copy') onDuplicate();
               if (v == 'archive') onArchive();
