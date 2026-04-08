@@ -34,27 +34,36 @@ class TrainingFolderPlanTile extends StatelessWidget {
             child: Text(
               folder.name,
               style: const TextStyle(color: Colors.white),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
           IconButton(
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
             icon: const Icon(Icons.arrow_upward, size: 16),
             onPressed: onMoveUp,
           ),
+          const SizedBox(width: 6),
           IconButton(
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
             icon: const Icon(Icons.arrow_downward, size: 16),
             onPressed: onMoveDown,
           ),
-          IconButton(
-            icon: const Icon(Icons.copy, size: 16),
-            onPressed: onDuplicate,
-          ),
-          IconButton(
-            icon: const Icon(Icons.archive, size: 16),
-            onPressed: onArchive,
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete, size: 16),
-            onPressed: onDelete,
+          const SizedBox(width: 6),
+          PopupMenuButton<String>(
+            padding: EdgeInsets.zero,
+            icon: const Icon(Icons.more_vert, size: 18, color: Colors.white54),
+            onSelected: (v) {
+              if (v == 'copy') onDuplicate();
+              if (v == 'archive') onArchive();
+              if (v == 'delete') onDelete();
+            },
+            itemBuilder: (_) => const [
+              PopupMenuItem(value: 'copy', child: Text('Kopieren')),
+              PopupMenuItem(value: 'archive', child: Text('Archivieren')),
+              PopupMenuItem(value: 'delete', child: Text('Löschen')),
+            ],
           ),
         ],
       ),
