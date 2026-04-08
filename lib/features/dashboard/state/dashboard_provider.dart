@@ -278,6 +278,23 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       String folderId,
       String planId,
       Exercise exercise,
-      ) async =>
-      _createExercise(folderId, planId, exercise);
-}
+      ) async {
+    state = state.copyWith(
+      folders: state.folders.map((f) {
+        if (f.id == folderId) {
+          return f.copyWith(
+            exercises: [...f.exercises, exercise],
+          );
+        }
+        return f;
+      }).toList(),
+    );
+
+    try {
+      await api.createExercise(
+        planId: planId,
+        folderId: folderId,
+        name: exercise.name,
+      );
+    } catch (_) {}
+  }}
