@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../models/training_plan.dart';
-import '../../models/exercise.dart';
-import '../../state/dashboard_provider.dart';
+import '../../utils/archive_exercise_actions.dart';
 
 class ArchivedMuscleGroupTile extends ConsumerStatefulWidget {
   final TrainingPlan plan;
@@ -24,11 +22,11 @@ class ArchivedMuscleGroupTile extends ConsumerStatefulWidget {
 
 class _ArchivedMuscleGroupTileState
     extends ConsumerState<ArchivedMuscleGroupTile> {
-
   bool expanded = false;
 
   @override
   Widget build(BuildContext context) {
+    final p = widget.plan;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -39,49 +37,30 @@ class _ArchivedMuscleGroupTileState
       ),
       child: Column(
         children: [
-
           InkWell(
-            onTap: () {
-              setState(() {
-                expanded = !expanded;
-              });
-            },
+            onTap: () => setState(() => expanded = !expanded),
             child: Row(
               children: [
-
-                const Icon(
-                  Icons.fitness_center,
-                  color: Color(0xFFFF3B30),
-                ),
-
+                const Icon(Icons.fitness_center,
+                    color: Color(0xFFFF3B30)),
                 const SizedBox(width: 12),
-
                 Expanded(
                   child: Text(
-                    widget.plan.name,
+                    p.name,
                     style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
+                        color: Colors.white, fontSize: 16),
                   ),
                 ),
-
                 IconButton(
-                  icon: const Icon(
-                    Icons.download,
-                    color: Color(0xFFFF3B30),
+                  icon: const Icon(Icons.download,
+                      color: Color(0xFFFF3B30)),
+                  onPressed: () => ArchiveExerciseActions.importAll(
+                    ref,
+                    folderId: widget.folderId,
+                    planId: widget.targetPlanId,
+                    exercises: p.exercises,
                   ),
-                  onPressed: () {
-                    for (final e in widget.plan.exercises) {
-                      ref.read(dashboardProvider.notifier).importExercise(
-                        widget.folderId,
-                        widget.targetPlanId,
-                        e,
-                      );
-                    }
-                  },
                 ),
-
                 Icon(
                   expanded
                       ? Icons.keyboard_arrow_up
@@ -91,42 +70,34 @@ class _ArchivedMuscleGroupTileState
               ],
             ),
           ),
-
           if (expanded) ...[
             const SizedBox(height: 12),
-
-            ...widget.plan.exercises.map((e) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
-
-                    Expanded(
-                      child: Text(
-                        e.name,
-                        style: const TextStyle(
-                          color: Colors.white70,
+            ...p.exercises.map((e) => Padding(
+              padding:
+              const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      e.name,
+                      style: const TextStyle(
+                          color: Colors.white70),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.download,
+                        color: Color(0xFFFF3B30)),
+                    onPressed: () =>
+                        ArchiveExerciseActions.importSingle(
+                          ref,
+                          folderId: widget.folderId,
+                          planId: widget.targetPlanId,
+                          exercise: e,
                         ),
-                      ),
-                    ),
-
-                    IconButton(
-                      icon: const Icon(
-                        Icons.download,
-                        color: Color(0xFFFF3B30),
-                      ),
-                      onPressed: () {
-                        ref.read(dashboardProvider.notifier).importExercise(
-                          widget.folderId,
-                          widget.targetPlanId,
-                          e,
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              );
-            }),
+                  ),
+                ],
+              ),
+            )),
           ],
         ],
       ),
