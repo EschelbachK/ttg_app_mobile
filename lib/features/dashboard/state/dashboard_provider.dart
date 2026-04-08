@@ -66,192 +66,178 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
   void showPlans() => state = state.copyWith(showArchive: false);
   void showArchive() => state = state.copyWith(showArchive: true);
 
-  Future<void> loadTrainingPlans() async {
+  Future<void> _execute(Future<void> Function() fn) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final plans = (await api.getTrainingPlans())
-          .map<TrainingPlan>((e) => TrainingPlan.fromJson(e))
-          .toList();
-
-      final archivedPlans = (await api.getArchivedPlans())
-          .map<TrainingPlan>((e) => TrainingPlan.fromJson(e))
-          .toList();
-
-      final archivedFolders = (await api.getArchivedFolders())
-          .map<TrainingFolder>((e) => TrainingFolder.fromJson(e))
-          .toList();
-
-      final allPlans = [...plans, ...archivedPlans];
-      List<TrainingFolder> allFolders = [];
-
-      for (final p in allPlans) {
-        final folderData = await api.getFolders(p.id);
-        final folders = await Future.wait(folderData.map((e) async {
-          final f = TrainingFolder.fromJson(e);
-          final ex = await api.getExercises(planId: p.id, folderId: f.id);
-          return f.copyWith(
-            trainingPlanId: p.id,
-            exercises:
-            ex.map<Exercise>((x) => Exercise.fromJson(x)).toList(),
-          );
-        }));
-
-        allFolders.addAll(
-            folders.where((f) => !archivedFolders.any((a) => a.id == f.id)));
-      }
-
-      state = state.copyWith(
-        trainingPlans: plans,
-        archivedPlans: archivedPlans,
-        archivedFolders: archivedFolders,
-        folders: allFolders,
-        isLoading: false,
-      );
+      await fn();
     } catch (e) {
       final err = GlobalErrorHandler.handle(e);
-      state = state.copyWith(isLoading: false, error: err.message);
+      state = state.copyWith(error: err.message);
     }
+    state = state.copyWith(isLoading: false);
   }
 
-  Future<void> createTrainingPlan(String name) async {
-    await api.createTrainingPlan(name);
-    await loadTrainingPlans();
-  }
+  Future<void> loadTrainingPlans() async => _execute(() async {
+    final plans = (await api.getTrainingPlans())
+        .map<TrainingPlan>((e) => TrainingPlan.fromJson(e))
+        .toList();
 
-  Future<void> importPlan(TrainingPlan plan) async {
-    await api.createTrainingPlan(plan.name);
-    await loadTrainingPlans();
-  }
+    final archivedPlans = (await api.getArchivedPlans())
+        .map<TrainingPlan>((e) => TrainingPlan.fromJson(e))
+        .toList();
 
-  Future<void> renamePlan(String id, String name) async {
-    await api.updateTrainingPlan(id, name);
-    await loadTrainingPlans();
-  }
+    final archivedFolders = (await api.getArchivedFolders())
+        .map<TrainingFolder>((e) => TrainingFolder.fromJson(e))
+        .toList();
 
-  Future<void> deletePlan(String id) async {
-    await api.deleteTrainingPlan(id);
-    await loadTrainingPlans();
-  }
+    final allPlans = [...plans, ...archivedPlans];
 
-  Future<void> archivePlan(String id) async {
-    await api.archiveTrainingPlan(id);
-    await loadTrainingPlans();
-  }
+    final foldersNested = await Future.wait(allPlans.map((p) async {
+      final folderData = await api.getFolders(p.id);
+      return Future.wait(folderData.map((e) async {
+        final f = TrainingFolder.fromJson(e);
+        final ex = await api.getExercises(planId: p.id, folderId: f.id);
+        return f.copyWith(
+          trainingPlanId: p.id,
+          exercises: ex.map<Exercise>((x) => Exercise.fromJson(x)).toList(),
+        );
+      }));
+    }));
 
-  Future<void> restorePlan(String id) async {
-    await api.restoreTrainingPlan(id);
-    await loadTrainingPlans();
-  }
+    final allFolders = foldersNested
+        .expand((e) => e)
+        .where((f) => !archivedFolders.any((a) => a.id == f.id))
+        .toList();
 
-  Future<void> addFolder(String planId, String name) async {
-    await api.createFolder(
-      trainingPlanId: planId,
-      name: name,
-      order:
-      state.folders.where((f) => f.trainingPlanId == planId).length,
-    );
-    await loadTrainingPlans();
-  }
-
-  Future<void> renameFolder(String id, String name) async {
-    await api.updateFolder(folderId: id, name: name);
     state = state.copyWith(
-      folders: state.folders
-          .map((f) => f.id == id ? f.copyWith(name: name) : f)
-          .toList(),
+      trainingPlans: plans,
+      archivedPlans: archivedPlans,
+      archivedFolders: archivedFolders,
+      folders: allFolders,
     );
-  }
+  });
 
-  Future<void> deleteFolder(String id) async {
-    await api.deleteFolder(id);
-    await loadTrainingPlans();
-  }
+  Future<void> _refresh(Future<void> Function() fn) async =>
+      _execute(() async {
+        await fn();
+        await loadTrainingPlans();
+      });
 
-  Future<void> duplicateFolder(String id) async {
-    await api.duplicateFolder(id);
-    await loadTrainingPlans();
-  }
+  Future<void> createTrainingPlan(String name) async =>
+      _refresh(() => api.createTrainingPlan(name));
 
-  Future<void> archiveFolder(String id) async {
-    await api.archiveFolder(id);
-    await loadTrainingPlans();
-  }
+  Future<void> importPlan(TrainingPlan plan) async =>
+      _refresh(() => api.createTrainingPlan(plan.name));
 
-  Future<void> restoreFolder(String id) async {
-    await api.restoreFolder(id);
-    await loadTrainingPlans();
-  }
+  Future<void> renamePlan(String id, String name) async =>
+      _refresh(() => api.updateTrainingPlan(id, name));
 
-  Future<void> moveFolderUp(String id) async {
-    final f = state.folders.firstWhere((e) => e.id == id);
-    final list = state.folders
-        .where((e) => e.trainingPlanId == f.trainingPlanId)
-        .toList()
-      ..sort((a, b) => a.order.compareTo(b.order));
+  Future<void> deletePlan(String id) async =>
+      _refresh(() => api.deleteTrainingPlan(id));
 
-    final i = list.indexWhere((e) => e.id == id);
-    if (i <= 0) return;
+  Future<void> archivePlan(String id) async =>
+      _refresh(() => api.archiveTrainingPlan(id));
 
-    await api.updateFolderOrder(id, list[i - 1].order);
-    await loadTrainingPlans();
-  }
+  Future<void> restorePlan(String id) async =>
+      _refresh(() => api.restoreTrainingPlan(id));
 
-  Future<void> moveFolderDown(String id) async {
-    final f = state.folders.firstWhere((e) => e.id == id);
-    final list = state.folders
-        .where((e) => e.trainingPlanId == f.trainingPlanId)
-        .toList()
-      ..sort((a, b) => a.order.compareTo(b.order));
+  Future<void> addFolder(String planId, String name) async =>
+      _refresh(() => api.createFolder(
+        trainingPlanId: planId,
+        name: name,
+        order: state.folders
+            .where((f) => f.trainingPlanId == planId)
+            .length,
+      ));
 
-    final i = list.indexWhere((e) => e.id == id);
-    if (i >= list.length - 1) return;
+  Future<void> renameFolder(String id, String name) async =>
+      _execute(() async {
+        await api.updateFolder(folderId: id, name: name);
+        state = state.copyWith(
+          folders: state.folders
+              .map((f) => f.id == id ? f.copyWith(name: name) : f)
+              .toList(),
+        );
+      });
 
-    await api.updateFolderOrder(id, list[i + 1].order);
-    await loadTrainingPlans();
-  }
+  Future<void> deleteFolder(String id) async =>
+      _refresh(() => api.deleteFolder(id));
+
+  Future<void> duplicateFolder(String id) async =>
+      _refresh(() => api.duplicateFolder(id));
+
+  Future<void> archiveFolder(String id) async =>
+      _refresh(() => api.archiveFolder(id));
+
+  Future<void> restoreFolder(String id) async =>
+      _refresh(() => api.restoreFolder(id));
+
+  Future<void> moveFolderUp(String id) async =>
+      _refresh(() async {
+        final f = state.folders.firstWhere((e) => e.id == id);
+        final list = state.folders
+            .where((e) => e.trainingPlanId == f.trainingPlanId)
+            .toList()
+          ..sort((a, b) => a.order.compareTo(b.order));
+
+        final i = list.indexWhere((e) => e.id == id);
+        if (i <= 0) return;
+
+        await api.updateFolderOrder(id, list[i - 1].order);
+      });
+
+  Future<void> moveFolderDown(String id) async =>
+      _refresh(() async {
+        final f = state.folders.firstWhere((e) => e.id == id);
+        final list = state.folders
+            .where((e) => e.trainingPlanId == f.trainingPlanId)
+            .toList()
+          ..sort((a, b) => a.order.compareTo(b.order));
+
+        final i = list.indexWhere((e) => e.id == id);
+        if (i >= list.length - 1) return;
+
+        await api.updateFolderOrder(id, list[i + 1].order);
+      });
 
   Future<void> importFolderToPlan({
     required String folderId,
     required String targetPlanId,
     required String name,
-  }) async {
-    await api.createFolder(
-      trainingPlanId: targetPlanId,
-      name: name,
-      order: state.folders
-          .where((f) => f.trainingPlanId == targetPlanId)
-          .length,
-    );
-    await api.restoreFolder(folderId);
-    await loadTrainingPlans();
+  }) async =>
+      _refresh(() async {
+        await api.createFolder(
+          trainingPlanId: targetPlanId,
+          name: name,
+          order: state.folders
+              .where((f) => f.trainingPlanId == targetPlanId)
+              .length,
+        );
+        await api.restoreFolder(folderId);
+      });
 
-
-  }Future<void> importExercise(
-
+  Future<void> _createExercise(
       String folderId,
       String planId,
       Exercise exercise,
-      ) async {
-    await api.createExercise(
-      planId: planId,
-      folderId: folderId,
-      name: exercise.name,
-    );
+      ) async =>
+      _refresh(() => api.createExercise(
+        planId: planId,
+        folderId: folderId,
+        name: exercise.name,
+      ));
 
-    await loadTrainingPlans();
-  }
+  Future<void> importExercise(
+      String folderId,
+      String planId,
+      Exercise exercise,
+      ) async =>
+      _createExercise(folderId, planId, exercise);
+
   Future<void> addExercise(
       String folderId,
       String planId,
       Exercise exercise,
-      ) async {
-    await api.createExercise(
-      planId: planId,
-      folderId: folderId,
-      name: exercise.name,
-    );
-
-    await loadTrainingPlans();
-  }
-
+      ) async =>
+      _createExercise(folderId, planId, exercise);
 }
