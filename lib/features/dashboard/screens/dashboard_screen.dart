@@ -18,11 +18,14 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _S extends ConsumerState<DashboardScreen> {
+  final Set<String> expandedPlans = {};
+
   @override
   void initState() {
     super.initState();
     Future.microtask(
-            () => ref.read(dashboardProvider.notifier).loadTrainingPlans());
+          () => ref.read(dashboardProvider.notifier).loadTrainingPlans(),
+    );
   }
 
   Widget section(String t) => Padding(
@@ -46,8 +49,7 @@ class _S extends ConsumerState<DashboardScreen> {
 
     return Stack(children: [
       Positioned.fill(
-        child: Image.asset("assets/images/dashboard_bg.png",
-            fit: BoxFit.cover),
+        child: Image.asset("assets/images/dashboard_bg.png", fit: BoxFit.cover),
       ),
       Positioned.fill(
         child: Container(color: Colors.black.withOpacity(.55)),
@@ -73,15 +75,16 @@ class _S extends ConsumerState<DashboardScreen> {
               const Spacer(),
               if (!s.showArchive)
                 IconButton(
-                  icon: const Icon(Icons.add,
-                      color: AppTheme.primaryRed),
+                  icon: const Icon(Icons.add, color: AppTheme.primaryRed),
                   onPressed: () => showTTGInputDialog(
                     context: context,
                     title: "Neuer Trainingsplan",
                     buttonText: "Erstellen",
-                    onSubmit: (v) => ref
-                        .read(dashboardProvider.notifier)
-                        .createTrainingPlan(v),
+                    onSubmit: (v) {
+                      ref
+                          .read(dashboardProvider.notifier)
+                          .createTrainingPlan(v);
+                    },
                   ),
                 )
               else
@@ -106,14 +109,12 @@ class _S extends ConsumerState<DashboardScreen> {
                 ],
               ])
                   : s.isLoading
-                  ? const Center(
-                  child: CircularProgressIndicator())
+                  ? const Center(child: CircularProgressIndicator())
                   : s.trainingPlans.isEmpty
                   ? Center(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                    AppTheme.primaryRed,
+                    backgroundColor: AppTheme.primaryRed,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                         horizontal: 32, vertical: 16),
@@ -121,15 +122,14 @@ class _S extends ConsumerState<DashboardScreen> {
                         borderRadius:
                         BorderRadius.circular(30)),
                   ),
-                  onPressed: () =>
-                      showTTGInputDialog(
-                        context: context,
-                        title: "Neuer Trainingsplan",
-                        buttonText: "Erstellen",
-                        onSubmit: (v) => ref
-                            .read(dashboardProvider.notifier)
-                            .createTrainingPlan(v),
-                      ),
+                  onPressed: () => showTTGInputDialog(
+                    context: context,
+                    title: "Neuer Trainingsplan",
+                    buttonText: "Erstellen",
+                    onSubmit: (v) => ref
+                        .read(dashboardProvider.notifier)
+                        .createTrainingPlan(v),
+                  ),
                   child: const Text(
                     "+ Neuen Plan erstellen",
                     style: TextStyle(fontSize: 16),
@@ -137,12 +137,25 @@ class _S extends ConsumerState<DashboardScreen> {
                 ),
               )
                   : ListView(
-                children: s.trainingPlans
-                    .map((p) => Column(children: [
-                  TrainingPlanCard(plan: p),
-                  const SizedBox(height: 10)
-                ]))
-                    .toList(),
+                children: s.trainingPlans.map((p) {
+                  final isExpanded =
+                  expandedPlans.contains(p.id);
+
+                  return Column(children: [
+                    TrainingPlanCard(
+                      plan: p,
+                      initiallyExpanded: isExpanded,
+                      onExpansionChanged: (open) {
+                        setState(() {
+                          open
+                              ? expandedPlans.add(p.id)
+                              : expandedPlans.remove(p.id);
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 10)
+                  ]);
+                }).toList(),
               ),
             ),
           )
