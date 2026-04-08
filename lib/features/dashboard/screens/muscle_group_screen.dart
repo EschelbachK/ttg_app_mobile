@@ -22,10 +22,12 @@ class MuscleGroupScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<MuscleGroupScreen> createState() => _S();
+  ConsumerState<MuscleGroupScreen> createState() =>
+      _MuscleGroupScreenState();
 }
 
-class _S extends ConsumerState<MuscleGroupScreen> {
+class _MuscleGroupScreenState
+    extends ConsumerState<MuscleGroupScreen> {
   bool open = false;
 
   @override
@@ -46,11 +48,12 @@ class _S extends ConsumerState<MuscleGroupScreen> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white54),
+            icon:
+            const Icon(Icons.arrow_back, color: Colors.white54),
             onPressed: () => Navigator.pop(context),
           ),
-          title:
-          Text(plan.name, style: const TextStyle(color: Colors.white)),
+          title: Text(plan.name,
+              style: const TextStyle(color: Colors.white)),
         ),
         body: Column(children: [
           const SizedBox(height: 20),
@@ -85,13 +88,15 @@ class _S extends ConsumerState<MuscleGroupScreen> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
                   child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                    filter:
+                    ImageFilter.blur(sigmaX: 8, sigmaY: 8),
                     child: Container(
                       decoration: BoxDecoration(
                         color: Colors.black.withOpacity(.06),
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                            color: Colors.white.withOpacity(.25)),
+                            color:
+                            Colors.white.withOpacity(.25)),
                       ),
                       child: ExpansionTile(
                         trailing: const Icon(Icons.add,
@@ -102,7 +107,8 @@ class _S extends ConsumerState<MuscleGroupScreen> {
                           child: Text("Übung hinzufügen",
                               style: TextStyle(
                                   color: AppTheme.primaryRed,
-                                  fontWeight: FontWeight.bold)),
+                                  fontWeight:
+                                  FontWeight.bold)),
                         ),
                         children: [
                           ExerciseSelectionCard(
@@ -121,7 +127,8 @@ class _S extends ConsumerState<MuscleGroupScreen> {
             child: plan.exercises.isEmpty
                 ? const Center(
                 child: Text("Noch keine Übungen hinzugefügt",
-                    style: TextStyle(color: Colors.white38)))
+                    style:
+                    TextStyle(color: Colors.white38)))
                 : ListView.builder(
               itemCount: plan.exercises.length,
               itemBuilder: (_, i) =>
