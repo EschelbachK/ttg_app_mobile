@@ -2,15 +2,17 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-Future<bool> showTTGConfirmDialog({
+Future<void> showTTGInputDialog({
   required BuildContext context,
   required String title,
-  required String subtitle,
-  String confirmText = "Löschen",
+  required String buttonText,
+  required Function(String) onSubmit,
+  String initialValue = "",
 }) async {
-  final result = await showDialog<bool>(
+  final controller = TextEditingController(text: initialValue);
+
+  await showDialog(
     context: context,
-    barrierDismissible: false,
     builder: (c) => Dialog(
       backgroundColor: Colors.transparent,
       child: ClipRRect(
@@ -29,12 +31,18 @@ Future<bool> showTTGConfirmDialog({
               children: [
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: Text(title, style: const TextStyle(color: Colors.white, fontSize: 20)),
+                  child: Text(title,
+                      style: const TextStyle(
+                          color: Colors.white, fontSize: 20)),
                 ),
                 const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(subtitle, style: const TextStyle(color: Colors.white54)),
+                TextField(
+                  controller: controller,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    hintText: "Eingeben...",
+                    hintStyle: TextStyle(color: Colors.white38),
+                  ),
                 ),
                 const SizedBox(height: 20),
                 const Divider(color: AppTheme.primaryRed),
@@ -43,8 +51,9 @@ Future<bool> showTTGConfirmDialog({
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
-                      onPressed: () => Navigator.pop(c, false),
-                      child: const Text("Abbrechen", style: TextStyle(color: Colors.white70)),
+                      onPressed: () => Navigator.pop(c),
+                      child: const Text("Abbrechen",
+                          style: TextStyle(color: Colors.white70)),
                     ),
                     const SizedBox(width: 10),
                     ElevatedButton(
@@ -52,8 +61,11 @@ Future<bool> showTTGConfirmDialog({
                         backgroundColor: AppTheme.primaryRed,
                         foregroundColor: Colors.white,
                       ),
-                      onPressed: () => Navigator.pop(c, true),
-                      child: Text(confirmText),
+                      onPressed: () {
+                        onSubmit(controller.text.trim());
+                        Navigator.pop(c);
+                      },
+                      child: Text(buttonText),
                     ),
                   ],
                 ),
@@ -64,5 +76,4 @@ Future<bool> showTTGConfirmDialog({
       ),
     ),
   );
-  return result ?? false;
 }
