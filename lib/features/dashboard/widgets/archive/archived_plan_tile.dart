@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../models/exercise.dart';
 import '../../models/training_plan.dart';
 import '../../state/dashboard_provider.dart';
+import '../../utils/dashboard_mapper.dart';
 import '../import_plan_sheet.dart';
 
 class ArchivedPlanTile extends ConsumerStatefulWidget {
@@ -44,8 +44,6 @@ class _ArchivedPlanTileState
                     Colors.black.withOpacity(0.85),
                     const Color(0xFF1A0000).withOpacity(0.85),
                   ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
                 ),
                 border: Border.all(
                   color: Colors.white.withOpacity(0.12),
@@ -62,22 +60,18 @@ class _ArchivedPlanTileState
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    "Plan löschen?",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  const Text("Plan löschen?",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600)),
                   const SizedBox(height: 10),
                   Text(
                     'Möchtest du "${widget.plan.name}" endgültig löschen?',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
-                      fontSize: 13,
-                    ),
+                        color: Colors.white.withOpacity(0.7),
+                        fontSize: 13),
                   ),
                   const SizedBox(height: 24),
                   Row(
@@ -90,13 +84,10 @@ class _ArchivedPlanTileState
                             padding: const EdgeInsets.symmetric(
                                 vertical: 14),
                             alignment: Alignment.center,
-                            child: Text(
-                              "Abbrechen",
-                              style: TextStyle(
-                                color:
-                                Colors.white.withOpacity(0.6),
-                              ),
-                            ),
+                            child: Text("Abbrechen",
+                                style: TextStyle(
+                                    color: Colors.white
+                                        .withOpacity(0.6))),
                           ),
                         ),
                       ),
@@ -118,21 +109,12 @@ class _ArchivedPlanTileState
                               color: const Color(0xFFFF3B30),
                               borderRadius:
                               BorderRadius.circular(30),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFFFF3B30)
-                                      .withOpacity(0.4),
-                                  blurRadius: 12,
-                                ),
-                              ],
                             ),
-                            child: const Text(
-                              "Löschen",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                            child: const Text("Löschen",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight:
+                                    FontWeight.w600)),
                           ),
                         ),
                       ),
@@ -149,10 +131,6 @@ class _ArchivedPlanTileState
 
   void _openImport(BuildContext context, String folderId,
       String name, List exercises, String planId) {
-    final mapped = exercises
-        .map((e) => e is Exercise ? e : Exercise.fromJson(e))
-        .toList();
-
     showDialog(
       context: context,
       barrierColor: Colors.transparent,
@@ -160,7 +138,8 @@ class _ArchivedPlanTileState
         plan: TrainingPlan(
           id: planId,
           name: name,
-          exercises: mapped,
+          exercises:
+          DashboardMapper.mapExercises(exercises),
         ),
         folderId: folderId,
       ),
@@ -249,19 +228,13 @@ class _ArchivedPlanTileState
                   ),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.fitness_center,
-                        color: Color(0xFFFF3B30),
-                        size: 18,
-                      ),
+                      const Icon(Icons.fitness_center,
+                          color: Color(0xFFFF3B30), size: 18),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Text(
-                          f.name,
-                          style: const TextStyle(
-                            color: Colors.white,
-                          ),
-                        ),
+                        child: Text(f.name,
+                            style: const TextStyle(
+                                color: Colors.white)),
                       ),
                       IconButton(
                         icon: const Icon(Icons.file_download,
