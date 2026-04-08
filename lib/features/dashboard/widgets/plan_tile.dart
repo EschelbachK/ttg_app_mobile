@@ -1,12 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/ui/ttg_confirm_dialog.dart';
-import '../../../core/ui/ttg_input_dialog.dart';
 import '../models/training_plan.dart';
-import '../state/active_plan_provider.dart';
-import '../screens/muscle_group_screen.dart';
-import '../state/dashboard_provider.dart';
+import '../utils/plan_tile_actions.dart';
 
 class PlanTile extends ConsumerStatefulWidget {
   final String folderId;
@@ -33,7 +29,6 @@ class _PlanTileState extends ConsumerState<PlanTile> {
 
   @override
   Widget build(BuildContext context) {
-    final notifier = ref.read(dashboardProvider.notifier);
     final plan = widget.plan;
 
     return Container(
@@ -46,7 +41,8 @@ class _PlanTileState extends ConsumerState<PlanTile> {
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.05),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withOpacity(0.08)),
+              border:
+              Border.all(color: Colors.white.withOpacity(0.08)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.white.withOpacity(0.08),
@@ -64,94 +60,75 @@ class _PlanTileState extends ConsumerState<PlanTile> {
                       Expanded(
                         child: InkWell(
                           borderRadius: BorderRadius.circular(12),
-                          onTap: () {
-                            ref.read(activePlanIdProvider.notifier).state = plan.id;
-
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => MuscleGroupScreen(
-                                  folderId: widget.folderId,
-                                  plan: plan,
-                                  isArchived: widget.isArchived,
-                                ),
-                              ),
-                            );
-                          },
+                          onTap: () => PlanTileActions.openPlan(
+                            context,
+                            ref,
+                            folderId: widget.folderId,
+                            plan: plan,
+                            isArchived: widget.isArchived,
+                          ),
                           child: Row(
                             children: [
-                              const Icon(Icons.fitness_center, color: Color(0xFFFF3B30)),
+                              const Icon(Icons.fitness_center,
+                                  color: Color(0xFFFF3B30)),
                               const SizedBox(width: 10),
-                              Text(
-                                plan.name,
-                                style: const TextStyle(color: Colors.white),
-                              ),
+                              Text(plan.name,
+                                  style: const TextStyle(
+                                      color: Colors.white)),
                             ],
                           ),
                         ),
                       ),
-
                       if (widget.isArchived)
                         IconButton(
-                          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white54),
-                          onPressed: () => setState(() => expanded = !expanded),
+                          icon: const Icon(
+                              Icons.keyboard_arrow_down,
+                              color: Colors.white54),
+                          onPressed: () =>
+                              setState(() => expanded = !expanded),
                         ),
-
                       if (!widget.isArchived)
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             GestureDetector(
-                              onTap: () {
-                                showTTGInputDialog(
-                                  context: context,
-                                  title: "Muskelgruppe umbenennen",
-                                  buttonText: "Speichern",
-                                  initialValue: plan.name,
-                                  onSubmit: (value) {
-                                    notifier.renamePlan(plan.id, value);
-                                  },
-                                );
-                              },
+                              onTap: () => PlanTileActions.rename(
+                                  context, ref, plan),
                               child: const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 6),
-                                child: Icon(Icons.edit, color: Color(0xFFFF3B30), size: 18),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 6),
+                                child: Icon(Icons.edit,
+                                    color: Color(0xFFFF3B30),
+                                    size: 18),
                               ),
                             ),
-
                             GestureDetector(
-                              onTap: () async {
-                                final confirm = await showTTGConfirmDialog(
-                                  context: context,
-                                  title: "Muskelgruppe löschen",
-                                  subtitle: "Wirklich löschen?",
-                                );
-                                if (confirm) widget.onDelete();
-                              },
+                              onTap: () => PlanTileActions.delete(
+                                  context, widget.onDelete),
                               child: const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 6),
-                                child: Icon(Icons.delete, color: Color(0xFFFF3B30), size: 18),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 6),
+                                child: Icon(Icons.delete,
+                                    color: Color(0xFFFF3B30),
+                                    size: 18),
                               ),
                             ),
-
                             PopupMenuButton<String>(
-                              icon: const Icon(Icons.more_vert, color: Colors.white54, size: 20),
+                              icon: const Icon(Icons.more_vert,
+                                  color: Colors.white54,
+                                  size: 20),
                               onSelected: (value) async {
-                                if (value == 'archive') widget.onArchive();
-
-                                if (value == 'delete') {
-                                  final confirm = await showTTGConfirmDialog(
-                                    context: context,
-                                    title: "Muskelgruppe löschen",
-                                    subtitle: "Wirklich löschen?",
-                                  );
-                                  if (confirm) widget.onDelete();
-                                }
+                                if (value == 'archive')
+                                  widget.onArchive();
+                                if (value == 'delete')
+                                  await PlanTileActions.delete(
+                                      context, widget.onDelete);
                               },
                               itemBuilder: (context) => const [
                                 PopupMenuItem(
                                   value: 'archive',
-                                  child: Text('Gruppe archivieren'),
+                                  child: Text(
+                                      'Gruppe archivieren'),
                                 ),
                                 PopupMenuDivider(),
                                 PopupMenuItem(
@@ -165,46 +142,56 @@ class _PlanTileState extends ConsumerState<PlanTile> {
                     ],
                   ),
                 ),
-
                 if (expanded && widget.isArchived)
                   Column(
-                    children: plan.exercises.map((group) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.05),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  group.name,
-                                  style: const TextStyle(color: Colors.white),
-                                ),
+                    children: plan.exercises
+                        .map((e) => Padding(
+                      padding:
+                      const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              padding:
+                              const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.white
+                                    .withOpacity(0.05),
+                                borderRadius:
+                                BorderRadius.circular(
+                                    12),
                               ),
+                              child: Text(e.name,
+                                  style:
+                                  const TextStyle(
+                                      color: Colors
+                                          .white)),
                             ),
-                            const SizedBox(width: 8),
-                            GestureDetector(
-                              onTap: () {
-                                ref.read(dashboardProvider.notifier).importExercise(
+                          ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () =>
+                                PlanTileActions
+                                    .importExercise(
+                                  ref,
                                   widget.folderId,
                                   plan.id,
-                                  group,
-                                );
-                              },
-                              child: const Icon(
-                                Icons.download,
-                                color: Color(0xFFFF3B30),
-                                size: 20,
-                              ),
+                                  e,
+                                ),
+                            child: const Icon(
+                              Icons.download,
+                              color: Color(0xFFFF3B30),
+                              size: 20,
                             ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
+                          ),
+                        ],
+                      ),
+                    ))
+                        .toList(),
                   ),
               ],
             ),
