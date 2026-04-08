@@ -59,6 +59,7 @@ class _S extends ConsumerState<TrainingPlanCard> {
       child: Column(
         children: [
           GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: toggle,
             child: TTGListTile(
               title: p.name,
@@ -134,6 +135,7 @@ class _S extends ConsumerState<TrainingPlanCard> {
                 )),
                 const SizedBox(height: 6),
                 GestureDetector(
+                  behavior: HitTestBehavior.opaque,
                   onTap: () => TrainingPlanActions.createFolder(
                       context, ref, p.id),
                   child: const Padding(
@@ -156,7 +158,10 @@ class _S extends ConsumerState<TrainingPlanCard> {
 
     return Padding(
       padding: EdgeInsets.fromLTRB(16, 0, 16, open ? 16 : 12),
-      child: open ? TTGGlowBorder(child: container) : container,
+      child: TTGGlowBorder(
+        height: open ? 3 : 2,
+        child: container,
+      ),
     );
   }
 }
