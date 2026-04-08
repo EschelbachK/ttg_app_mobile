@@ -32,11 +32,8 @@ class _MuscleGroupScreenState
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(dashboardProvider);
-
-    final folder = state.folders.firstWhere(
-          (f) => f.id == widget.folderId,
-    );
-
+    final folder =
+    state.folders.firstWhere((f) => f.id == widget.folderId);
     final exercises = folder.exercises;
 
     return Stack(
@@ -53,9 +50,10 @@ class _MuscleGroupScreenState
             elevation: 0,
             centerTitle: true,
             leading: IconButton(
-                icon: const Icon(Icons.arrow_back,
-                    color: Colors.white54),
-                onPressed: () => Navigator.pop(context)),
+              icon:
+              const Icon(Icons.arrow_back, color: Colors.white54),
+              onPressed: () => Navigator.pop(context),
+            ),
             title: Text(folder.name,
                 style: const TextStyle(color: Colors.white)),
           ),
@@ -68,29 +66,92 @@ class _MuscleGroupScreenState
                   const EdgeInsets.symmetric(horizontal: 20),
                   child: TTGGlowBorder(
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(22),
                       child: BackdropFilter(
                         filter:
-                        ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                        child: ExpansionTile(
-                          trailing: const Icon(Icons.add,
-                              color: AppTheme.primaryRed),
-                          onExpansionChanged: (v) =>
-                              setState(() => open = v),
-                          title: const Center(
-                            child: Text(
-                              "Übung hinzufügen",
-                              style: TextStyle(
-                                  color: AppTheme.primaryRed,
-                                  fontWeight: FontWeight.bold),
-                            ),
+                        ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.35),
+                            borderRadius:
+                            BorderRadius.circular(22),
+                            border: Border.all(
+                                color: Colors.white
+                                    .withOpacity(0.12)),
                           ),
-                          children: [
-                            ExerciseSelectionCard(
-                              folderId: folder.id,
-                              planId: widget.plan.id,
-                            )
-                          ],
+                          child: Column(
+                            children: [
+                              GestureDetector(
+                                onTap: () =>
+                                    setState(() => open = !open),
+                                child: Padding(
+                                  padding:
+                                  const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 14),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 26,
+                                        height: 26,
+                                        decoration: BoxDecoration(
+                                          color: AppTheme.primaryRed
+                                              .withOpacity(.15),
+                                          borderRadius:
+                                          BorderRadius.circular(
+                                              8),
+                                        ),
+                                        child: const Icon(Icons.add,
+                                            size: 16,
+                                            color: AppTheme.primaryRed),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      const Expanded(
+                                        child: Text(
+                                          "Übung hinzufügen",
+                                          style: TextStyle(
+                                            color:
+                                            AppTheme.primaryRed,
+                                            fontSize: 15,
+                                            fontWeight:
+                                            FontWeight.w600,
+                                            letterSpacing: 0.3,
+                                          ),
+                                        ),
+                                      ),
+                                      AnimatedRotation(
+                                        turns: open ? .5 : 0,
+                                        duration:
+                                        const Duration(
+                                            milliseconds: 200),
+                                        child: const Icon(
+                                          Icons.keyboard_arrow_down,
+                                          color: Colors.white54,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              AnimatedSize(
+                                duration:
+                                const Duration(milliseconds: 200),
+                                child: open
+                                    ? Padding(
+                                  padding:
+                                  const EdgeInsets.fromLTRB(
+                                      0, 0, 0, 12),
+                                  child:
+                                  ExerciseSelectionCard(
+                                    folderId: folder.id,
+                                    planId:
+                                    widget.plan.id,
+                                  ),
+                                )
+                                    : const SizedBox(),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -112,8 +173,7 @@ class _MuscleGroupScreenState
                   itemCount: exercises.length,
                   itemBuilder: (_, i) =>
                       ExerciseTile(
-                        exercise: exercises[i],
-                      ),
+                          exercise: exercises[i]),
                 ),
               ),
             ],
