@@ -15,5 +15,13 @@ class AppTheme {
   static final darkTheme = ThemeData.dark().copyWith(
     scaffoldBackgroundColor: background,
     primaryColor: primaryRed,
+    colorScheme: const ColorScheme.dark().copyWith(
+      primary: primaryRed,
+    ),
+    textSelectionTheme: const TextSelectionThemeData(
+      cursorColor: Colors.white,
+      selectionColor: Colors.white30,
+      selectionHandleColor: Colors.white,
+    ),
   );
 }
