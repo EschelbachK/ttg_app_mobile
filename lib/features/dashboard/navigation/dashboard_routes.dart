@@ -15,7 +15,9 @@ List<RouteBase> dashboardRoutes = [
         builder: (_, s) {
           final folderId = s.pathParameters['folderId'];
           final plan = s.extra as TrainingPlan?;
-          if (folderId == null || plan == null) return const Scaffold(body: Center(child: Text('Routing Error')));
+          if (folderId == null || plan == null) {
+            return const Scaffold(body: Center(child: Text('Routing Error')));
+          }
           return MuscleGroupScreen(folderId: folderId, plan: plan);
         },
       ),
@@ -24,7 +26,9 @@ List<RouteBase> dashboardRoutes = [
         builder: (_, s) {
           final folderId = s.pathParameters['folderId'];
           final planId = s.pathParameters['planId'];
-          if (folderId == null || planId == null) return const Scaffold(body: Center(child: Text('Routing Error')));
+          if (folderId == null || planId == null) {
+            return const Scaffold(body: Center(child: Text('Routing Error')));
+          }
           return TrainingExercisesScreen(folderId: folderId, planId: planId);
         },
       ),

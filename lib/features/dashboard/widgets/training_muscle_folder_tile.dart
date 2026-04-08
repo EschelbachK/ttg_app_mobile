@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/ui/ttg_list_tile.dart';
@@ -30,7 +29,10 @@ class TrainingFolderPlanTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => context.go('/dashboard/plans/${plan.id}/folders/${folder.id}/exercises', extra: plan),
+      onTap: () => context.push(
+        '/dashboard/muscle-group/${folder.id}',
+        extra: plan,
+      ),
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(12),
@@ -42,9 +44,19 @@ class TrainingFolderPlanTile extends StatelessWidget {
         child: TTGListTile(
           title: folder.name,
           actions: [
-            IconButton(padding: EdgeInsets.zero, constraints: const BoxConstraints(), icon: const Icon(Icons.arrow_upward, size: 16, color: AppTheme.primaryRed), onPressed: onMoveUp),
+            IconButton(
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              icon: const Icon(Icons.arrow_upward, size: 16, color: AppTheme.primaryRed),
+              onPressed: onMoveUp,
+            ),
             const SizedBox(width: 6),
-            IconButton(padding: EdgeInsets.zero, constraints: const BoxConstraints(), icon: const Icon(Icons.arrow_downward, size: 16, color: AppTheme.primaryRed), onPressed: onMoveDown),
+            IconButton(
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              icon: const Icon(Icons.arrow_downward, size: 16, color: AppTheme.primaryRed),
+              onPressed: onMoveDown,
+            ),
             const SizedBox(width: 6),
             PopupMenuButton<String>(
               padding: EdgeInsets.zero,
