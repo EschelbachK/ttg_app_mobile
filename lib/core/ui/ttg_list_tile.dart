@@ -23,13 +23,15 @@ class TTGListTile extends StatelessWidget {
         Expanded(
           child: Text(
             title,
+            maxLines: 1,
+            softWrap: false,
+            overflow: TextOverflow.visible,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 15,
+              fontSize: 16,
               fontWeight: FontWeight.w600,
-              letterSpacing: 0.3,
+              letterSpacing: 0.2,
             ),
-            overflow: TextOverflow.ellipsis,
           ),
         ),
         if (actions != null) ...actions!,
