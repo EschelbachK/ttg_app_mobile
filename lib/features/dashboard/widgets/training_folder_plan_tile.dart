@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/ui/ttg_card.dart';
+import '../../../core/ui/ttg_list_tile.dart';
 import '../models/training_folder.dart';
 
 class TrainingFolderPlanTile extends StatelessWidget {
@@ -22,27 +24,12 @@ class TrainingFolderPlanTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+    return TTGCard(
+      radius: 16,
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.35),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              folder.name,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.3,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
+      child: TTGListTile(
+        title: folder.name,
+        actions: [
           IconButton(
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
