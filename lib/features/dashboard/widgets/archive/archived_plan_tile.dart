@@ -1,10 +1,6 @@
-// 🔥 FINAL:
-// - TTG Glow Confirm Dialog
-// - moderner Gradient + Glow
-// - bessere Button Styles
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../models/exercise.dart';
 import '../../models/training_plan.dart';
 import '../../state/dashboard_provider.dart';
 import '../import_plan_sheet.dart';
@@ -24,6 +20,12 @@ class _ArchivedPlanTileState
   bool expanded = false;
   bool isRemoving = false;
 
+  void _runAction(Future<void> Function() action) async {
+    setState(() => isRemoving = true);
+    await Future.delayed(const Duration(milliseconds: 220));
+    await action();
+  }
+
   void _showDeleteDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -37,8 +39,6 @@ class _ArchivedPlanTileState
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
-
-                /// 🔥 GRADIENT (TTG STYLE)
                 gradient: LinearGradient(
                   colors: [
                     Colors.black.withOpacity(0.85),
@@ -47,13 +47,9 @@ class _ArchivedPlanTileState
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-
-                /// 🔥 BORDER
                 border: Border.all(
                   color: Colors.white.withOpacity(0.12),
                 ),
-
-                /// 🔥 GLOW UNTEN
                 boxShadow: [
                   BoxShadow(
                     color: const Color(0xFFFF3B30).withOpacity(0.25),
@@ -74,9 +70,7 @@ class _ArchivedPlanTileState
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-
                   const SizedBox(height: 10),
-
                   Text(
                     'Möchtest du "${widget.plan.name}" endgültig löschen?',
                     textAlign: TextAlign.center,
@@ -85,12 +79,9 @@ class _ArchivedPlanTileState
                       fontSize: 13,
                     ),
                   ),
-
                   const SizedBox(height: 24),
-
                   Row(
                     children: [
-                      /// 🔥 CANCEL
                       Expanded(
                         child: GestureDetector(
                           onTap: () =>
@@ -109,24 +100,15 @@ class _ArchivedPlanTileState
                           ),
                         ),
                       ),
-
                       const SizedBox(width: 10),
-
-                      /// 🔥 DELETE BUTTON (PILL)
                       Expanded(
                         child: GestureDetector(
-                          onTap: () async {
+                          onTap: () {
                             Navigator.pop(dialogContext);
-
-                            setState(() => isRemoving = true);
-
-                            await Future.delayed(
-                                const Duration(milliseconds: 200));
-
-                            await ref
+                            _runAction(() => ref
                                 .read(
                                 dashboardProvider.notifier)
-                                .deletePlan(widget.plan.id);
+                                .deletePlan(widget.plan.id));
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(
@@ -165,6 +147,26 @@ class _ArchivedPlanTileState
     );
   }
 
+  void _openImport(BuildContext context, String folderId,
+      String name, List exercises, String planId) {
+    final mapped = exercises
+        .map((e) => e is Exercise ? e : Exercise.fromJson(e))
+        .toList();
+
+    showDialog(
+      context: context,
+      barrierColor: Colors.transparent,
+      builder: (_) => ImportPlanSheet(
+        plan: TrainingPlan(
+          id: planId,
+          name: name,
+          exercises: mapped,
+        ),
+        folderId: folderId,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final plan = widget.plan;
@@ -189,7 +191,6 @@ class _ArchivedPlanTileState
           ),
           child: Column(
             children: [
-              /// 🔥 HEADER
               Row(
                 children: [
                   Expanded(
@@ -216,28 +217,17 @@ class _ArchivedPlanTileState
                       ),
                     ),
                   ),
-
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      /// RESTORE
                       IconButton(
                         icon: const Icon(Icons.file_download,
                             color: Color(0xFFFF3B30)),
-                        onPressed: () async {
-                          setState(() => isRemoving = true);
-
-                          await Future.delayed(
-                              const Duration(milliseconds: 250));
-
-                          await ref
-                              .read(
-                              dashboardProvider.notifier)
-                              .restorePlan(plan.id);
-                        },
+                        onPressed: () => _runAction(() => ref
+                            .read(
+                            dashboardProvider.notifier)
+                            .restorePlan(plan.id)),
                       ),
-
-                      /// DELETE
                       IconButton(
                         icon: const Icon(Icons.close,
                             color: Colors.redAccent),
@@ -248,10 +238,8 @@ class _ArchivedPlanTileState
                   ),
                 ],
               ),
-
               if (expanded) ...[
                 const SizedBox(height: 10),
-
                 ...folders.map((f) => Container(
                   margin: const EdgeInsets.only(bottom: 10),
                   padding: const EdgeInsets.all(14),
@@ -278,40 +266,22 @@ class _ArchivedPlanTileState
                       IconButton(
                         icon: const Icon(Icons.file_download,
                             color: Color(0xFFFF3B30)),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            barrierColor:
-                            Colors.transparent,
-                            builder: (_) =>
-                                ImportPlanSheet(
-                                  plan: TrainingPlan(
-                                    id: f.trainingPlanId,
-                                    name: f.name,
-                                    exercises: f.exercises,
-                                  ),
-                                  folderId: f.id,
-                                ),
-                          );
-                        },
+                        onPressed: () => _openImport(
+                          context,
+                          f.id,
+                          f.name,
+                          f.exercises,
+                          f.trainingPlanId,
+                        ),
                       ),
                       GestureDetector(
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            barrierColor:
-                            Colors.transparent,
-                            builder: (_) =>
-                                ImportPlanSheet(
-                                  plan: TrainingPlan(
-                                    id: f.trainingPlanId,
-                                    name: f.name,
-                                    exercises: f.exercises,
-                                  ),
-                                  folderId: f.id,
-                                ),
-                          );
-                        },
+                        onTap: () => _openImport(
+                          context,
+                          f.id,
+                          f.name,
+                          f.exercises,
+                          f.trainingPlanId,
+                        ),
                         child: const Icon(
                           Icons.arrow_forward_ios,
                           color: Colors.white54,
