@@ -1,198 +1,224 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/ui/ttg_confirm_dialog.dart';
-import '../../../core/ui/ttg_input_dialog.dart';
+import '../../../core/ui/ttg_glow_border.dart';
+import '../../../core/theme/app_theme.dart';
+import '../models/training_folder.dart';
 import '../models/training_plan.dart';
-import '../state/active_plan_provider.dart';
-import '../screens/muscle_group_screen.dart';
 import '../state/dashboard_provider.dart';
+import '../state/active_plan_provider.dart';
+import 'plan_tile.dart';
 
-class PlanTile extends ConsumerStatefulWidget {
-  final String folderId;
-  final TrainingPlan plan;
-  final VoidCallback onDelete;
-  final VoidCallback onMoveUp;
-  final VoidCallback onMoveDown;
-  final VoidCallback onArchive;
-  final VoidCallback onDuplicate;
-  final bool isArchived;
+class FolderCard extends ConsumerStatefulWidget {
+  final TrainingFolder folder;
 
-  const PlanTile({
-    super.key,
-    required this.folderId,
-    required this.plan,
-    required this.onDelete,
-    required this.onMoveUp,
-    required this.onMoveDown,
-    required this.onArchive,
-    required this.onDuplicate,
-    this.isArchived = false,
-  });
+  const FolderCard({super.key, required this.folder});
 
   @override
-  ConsumerState<PlanTile> createState() => _PlanTileState();
+  ConsumerState<FolderCard> createState() => _FolderCardState();
 }
 
-class _PlanTileState extends ConsumerState<PlanTile> {
-  bool expanded = false;
+class _FolderCardState extends ConsumerState<FolderCard> {
+  bool expanded = true;
 
   @override
   Widget build(BuildContext context) {
-    final notifier = ref.read(dashboardProvider.notifier);
-    final plan = widget.plan;
+    final n = ref.read(dashboardProvider.notifier);
+    final f = widget.folder;
+    final planId = ref.read(activePlanIdProvider);
 
-    return Container(
-      margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withOpacity(0.08)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.white.withOpacity(0.08),
-                  blurRadius: 25,
-                  offset: const Offset(0, 8),
-                )
-              ],
-            ),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(12),
-                          onTap: () {
-                            ref.read(activePlanIdProvider.notifier).state = plan.id;
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => MuscleGroupScreen(
-                                  folderId: widget.folderId,
-                                  plan: plan,
-                                  isArchived: widget.isArchived,
+    final plans = f.plans.cast<TrainingPlan>();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
+      child: TTGGlowBorder(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(18),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.06),
+                borderRadius: BorderRadius.circular(25),
+                border: Border.all(color: Colors.white.withOpacity(0.25)),
+              ),
+              child: Column(
+                children: [
+                  GestureDetector(
+                    onTap: () => setState(() => expanded = !expanded),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.folder, color: AppTheme.primaryRed),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  f.name,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                          child: Row(
-                            children: [
-                              const Icon(Icons.fitness_center, color: Color(0xFFFF3B30)),
-                              const SizedBox(width: 10),
-                              Text(plan.name, style: const TextStyle(color: Colors.white)),
+                                const SizedBox(height: 2),
+                                Text(
+                                  f.bodyRegion,
+                                  style: const TextStyle(
+                                    color: Colors.white38,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          InkWell(
+                            onTap: () {
+                              final c = TextEditingController(text: f.name);
+                              showDialog(
+                                context: context,
+                                builder: (_) => _InputDialog(
+                                  title: "Ordner umbenennen",
+                                  controller: c,
+                                  onSubmit: (v) {
+                                    if (v.isEmpty) return;
+                                    n.renameFolder(f.id, v);
+                                  },
+                                ),
+                              );
+                            },
+                            child: const Padding(
+                              padding: EdgeInsets.only(right: 8),
+                              child: Icon(Icons.edit, color: Colors.white54, size: 18),
+                            ),
+                          ),
+                          Icon(
+                            expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                            color: Colors.white54,
+                          ),
+                          PopupMenuButton<String>(
+                            icon: const Icon(Icons.more_vert, color: Colors.white54),
+                            onSelected: (v) async {
+                              if (v == 'archive') n.archiveFolder(f.id);
+                              if (v == 'delete') {
+                                final confirm = await _confirm(context, "Ordner löschen");
+                                if (confirm && planId != null) {
+                                  n.deleteFolder(f.id);
+                                }
+                              }
+                            },
+                            itemBuilder: (_) => const [
+                              PopupMenuItem(value: 'archive', child: Text("Ordner archivieren")),
+                              PopupMenuItem(value: 'delete', child: Text("Ordner löschen")),
                             ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (expanded) ...[
+                    ...plans.map(
+                          (p) => PlanTile(
+                        folderId: f.id,
+                        plan: p,
+                        onDelete: () => n.deletePlan(p.id),
+                        onArchive: () => n.archivePlan(p.id),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        final c = TextEditingController();
+                        showDialog(
+                          context: context,
+                          builder: (_) => _InputDialog(
+                            title: "Neue Muskelgruppe",
+                            controller: c,
+                            onSubmit: (v) {
+                              if (v.isEmpty) return;
+                              n.addFolder(f.trainingPlanId, v);
+                            },
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        alignment: Alignment.center,
+                        child: const Text(
+                          "+ Muskelgruppe hinzufügen",
+                          style: TextStyle(
+                            color: AppTheme.primaryRed,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
-                      if (widget.isArchived)
-                        IconButton(
-                          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white54),
-                          onPressed: () => setState(() => expanded = !expanded),
-                        ),
-                      if (!widget.isArchived)
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            GestureDetector(
-                              onTap: () {
-                                showTTGInputDialog(
-                                  context: context,
-                                  title: "Muskelgruppe umbenennen",
-                                  buttonText: "Speichern",
-                                  initialValue: plan.name,
-                                  onSubmit: (value) {
-                                    notifier.renamePlan(plan.id, value);
-                                  },
-                                );
-                              },
-                              child: const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 6),
-                                child: Icon(Icons.edit, color: Color(0xFFFF3B30), size: 18),
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () async {
-                                final confirm = await showTTGConfirmDialog(
-                                  context: context,
-                                  title: "Muskelgruppe löschen",
-                                  subtitle: "Wirklich löschen?",
-                                );
-                                if (confirm) widget.onDelete();
-                              },
-                              child: const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 6),
-                                child: Icon(Icons.delete, color: Color(0xFFFF3B30), size: 18),
-                              ),
-                            ),
-                            PopupMenuButton<String>(
-                              icon: const Icon(Icons.more_vert, color: Colors.white54, size: 20),
-                              onSelected: (value) async {
-                                if (value == 'archive') widget.onArchive();
-                                if (value == 'delete') {
-                                  final confirm = await showTTGConfirmDialog(
-                                    context: context,
-                                    title: "Muskelgruppe löschen",
-                                    subtitle: "Wirklich löschen?",
-                                  );
-                                  if (confirm) widget.onDelete();
-                                }
-                              },
-                              itemBuilder: (context) => const [
-                                PopupMenuItem(value: 'archive', child: Text('Gruppe archivieren')),
-                                PopupMenuDivider(),
-                                PopupMenuItem(value: 'delete', child: Text('Löschen')),
-                              ],
-                            ),
-                          ],
-                        ),
-                    ],
-                  ),
-                ),
-                if (expanded && widget.isArchived)
-                  Column(
-                    children: plan.exercises.map((group) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.05),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(group.name, style: const TextStyle(color: Colors.white)),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            GestureDetector(
-                              onTap: () {
-                                ref.read(dashboardProvider.notifier).importExercise(
-                                  widget.folderId,
-                                  plan.id,
-                                  group,
-                                );
-                              },
-                              child: const Icon(Icons.download, color: Color(0xFFFF3B30), size: 20),
-                            ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
-              ],
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Future<bool> _confirm(BuildContext context, String title) async {
+    return await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(title),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Abbrechen")),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text("Löschen")),
+        ],
+      ),
+    ) ??
+        false;
+  }
+}
+
+class _InputDialog extends StatelessWidget {
+  final String title;
+  final TextEditingController controller;
+  final void Function(String) onSubmit;
+
+  const _InputDialog({
+    required this.title,
+    required this.controller,
+    required this.onSubmit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.black87,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(title, style: const TextStyle(color: Colors.white)),
+          ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: controller,
+            style: const TextStyle(color: Colors.white),
+          ),
+          const SizedBox(height: 16),
+          Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text("Abbrechen")),
+            ElevatedButton(
+              onPressed: () {
+                onSubmit(controller.text.trim());
+                Navigator.pop(context);
+              },
+              child: const Text("Speichern"),
+            )
+          ])
+        ]),
       ),
     );
   }
