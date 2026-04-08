@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import '../../dashboard/models/training_plan.dart';
+import '../../dashboard/models/training_folder.dart';
 import '../models/set_entry.dart';
-import '../models/training_folder2.dart';
 import '../models/training_exercise.dart';
 
 class WorkoutApiService {
@@ -9,123 +9,52 @@ class WorkoutApiService {
 
   WorkoutApiService(this._dio);
 
-  // =========================
-  // TRAINING PLAN
-  // =========================
-
-  Future<List<TrainingPlan>> getTrainingPlans() async {
-    final response = await _dio.get('/training-plans');
-    final data = response.data as List<dynamic>;
-
-    return data
-        .map((json) => TrainingPlan.fromJson(json))
-        .toList();
+  Future<List<T>> _mapList<T>(
+      String path,
+      T Function(Map<String, dynamic>) fromJson) async {
+    final res = await _dio.get(path);
+    final data = res.data as List<dynamic>;
+    return data.map((e) => fromJson(e)).toList();
   }
+
+  Future<List<TrainingPlan>> getTrainingPlans() =>
+      _mapList('/training-plans', TrainingPlan.fromJson);
 
   Future<TrainingPlan> createTrainingPlan(String name) async {
-    final response = await _dio.post(
-      '/training-plans',
-      data: {'name': name},
-    );
-
-    return TrainingPlan.fromJson(response.data);
+    final res =
+    await _dio.post('/training-plans', data: {'name': name});
+    return TrainingPlan.fromJson(res.data);
   }
 
-  Future<void> deleteTrainingPlan(String id) async {
-    await _dio.delete('/training-plans/$id');
-  }
+  Future<void> deleteTrainingPlan(String id) =>
+      _dio.delete('/training-plans/$id');
 
-  // =========================
-  // TRAINING FOLDER
-  // =========================
-
-  Future<List<TrainingFolder>> getFolders(String planId) async {
-    final response =
-    await _dio.get('/training-plans/$planId/folders');
-
-    final data = response.data as List<dynamic>;
-
-    return data
-        .map((json) => TrainingFolder.fromJson(json))
-        .toList();
-  }
+  Future<List<TrainingFolder>> getFolders(String planId) =>
+      _mapList(
+          '/training-plans/$planId/folders',
+          TrainingFolder.fromJson);
 
   Future<TrainingFolder> createFolder(
       String planId, String name) async {
-    final response = await _dio.post(
+    final res = await _dio.post(
       '/training-plans/$planId/folders',
       data: {'name': name},
     );
-
-    return TrainingFolder.fromJson(response.data);
+    return TrainingFolder.fromJson(res.data);
   }
 
-  Future<void> deleteFolder(
-      String planId, String folderId) async {
-    await _dio.delete(
-        '/training-plans/$planId/folders/$folderId');
-  }
+  Future<void> deleteFolder(String planId, String folderId) =>
+      _dio.delete('/training-plans/$planId/folders/$folderId');
 
-  // =========================
-  // TRAINING EXERCISE
-  // =========================
+  Future<List<TrainingExercise>> getExercises(String folderId) =>
+      _mapList(
+          '/folders/$folderId/exercises',
+          TrainingExercise.fromJson);
 
-  Future<List<TrainingExercise>> getExercises(
-      String folderId) async {
-    final response =
-    await _dio.get('/folders/$folderId/exercises');
-
-    final data = response.data as List<dynamic>;
-
-    return data
-        .map((json) => TrainingExercise.fromJson(json))
-        .toList();
-  }
-
-  Future<TrainingExercise> createExercise(
-      String folderId, String name) async {
-    final response = await _dio.post(
-      '/folders/$folderId/exercises',
-      data: {'name': name},
-    );
-
-    return TrainingExercise.fromJson(response.data);
-  }
-
-  Future<void> deleteExercise(
-      String folderId, String exerciseId) async {
-    await _dio.delete(
-        '/folders/$folderId/exercises/$exerciseId');
-  }
-  // =========================
-  // SET ENTRY
-  // =========================
-
-  Future<List<SetEntry>> getSets(String exerciseId) async {
-    final response =
-    await _dio.get('/exercises/$exerciseId/sets');
-
-    final data = response.data as List<dynamic>;
-
-    return data
-        .map((json) => SetEntry.fromJson(json))
-        .toList();
-  }
-
-  Future<SetEntry> createSet(
-      String exerciseId,
-      int reps,
-      double weight) async {
-    final response = await _dio.post(
-      '/exercises/$exerciseId/sets',
-      data: {
-        'reps': reps,
-        'weight': weight,
-      },
-    );
-
-    return SetEntry.fromJson(response.data);
-  }
+  Future<List<SetEntry>> getSets(String exerciseId) =>
+      _mapList(
+          '/exercises/$exerciseId/sets',
+          SetEntry.fromJson);
 
   Future<SetEntry> updateSet(
       String exerciseId,
@@ -133,7 +62,7 @@ class WorkoutApiService {
       int reps,
       double weight,
       bool completed) async {
-    final response = await _dio.put(
+    final res = await _dio.put(
       '/exercises/$exerciseId/sets/$setId',
       data: {
         'reps': reps,
@@ -141,14 +70,6 @@ class WorkoutApiService {
         'completed': completed,
       },
     );
-
-    return SetEntry.fromJson(response.data);
-  }
-
-  Future<void> deleteSet(
-      String exerciseId,
-      String setId) async {
-    await _dio.delete(
-        '/exercises/$exerciseId/sets/$setId');
+    return SetEntry.fromJson(res.data);
   }
 }
