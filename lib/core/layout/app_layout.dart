@@ -16,9 +16,7 @@ class AppLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(title), actions: actions),
-      body: SizedBox.expand(
-        child: SafeArea(child: child),
-      ),
+      body: SafeArea(child: child),
     );
   }
 }

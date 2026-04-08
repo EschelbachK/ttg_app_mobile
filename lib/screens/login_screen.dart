@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../services/api_service.dart';
-import '../services/token_storage.dart';
-import '../core/auth/auth_provider.dart';
-import '../core/error/app_exceptions.dart';
-import '../models/auth_response.dart';
+import 'package:ttg_app_mobile/core/error/api_exceptions.dart';
+import 'package:ttg_app_mobile/core/auth/auth_provider.dart';
+import 'package:ttg_app_mobile/services/token_storage.dart';
+import 'package:ttg_app_mobile/core/auth/auth_service.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -17,7 +15,7 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final TokenStorage _tokenStorage = TokenStorage();
+  final _tokenStorage = TokenStorage();
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -29,9 +27,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     });
 
     try {
-      final apiService = ref.read(apiServiceProvider);
+      final authService = ref.read(authServiceProvider);
 
-      AuthResponse result = await apiService.login(
+      final result = await authService.login(
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
@@ -45,27 +43,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,
       );
-
     } on UnauthorizedException {
-      setState(() {
-        _errorMessage = "Invalid credentials.";
-      });
+      setState(() => _errorMessage = "Invalid credentials.");
     } on NetworkException {
-      setState(() {
-        _errorMessage = "Network error. Please try again.";
-      });
+      setState(() => _errorMessage = "Network error. Please try again.");
     } on ServerException {
-      setState(() {
-        _errorMessage = "Server error. Please try later.";
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = "Unexpected error.";
-      });
+      setState(() => _errorMessage = "Server error. Please try later.");
+    } catch (_) {
+      setState(() => _errorMessage = "Unexpected error.");
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
     }
   }
 
@@ -79,9 +66,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Login"),
-      ),
+      appBar: AppBar(title: const Text("Login")),
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -89,33 +74,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           children: [
             TextField(
               controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: "Email",
-              ),
+              decoration: const InputDecoration(labelText: "Email"),
             ),
             const SizedBox(height: 16),
             TextField(
               controller: _passwordController,
               obscureText: true,
-              decoration: const InputDecoration(
-                labelText: "Password",
-              ),
+              decoration: const InputDecoration(labelText: "Password"),
             ),
             const SizedBox(height: 24),
             if (_errorMessage != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: Text(
-                  _errorMessage!,
-                  style: const TextStyle(color: Colors.red),
-                ),
+                child: Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
               ),
             _isLoading
                 ? const CircularProgressIndicator()
-                : ElevatedButton(
-              onPressed: _login,
-              child: const Text("Login"),
-            ),
+                : ElevatedButton(onPressed: _login, child: const Text("Login")),
           ],
         ),
       ),

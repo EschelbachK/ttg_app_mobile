@@ -37,16 +37,13 @@ Future<void> showTTGInputDialog({
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
                 TextField(
                   controller: controller,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     hintText: "Name eingeben",
-                    hintStyle:
-                    TextStyle(color: Colors.white.withOpacity(0.4)),
+                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
                     enabledBorder: const UnderlineInputBorder(
                       borderSide: BorderSide(color: AppTheme.primaryRed),
                     ),
@@ -55,9 +52,7 @@ Future<void> showTTGInputDialog({
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 24),
-
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -65,8 +60,7 @@ Future<void> showTTGInputDialog({
                       onPressed: () => Navigator.pop(dialogContext),
                       child: Text(
                         "Abbrechen",
-                        style: TextStyle(
-                            color: Colors.white.withOpacity(0.7)),
+                        style: TextStyle(color: Colors.white.withOpacity(0.7)),
                       ),
                     ),
                     ElevatedButton(
@@ -74,8 +68,7 @@ Future<void> showTTGInputDialog({
                         backgroundColor: AppTheme.primaryRed,
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
@@ -83,7 +76,6 @@ Future<void> showTTGInputDialog({
                       onPressed: () {
                         final value = controller.text.trim();
                         if (value.isEmpty) return;
-
                         Navigator.pop(dialogContext);
                         onSubmit(value);
                       },

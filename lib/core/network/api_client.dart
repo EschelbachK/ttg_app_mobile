@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../services/token_storage.dart';
 import '../auth/auth_provider.dart';
-import '../error/app_exceptions.dart';
+import '../error/api_exceptions.dart';
 
 class ApiClient {
   final Ref ref;

@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/auth/models/auth_response.dart';
+import '../network/dio_provider.dart';
 
 class AuthService {
   final Dio _dio;
@@ -14,7 +16,6 @@ class AuthService {
         'password': password,
       },
     );
-
     return AuthResponse.fromJson(response.data['data']);
   }
 
@@ -25,7 +26,11 @@ class AuthService {
         'refreshToken': refreshToken,
       },
     );
-
     return AuthResponse.fromJson(response.data['data']);
   }
 }
+
+final authServiceProvider = Provider<AuthService>((ref) {
+  final dio = ref.read(dioProvider);
+  return AuthService(dio);
+});
