@@ -29,7 +29,7 @@ class _PlanTileState extends ConsumerState<PlanTile> {
 
   @override
   Widget build(BuildContext context) {
-    final plan = widget.plan;
+    final p = widget.plan;
 
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 0, 12, 8),
@@ -41,8 +41,7 @@ class _PlanTileState extends ConsumerState<PlanTile> {
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.05),
               borderRadius: BorderRadius.circular(16),
-              border:
-              Border.all(color: Colors.white.withOpacity(0.08)),
+              border: Border.all(color: Colors.white.withOpacity(0.08)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.white.withOpacity(0.08),
@@ -64,77 +63,51 @@ class _PlanTileState extends ConsumerState<PlanTile> {
                             context,
                             ref,
                             folderId: widget.folderId,
-                            plan: plan,
+                            plan: p,
                             isArchived: widget.isArchived,
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.fitness_center,
-                                  color: Color(0xFFFF3B30)),
+                              const Icon(Icons.fitness_center, color: Color(0xFFFF3B30)),
                               const SizedBox(width: 10),
-                              Text(plan.name,
-                                  style: const TextStyle(
-                                      color: Colors.white)),
+                              Text(p.name, style: const TextStyle(color: Colors.white)),
                             ],
                           ),
                         ),
                       ),
                       if (widget.isArchived)
                         IconButton(
-                          icon: const Icon(
-                              Icons.keyboard_arrow_down,
-                              color: Colors.white54),
-                          onPressed: () =>
-                              setState(() => expanded = !expanded),
+                          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white54),
+                          onPressed: () => setState(() => expanded = !expanded),
                         ),
                       if (!widget.isArchived)
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             GestureDetector(
-                              onTap: () => PlanTileActions.rename(
-                                  context, ref, plan),
+                              onTap: () => PlanTileActions.rename(context, ref, p),
                               child: const Padding(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 6),
-                                child: Icon(Icons.edit,
-                                    color: Color(0xFFFF3B30),
-                                    size: 18),
+                                padding: EdgeInsets.symmetric(horizontal: 6),
+                                child: Icon(Icons.edit, color: Color(0xFFFF3B30), size: 18),
                               ),
                             ),
                             GestureDetector(
-                              onTap: () => PlanTileActions.delete(
-                                  context, widget.onDelete),
+                              onTap: () => PlanTileActions.delete(context, widget.onDelete),
                               child: const Padding(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 6),
-                                child: Icon(Icons.delete,
-                                    color: Color(0xFFFF3B30),
-                                    size: 18),
+                                padding: EdgeInsets.symmetric(horizontal: 6),
+                                child: Icon(Icons.delete, color: Color(0xFFFF3B30), size: 18),
                               ),
                             ),
                             PopupMenuButton<String>(
-                              icon: const Icon(Icons.more_vert,
-                                  color: Colors.white54,
-                                  size: 20),
-                              onSelected: (value) async {
-                                if (value == 'archive')
-                                  widget.onArchive();
-                                if (value == 'delete')
-                                  await PlanTileActions.delete(
-                                      context, widget.onDelete);
+                              icon: const Icon(Icons.more_vert, color: Colors.white54, size: 20),
+                              onSelected: (v) async {
+                                if (v == 'archive') widget.onArchive();
+                                if (v == 'delete') await PlanTileActions.delete(context, widget.onDelete);
                               },
-                              itemBuilder: (context) => const [
-                                PopupMenuItem(
-                                  value: 'archive',
-                                  child: Text(
-                                      'Gruppe archivieren'),
-                                ),
+                              itemBuilder: (_) => const [
+                                PopupMenuItem(value: 'archive', child: Text('Gruppe archivieren')),
                                 PopupMenuDivider(),
-                                PopupMenuItem(
-                                  value: 'delete',
-                                  child: Text('Löschen'),
-                                ),
+                                PopupMenuItem(value: 'delete', child: Text('Löschen')),
                               ],
                             ),
                           ],
@@ -144,54 +117,35 @@ class _PlanTileState extends ConsumerState<PlanTile> {
                 ),
                 if (expanded && widget.isArchived)
                   Column(
-                    children: plan.exercises
-                        .map((e) => Padding(
-                      padding:
-                      const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              padding:
-                              const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 10),
-                              decoration: BoxDecoration(
-                                color: Colors.white
-                                    .withOpacity(0.05),
-                                borderRadius:
-                                BorderRadius.circular(
-                                    12),
-                              ),
-                              child: Text(e.name,
-                                  style:
-                                  const TextStyle(
-                                      color: Colors
-                                          .white)),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () =>
-                                PlanTileActions
-                                    .importExercise(
-                                  ref,
-                                  widget.folderId,
-                                  plan.id,
-                                  e,
+                    children: p.exercises.map((e) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.05),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                            child: const Icon(
-                              Icons.download,
-                              color: Color(0xFFFF3B30),
-                              size: 20,
+                                child: Text(e.name, style: const TextStyle(color: Colors.white)),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ))
-                        .toList(),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () => PlanTileActions.importExercise(
+                                ref,
+                                widget.folderId,
+                                p.id,
+                                e,
+                              ),
+                              child: const Icon(Icons.download, color: Color(0xFFFF3B30), size: 20),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
                   ),
               ],
             ),

@@ -3,9 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/ui/ttg_confirm_dialog.dart';
 import '../../../core/ui/ttg_input_dialog.dart';
 import '../models/training_plan.dart';
-import '../state/dashboard_provider.dart';
-import '../state/active_plan_provider.dart';
 import '../screens/muscle_group_screen.dart';
+import '../state/active_plan_provider.dart';
+import '../state/dashboard_provider.dart';
+import '../models/exercise.dart';
 
 class PlanTileActions {
   static void openPlan(
@@ -16,7 +17,6 @@ class PlanTileActions {
         required bool isArchived,
       }) {
     ref.read(activePlanIdProvider.notifier).state = plan.id;
-
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -34,14 +34,13 @@ class PlanTileActions {
       WidgetRef ref,
       TrainingPlan plan,
       ) {
-    final notifier = ref.read(dashboardProvider.notifier);
-
+    final n = ref.read(dashboardProvider.notifier);
     showTTGInputDialog(
       context: context,
       title: "Muskelgruppe umbenennen",
       buttonText: "Speichern",
       initialValue: plan.name,
-      onSubmit: (value) => notifier.renamePlan(plan.id, value),
+      onSubmit: (v) => n.renamePlan(plan.id, v),
     );
   }
 
@@ -61,12 +60,12 @@ class PlanTileActions {
       WidgetRef ref,
       String folderId,
       String planId,
-      dynamic exercise,
+      Exercise e,
       ) {
     ref.read(dashboardProvider.notifier).importExercise(
       folderId,
       planId,
-      exercise,
+      e,
     );
   }
 }
