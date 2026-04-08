@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/app_theme.dart';
 import '../models/training_folder.dart';
 
 class TrainingFolderPlanTile extends StatelessWidget {
@@ -40,14 +41,14 @@ class TrainingFolderPlanTile extends StatelessWidget {
           IconButton(
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
-            icon: const Icon(Icons.arrow_upward, size: 16),
+            icon: const Icon(Icons.arrow_upward, size: 16, color: AppTheme.primaryRed),
             onPressed: onMoveUp,
           ),
           const SizedBox(width: 6),
           IconButton(
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
-            icon: const Icon(Icons.arrow_downward, size: 16),
+            icon: const Icon(Icons.arrow_downward, size: 16, color: AppTheme.primaryRed),
             onPressed: onMoveDown,
           ),
           const SizedBox(width: 6),

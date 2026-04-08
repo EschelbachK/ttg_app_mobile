@@ -97,17 +97,21 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       final folderData = await api.getFolders(p.id);
       return Future.wait(folderData.map((e) async {
         final f = TrainingFolder.fromJson(e);
-        final ex = await api.getExercises(planId: p.id, folderId: f.id);
+        final ex =
+        await api.getExercises(planId: p.id, folderId: f.id);
         return f.copyWith(
           trainingPlanId: p.id,
-          exercises: ex.map<Exercise>((x) => Exercise.fromJson(x)).toList(),
+          exercises: ex
+              .map<Exercise>((x) => Exercise.fromJson(x))
+              .toList(),
         );
       }));
     }));
 
     final allFolders = foldersNested
         .expand((e) => e)
-        .where((f) => !archivedFolders.any((a) => a.id == f.id))
+        .where((f) =>
+    !archivedFolders.any((a) => a.id == f.id))
         .toList();
 
     state = state.copyWith(
@@ -156,7 +160,8 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         await api.updateFolder(folderId: id, name: name);
         state = state.copyWith(
           folders: state.folders
-              .map((f) => f.id == id ? f.copyWith(name: name) : f)
+              .map((f) =>
+          f.id == id ? f.copyWith(name: name) : f)
               .toList(),
         );
       });
@@ -173,33 +178,67 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
   Future<void> restoreFolder(String id) async =>
       _refresh(() => api.restoreFolder(id));
 
-  Future<void> moveFolderUp(String id) async =>
-      _refresh(() async {
-        final f = state.folders.firstWhere((e) => e.id == id);
-        final list = state.folders
-            .where((e) => e.trainingPlanId == f.trainingPlanId)
-            .toList()
-          ..sort((a, b) => a.order.compareTo(b.order));
+  Future<void> moveFolderUp(String id) async {
+    final f = state.folders.firstWhere((e) => e.id == id);
 
-        final i = list.indexWhere((e) => e.id == id);
-        if (i <= 0) return;
+    final list = state.folders
+        .where((e) => e.trainingPlanId == f.trainingPlanId)
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
 
-        await api.updateFolderOrder(id, list[i - 1].order);
-      });
+    final i = list.indexWhere((e) => e.id == id);
+    if (i <= 0) return;
 
-  Future<void> moveFolderDown(String id) async =>
-      _refresh(() async {
-        final f = state.folders.firstWhere((e) => e.id == id);
-        final list = state.folders
-            .where((e) => e.trainingPlanId == f.trainingPlanId)
-            .toList()
-          ..sort((a, b) => a.order.compareTo(b.order));
+    final target = list[i - 1];
 
-        final i = list.indexWhere((e) => e.id == id);
-        if (i >= list.length - 1) return;
+    final updated = state.folders.map((folder) {
+      if (folder.id == f.id) {
+        return folder.copyWith(order: target.order);
+      }
+      if (folder.id == target.id) {
+        return folder.copyWith(order: f.order);
+      }
+      return folder;
+    }).toList();
 
-        await api.updateFolderOrder(id, list[i + 1].order);
-      });
+    final sorted = [...updated]..sort((a, b) => a.order.compareTo(b.order));
+    state = state.copyWith(folders: sorted);
+
+    try {
+      await api.updateFolderOrder(f.id, target.order);
+    } catch (_) {}
+  }
+
+  Future<void> moveFolderDown(String id) async {
+    final f = state.folders.firstWhere((e) => e.id == id);
+
+    final list = state.folders
+        .where((e) => e.trainingPlanId == f.trainingPlanId)
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
+
+    final i = list.indexWhere((e) => e.id == id);
+    if (i >= list.length - 1) return;
+
+    final target = list[i + 1];
+
+    final updated = state.folders.map((folder) {
+      if (folder.id == f.id) {
+        return folder.copyWith(order: target.order);
+      }
+      if (folder.id == target.id) {
+        return folder.copyWith(order: f.order);
+      }
+      return folder;
+    }).toList();
+
+    final sorted = [...updated]..sort((a, b) => a.order.compareTo(b.order));
+    state = state.copyWith(folders: sorted);
+
+    try {
+      await api.updateFolderOrder(f.id, target.order);
+    } catch (_) {}
+  }
 
   Future<void> importFolderToPlan({
     required String folderId,
