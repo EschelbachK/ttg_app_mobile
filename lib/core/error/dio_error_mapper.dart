@@ -2,26 +2,22 @@ import 'package:dio/dio.dart';
 import 'api_exceptions.dart';
 
 class DioErrorMapper {
-  static ApiException map(DioException error) {
-    if (error.type == DioExceptionType.connectionTimeout ||
-        error.type == DioExceptionType.receiveTimeout ||
-        error.type == DioExceptionType.connectionError) {
-      return NetworkException();
+  static ApiException map(DioException e) {
+    switch (e.type) {
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.receiveTimeout:
+      case DioExceptionType.connectionError:
+        return const NetworkException();
+      default:
+        final code = e.response?.statusCode;
+
+        if (code == 401) return const UnauthorizedException();
+        if (code != null && code >= 500) return const ServerException();
+
+        return ApiException(
+          e.message ?? 'Unbekannter Fehler aufgetreten',
+          code,
+        );
     }
-
-    final statusCode = error.response?.statusCode;
-
-    if (statusCode == 401) {
-      return UnauthorizedException();
-    }
-
-    if (statusCode != null && statusCode >= 500) {
-      return ServerException();
-    }
-
-    return ApiException(
-      message: error.message ?? 'Unexpected error occurred',
-      statusCode: statusCode,
-    );
   }
 }

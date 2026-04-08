@@ -1,27 +1,18 @@
 import 'package:dio/dio.dart';
 import 'app_error.dart';
+import 'dio_error_mapper.dart';
 
 class GlobalErrorHandler {
   static AppError handle(Object error) {
     if (error is DioException) {
-      final data = error.response?.data;
-
-      String message = 'Unexpected error';
-
-      if (data is Map && data['message'] != null) {
-        message = data['message'].toString();
-      } else if (data != null) {
-        message = data.toString();
-      } else if (error.message != null) {
-        message = error.message!;
-      }
-
-      return AppError(
-        message: message,
-        statusCode: error.response?.statusCode,
-      );
+      final mapped = DioErrorMapper.map(error);
+      return AppError(mapped.message, mapped.statusCode);
     }
 
-    return const AppError(message: 'Unexpected error');
+    if (error is Exception) {
+      return AppError(error.toString());
+    }
+
+    return const AppError('Unbekannter Fehler');
   }
 }
