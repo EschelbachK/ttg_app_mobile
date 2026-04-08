@@ -162,11 +162,12 @@ class _ArchivedPlanTileState
         duration: const Duration(milliseconds: 300),
         scale: isRemoving ? 0.95 : 1,
         child: Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          padding: const EdgeInsets.all(18),
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(.05),
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(20),
+            color: Colors.black.withOpacity(0.35),
+            border: Border.all(color: Colors.white.withOpacity(0.15)),
           ),
           child: Column(
             children: [
@@ -180,11 +181,17 @@ class _ArchivedPlanTileState
                         children: [
                           const Icon(Icons.folder,
                               color: Color(0xFFFF3B30), size: 18),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 10),
                           Expanded(
-                            child: Text(plan.name,
-                                style: const TextStyle(
-                                    color: Colors.white)),
+                            child: Text(
+                              plan.name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
                           ),
                           Icon(
                             expanded
@@ -201,7 +208,7 @@ class _ArchivedPlanTileState
                     children: [
                       IconButton(
                         icon: const Icon(Icons.file_download,
-                            color: Color(0xFFFF3B30)),
+                            color: Color(0xFFFF3B30), size: 25),
                         onPressed: () => _runAction(() => ref
                             .read(
                             dashboardProvider.notifier)
@@ -209,7 +216,7 @@ class _ArchivedPlanTileState
                       ),
                       IconButton(
                         icon: const Icon(Icons.close,
-                            color: Colors.redAccent),
+                            color: Color(0xFFFF3B30), size: 25),
                         onPressed: () =>
                             _showDeleteDialog(context),
                       ),
@@ -220,45 +227,54 @@ class _ArchivedPlanTileState
               if (expanded) ...[
                 const SizedBox(height: 10),
                 ...folders.map((f) => Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  padding: const EdgeInsets.all(14),
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(16),
+                    color: Colors.black.withOpacity(0.35),
+                    border: Border.all(color: Colors.white.withOpacity(0.12)),
                   ),
                   child: Row(
                     children: [
                       const Icon(Icons.fitness_center,
-                          color: Color(0xFFFF3B30), size: 18),
-                      const SizedBox(width: 12),
+                          color: Color(0xFFFF3B30), size: 20),
+                      const SizedBox(width: 10),
                       Expanded(
-                        child: Text(f.name,
-                            style: const TextStyle(
-                                color: Colors.white)),
+                        child: Text(
+                          f.name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
                       ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF3B30).withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          plan.name,
+                          style: const TextStyle(
+                            color: Color(0xFFFF3B30),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
                       IconButton(
                         icon: const Icon(Icons.file_download,
-                            color: Color(0xFFFF3B30)),
+                            color: Color(0xFFFF3B30), size: 25),
                         onPressed: () => _openImport(
                           context,
                           f.id,
                           f.name,
                           f.exercises,
                           f.trainingPlanId,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () => _openImport(
-                          context,
-                          f.id,
-                          f.name,
-                          f.exercises,
-                          f.trainingPlanId,
-                        ),
-                        child: const Icon(
-                          Icons.arrow_forward_ios,
-                          color: Colors.white54,
-                          size: 14,
                         ),
                       ),
                     ],
