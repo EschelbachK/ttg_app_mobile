@@ -2,63 +2,23 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class CatalogApi {
+  static const _base = "http://10.0.2.2:8080/api/exercise-catalog";
 
-  static const String baseUrl =
-      "http://10.0.2.2:8080/api/exercise-catalog/all";
-
-  Future<List<dynamic>> fetchExercises() async {
-
-    print("Fetching exercises...");
-
-    final response = await http.get(
-      Uri.parse(baseUrl),
-      headers: {
-        "Content-Type": "application/json",
-      },
+  Future<List<dynamic>> _get(String path) async {
+    final res = await http.get(
+      Uri.parse("$_base$path"),
+      headers: {"Content-Type": "application/json"},
     );
 
-    print("STATUS: ${response.statusCode}");
-    print("BODY: ${response.body}");
-
-    if (response.statusCode == 200) {
-
-      final List data = jsonDecode(response.body);
-
-      print("Loaded exercises: ${data.length}");
-
-      return data;
-
-    } else {
-
-      throw Exception("Failed to load exercise catalog");
+    if (res.statusCode != 200) {
+      throw Exception("Request failed: ${res.statusCode}");
     }
+
+    return jsonDecode(res.body) as List;
   }
 
-  Future<List<dynamic>> searchExercises(String query) async {
+  Future<List<dynamic>> fetchExercises() => _get("/all");
 
-    print("Searching exercises: $query");
-
-    final response = await http.get(
-      Uri.parse("http://10.0.2.2:8080/api/exercise-catalog/search?q=$query"),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    );
-
-    print("SEARCH STATUS: ${response.statusCode}");
-    print("SEARCH BODY: ${response.body}");
-
-    if (response.statusCode == 200) {
-
-      final List data = jsonDecode(response.body);
-
-      print("Search results: ${data.length}");
-
-      return data;
-
-    } else {
-
-      throw Exception("Search failed");
-    }
-  }
+  Future<List<dynamic>> searchExercises(String q) =>
+      _get("/search?q=$q");
 }
