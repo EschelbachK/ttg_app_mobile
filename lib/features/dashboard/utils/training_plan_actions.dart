@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/ui/ttg_confirm_dialog.dart';
 import '../../../core/ui/ttg_input_dialog.dart';
 import '../state/dashboard_provider.dart';
 import '../models/training_plan.dart';

@@ -1,58 +1,85 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 
-Future<bool> showTTGConfirmDialog({
+Future<void> showTTGInputDialog({
   required BuildContext context,
   required String title,
-  required String subtitle,
-}) async {
-  final result = await showDialog<bool>(
+  required String buttonText,
+  String? initialValue,
+  required Function(String value) onSubmit,
+}) {
+  final controller = TextEditingController(text: initialValue ?? '');
+
+  return showDialog(
     context: context,
-    barrierDismissible: false,
-    builder: (dialogContext) => Dialog(
-      backgroundColor: Colors.transparent,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+    barrierColor: Colors.black.withOpacity(0.6),
+    builder: (dialogContext) {
+      return Center(
+        child: Material(
+          color: Colors.transparent,
           child: Container(
-            padding: const EdgeInsets.all(24),
+            margin: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.35),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: Colors.white.withOpacity(0.25)),
+              borderRadius: BorderRadius.circular(20),
+              color: Colors.black.withOpacity(0.85),
+              border: Border.all(color: Colors.white.withOpacity(0.15)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(title, style: const TextStyle(color: Colors.white, fontSize: 20)),
-                ),
-                const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(subtitle, style: const TextStyle(color: Colors.white54)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 20),
-                const Divider(color: AppTheme.primaryRed),
-                const SizedBox(height: 20),
+                TextField(
+                  controller: controller,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: "Name eingeben",
+                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
+                    enabledBorder: const UnderlineInputBorder(
+                      borderSide: BorderSide(color: AppTheme.primaryRed),
+                    ),
+                    focusedBorder: const UnderlineInputBorder(
+                      borderSide: BorderSide(color: AppTheme.primaryRed),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextButton(
-                      onPressed: () => Navigator.of(dialogContext).pop(false),
-                      child: const Text("Abbrechen", style: TextStyle(color: Colors.white70)),
+                      onPressed: () => Navigator.pop(dialogContext),
+                      child: Text(
+                        "Abbrechen",
+                        style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                      ),
                     ),
-                    const SizedBox(width: 10),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryRed,
                         foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                       ),
-                      onPressed: () => Navigator.of(dialogContext).pop(true),
-                      child: const Text("Löschen"),
+                      onPressed: () {
+                        final value = controller.text.trim();
+                        if (value.isEmpty) return;
+                        Navigator.pop(dialogContext);
+                        onSubmit(value);
+                      },
+                      child: Text(buttonText),
                     ),
                   ],
                 ),
@@ -60,8 +87,7 @@ Future<bool> showTTGConfirmDialog({
             ),
           ),
         ),
-      ),
-    ),
+      );
+    },
   );
-  return result ?? false;
 }

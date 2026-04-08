@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/ui/ttg_input_dialog.dart';
+import '../../../core/ui/ttg_confirm_dialog.dart';
 import '../state/dashboard_provider.dart';
 import '../widgets/dashboard/dashboard_toggle.dart';
 import '../widgets/dashboard/dashboard_top_bar.dart';
