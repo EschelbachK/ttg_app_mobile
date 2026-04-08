@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/ui/ttg_card.dart';
 import '../../../core/ui/ttg_list_tile.dart';
 import '../models/training_plan.dart';
 import '../state/dashboard_provider.dart';
@@ -51,7 +50,17 @@ class _S extends ConsumerState<TrainingPlanCard> {
 
     return Padding(
       padding: EdgeInsets.fromLTRB(16, 0, 16, open ? 16 : 12),
-      child: TTGCard(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: open
+              ? Colors.black.withOpacity(0.35)
+              : Colors.transparent,
+          border: Border.all(
+            color: Colors.white.withOpacity(0.2),
+          ),
+        ),
         child: Column(
           children: [
             GestureDetector(
@@ -107,41 +116,43 @@ class _S extends ConsumerState<TrainingPlanCard> {
             AnimatedSize(
               duration: const Duration(milliseconds: 180),
               child: open
-                  ? Column(children: [
-                const SizedBox(height: 8),
-                ...groups.map((g) => TrainingFolderPlanTile(
-                  folder: g,
-                  onDelete: () => ref
-                      .read(dashboardProvider.notifier)
-                      .deleteFolder(g.id),
-                  onMoveUp: () => ref
-                      .read(dashboardProvider.notifier)
-                      .moveFolderUp(g.id),
-                  onMoveDown: () => ref
-                      .read(dashboardProvider.notifier)
-                      .moveFolderDown(g.id),
-                  onArchive: () => ref
-                      .read(dashboardProvider.notifier)
-                      .archiveFolder(g.id),
-                  onDuplicate: () => ref
-                      .read(dashboardProvider.notifier)
-                      .duplicateFolder(g.id),
-                )),
-                const SizedBox(height: 6),
-                GestureDetector(
-                  onTap: () => TrainingPlanActions.createFolder(
-                      context, ref, p.id),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8),
-                    child: Text(
-                      "+ Muskelgruppe hinzufügen",
-                      style: TextStyle(
-                          color: AppTheme.primaryRed,
-                          fontWeight: FontWeight.bold),
+                  ? Column(
+                children: [
+                  const SizedBox(height: 8),
+                  ...groups.map((g) => TrainingFolderPlanTile(
+                    folder: g,
+                    onDelete: () => ref
+                        .read(dashboardProvider.notifier)
+                        .deleteFolder(g.id),
+                    onMoveUp: () => ref
+                        .read(dashboardProvider.notifier)
+                        .moveFolderUp(g.id),
+                    onMoveDown: () => ref
+                        .read(dashboardProvider.notifier)
+                        .moveFolderDown(g.id),
+                    onArchive: () => ref
+                        .read(dashboardProvider.notifier)
+                        .archiveFolder(g.id),
+                    onDuplicate: () => ref
+                        .read(dashboardProvider.notifier)
+                        .duplicateFolder(g.id),
+                  )),
+                  const SizedBox(height: 6),
+                  GestureDetector(
+                    onTap: () => TrainingPlanActions.createFolder(
+                        context, ref, p.id),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Text(
+                        "+ Muskelgruppe hinzufügen",
+                        style: TextStyle(
+                            color: AppTheme.primaryRed,
+                            fontWeight: FontWeight.bold),
+                      ),
                     ),
-                  ),
-                )
-              ])
+                  )
+                ],
+              )
                   : const SizedBox(),
             )
           ],
