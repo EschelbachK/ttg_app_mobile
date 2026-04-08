@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/ui/ttg_glow_border.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../state/dashboard_provider.dart';
+import '../../utils/dashboard_toggle_config.dart';
 
 class DashboardToggle extends ConsumerWidget {
   const DashboardToggle({super.key});
@@ -27,50 +28,34 @@ class DashboardToggle extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(24),
               ),
               child: Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: notifier.showPlans,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: !state.showArchive
-                              ? AppTheme.primaryRed
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        alignment: Alignment.center,
-                        child: const Text(
-                          "PLÄNE",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
+                children: DashboardToggleConfig.items
+                    .map((item) => Expanded(
+                  child: GestureDetector(
+                    onTap: item.isArchive
+                        ? notifier.showArchive
+                        : notifier.showPlans,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: state.showArchive ==
+                            item.isArchive
+                            ? AppTheme.primaryRed
+                            : Colors.transparent,
+                        borderRadius:
+                        BorderRadius.circular(24),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        item.label,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight:
+                          FontWeight.w600,
                         ),
                       ),
                     ),
                   ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: notifier.showArchive,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: state.showArchive
-                              ? AppTheme.primaryRed
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        alignment: Alignment.center,
-                        child: const Text(
-                          "ARCHIV",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ))
+                    .toList(),
               ),
             ),
           ),
