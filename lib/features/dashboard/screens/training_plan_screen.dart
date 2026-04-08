@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/ui/ttg_confirm_dialog.dart';
 import '../../../core/ui/ttg_list_tile.dart';
 import '../models/training_plan.dart';
 import '../state/dashboard_provider.dart';
@@ -37,6 +38,18 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
     widget.onExpansionChanged?.call(open);
   }
 
+  void _confirmDelete() async {
+    final confirmed = await showTTGConfirmDialog(
+      context: context,
+      title: "Trainingsplan löschen",
+      subtitle: "Wirklich löschen?",
+    );
+
+    if (confirmed) {
+      ref.read(dashboardProvider.notifier).deletePlan(widget.plan.id);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(dashboardProvider);
@@ -46,8 +59,9 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
         f.name.toLowerCase() != "allgemein");
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(16, 0, 16, open ? 16 : 12),
+      padding: EdgeInsets.fromLTRB(0, 0, 0, open ? 16 : 12),
       child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 10),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
@@ -63,12 +77,41 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                 title: widget.plan.name,
                 leading: const Icon(Icons.folder, color: AppTheme.primaryRed, size: 20),
                 actions: [
+                  const Spacer(),
                   SizedBox(
                     width: w,
                     child: IconButton(
                       padding: EdgeInsets.zero,
                       icon: const Icon(Icons.edit, size: 18, color: Colors.white54),
-                      onPressed: () {},
+                      onPressed: () async {
+                        final controller = TextEditingController(text: widget.plan.name);
+
+                        final result = await showDialog<String>(
+                          context: context,
+                          builder: (c) => AlertDialog(
+                            backgroundColor: Colors.black,
+                            title: const Text("Umbenennen", style: TextStyle(color: Colors.white)),
+                            content: TextField(
+                              controller: controller,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(c),
+                                child: const Text("Abbrechen"),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pop(c, controller.text),
+                                child: const Text("Speichern"),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (result != null && result.trim().isNotEmpty) {
+                          ref.read(dashboardProvider.notifier).renamePlan(widget.plan.id, result.trim());
+                        }
+                      },
                     ),
                   ),
                   SizedBox(
@@ -81,6 +124,24 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                         child: const Icon(Icons.keyboard_arrow_down, color: Colors.white54),
                       ),
                       onPressed: toggle,
+                    ),
+                  ),
+                  SizedBox(
+                    width: w,
+                    child: PopupMenuButton<String>(
+                      padding: EdgeInsets.zero,
+                      icon: const Icon(Icons.more_vert, size: 18, color: Colors.white54),
+                      onSelected: (v) {
+                        if (v == 'archive') {
+                          ref.read(dashboardProvider.notifier).archivePlan(widget.plan.id);
+                        } else if (v == 'delete') {
+                          _confirmDelete();
+                        }
+                      },
+                      itemBuilder: (_) => const [
+                        PopupMenuItem(value: 'archive', child: Text('Archivieren')),
+                        PopupMenuItem(value: 'delete', child: Text('Löschen')),
+                      ],
                     ),
                   ),
                 ],
@@ -107,7 +168,13 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                     onTap: () {},
                     child: const Padding(
                       padding: EdgeInsets.symmetric(vertical: 8),
-                      child: Text("+ Muskelgruppe hinzufügen", style: TextStyle(color: AppTheme.primaryRed, fontWeight: FontWeight.bold)),
+                      child: Text(
+                        "+ Muskelgruppe hinzufügen",
+                        style: TextStyle(
+                          color: AppTheme.primaryRed,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                 ],
