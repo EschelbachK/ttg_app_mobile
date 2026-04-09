@@ -25,6 +25,12 @@ class ExerciseBlock extends ConsumerWidget {
     final suggestion = controller.getSuggestion(exercise);
     final historyAsync = ref.watch(_historyProvider(exercise.id));
 
+    Color _color(String r) => r.contains('increase')
+        ? Colors.green
+        : r.contains('plateau')
+        ? Colors.orange
+        : Colors.red;
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
       margin: const EdgeInsets.only(bottom: 12),
@@ -36,7 +42,6 @@ class ExerciseBlock extends ConsumerWidget {
             children: [
               Text(exercise.name, style: const TextStyle(fontSize: 18)),
               const SizedBox(height: 12),
-
               historyAsync.when(
                 data: (history) => Column(
                   children: [
@@ -48,9 +53,7 @@ class ExerciseBlock extends ConsumerWidget {
                 loading: () => const SizedBox(height: 100),
                 error: (_, __) => const SizedBox(),
               ),
-
               const SizedBox(height: 12),
-
               ...exercise.sets.asMap().entries.map((e) {
                 final isLast = e.key == exercise.sets.length - 1;
                 final set = e.value;
@@ -73,22 +76,12 @@ class ExerciseBlock extends ConsumerWidget {
                   ],
                 );
               }),
-
               const SizedBox(height: 12),
-
               if (suggestion != null)
                 Text(
                   suggestion.reason,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: suggestion.reason.contains('increase')
-                        ? Colors.green
-                        : suggestion.reason.contains('plateau')
-                        ? Colors.orange
-                        : Colors.red,
-                  ),
+                  style: TextStyle(fontSize: 12, color: _color(suggestion.reason)),
                 ),
-
               AddSetButton(
                 exerciseId: exercise.id,
                 suggestedWeight: suggestion?.suggestedWeight,
