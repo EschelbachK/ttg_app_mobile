@@ -12,13 +12,21 @@ class ProgressChart extends StatelessWidget {
   Widget build(BuildContext context) {
     if (history.isEmpty) return const SizedBox.shrink();
 
-    final spots = history.asMap().entries
-        .map((e) => FlSpot(e.key.toDouble(), e.value.weight))
-        .toList();
+    final weightSpots = <FlSpot>[];
+    final repsSpots = <FlSpot>[];
+    final volumeSpots = <FlSpot>[];
+
+    for (var i = 0; i < history.length; i++) {
+      final h = history[i];
+
+      weightSpots.add(FlSpot(i.toDouble(), h.weight));
+      repsSpots.add(FlSpot(i.toDouble(), h.reps.toDouble()));
+      volumeSpots.add(FlSpot(i.toDouble(), h.weight * h.reps));
+    }
 
     return TtgGlassCard(
       child: SizedBox(
-        height: 200,
+        height: 240,
         child: LineChart(
           LineChartData(
             gridData: FlGridData(show: false),
@@ -26,9 +34,22 @@ class ProgressChart extends StatelessWidget {
             borderData: FlBorderData(show: false),
             lineBarsData: [
               LineChartBarData(
-                spots: spots,
+                spots: weightSpots,
                 isCurved: true,
                 dotData: FlDotData(show: false),
+                color: Colors.blue,
+              ),
+              LineChartBarData(
+                spots: repsSpots,
+                isCurved: true,
+                dotData: FlDotData(show: false),
+                color: Colors.green,
+              ),
+              LineChartBarData(
+                spots: volumeSpots,
+                isCurved: true,
+                dotData: FlDotData(show: false),
+                color: Colors.orange,
               ),
             ],
           ),
