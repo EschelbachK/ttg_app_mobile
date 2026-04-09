@@ -23,15 +23,6 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     await loadActiveWorkout();
   }
 
-  Future<void> reorderExercises(List<ExerciseSession> updated) async {
-    final session = state.session;
-    if (session == null) return;
-
-    state = state.copyWith(
-      session: session.copyWith(exercises: updated),
-    );
-  }
-
   Future<void> addSet(String exerciseId, double weight, int reps) async {
     final session = state.session;
     if (session == null) return;
@@ -54,5 +45,22 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     );
 
     await api.addSet(exerciseId, weight, reps);
+  }
+
+  Future<void> reorderExercises(List<ExerciseSession> updated) async {
+    final session = state.session;
+    if (session == null) return;
+
+    state = state.copyWith(
+      session: session.copyWith(exercises: updated),
+    );
+  }
+
+  double getSuggestedWeight(double lastWeight) {
+    return lastWeight + 2.5;
+  }
+
+  int getSuggestedReps(int lastReps) {
+    return lastReps;
   }
 }

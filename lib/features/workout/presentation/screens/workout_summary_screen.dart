@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/workout_provider.dart';
+import '../widgets/volume_chart.dart';
 
 class WorkoutSummaryScreen extends ConsumerWidget {
   const WorkoutSummaryScreen({super.key});
@@ -16,18 +17,15 @@ class WorkoutSummaryScreen extends ConsumerWidget {
       );
     }
 
-    final totalSets = session.exercises.fold(
-      0,
-          (sum, e) => sum + e.sets.length,
-    );
+    final volumes = session.exercises.map((e) {
+      return e.sets.fold(
+        0.0,
+            (sum, s) => sum + s.weight * s.reps,
+      );
+    }).toList();
 
-    final totalVolume = session.exercises.fold(
-      0.0,
-          (sum, e) =>
-      sum +
-          e.sets.fold(
-              0.0, (s, set) => s + set.weight * set.reps),
-    );
+    final totalVolume =
+    volumes.fold(0.0, (sum, v) => sum + v);
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -36,11 +34,16 @@ class WorkoutSummaryScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            Text('Sets: $totalSets'),
             Text('Volume: ${totalVolume.toStringAsFixed(0)} kg'),
+            const SizedBox(height: 20),
+            VolumeChart(volumes: volumes),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                Navigator.popUntil(context, ModalRoute.withName('/dashboard'));
+                Navigator.popUntil(
+                  context,
+                  ModalRoute.withName('/dashboard'),
+                );
               },
               child: const Text('Finish Workout'),
             )
