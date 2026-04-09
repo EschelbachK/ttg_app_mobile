@@ -1,41 +1,48 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/network/api_client.dart';
+import 'package:dio/dio.dart';
 import '../domain/workout_session.dart';
+import '../domain/workout_group.dart';
 import '../domain/set_log.dart';
 
-final workoutApiServiceProvider = Provider<WorkoutApiService>((ref) {
-  return WorkoutApiService(ref.read(apiClientProvider));
-});
-
 class WorkoutApiService {
-  final ApiClient api;
+  final Dio dio;
 
-  WorkoutApiService(this.api);
+  WorkoutApiService(this.dio);
 
   Future<WorkoutSession?> getActiveWorkout() async {
     try {
-      final res = await api.get('/workout/active');
-      if (res.statusCode != 200 || res.data == null) return null;
-
+      final res = await dio.get('/workout/active');
       final data = res.data;
+
+      if (data == null) return null;
+
+      final exercises = (data['exercises'] as List? ?? []).asMap().entries.map((e) {
+        final ex = e.value;
+
+        return ExerciseSession(
+          id: ex['id'],
+          name: ex['name'],
+          order: e.key,
+          sets: (ex['sets'] as List? ?? []).map((s) {
+            return SetLog(
+              id: s['id'],
+              weight: (s['weight'] as num).toDouble(),
+              reps: s['reps'],
+              completed: s['completed'] ?? false,
+            );
+          }).toList(),
+        );
+      }).toList();
+
       return WorkoutSession(
         id: data['id'],
         startedAt: DateTime.parse(data['startedAt']),
-        exercises: (data['exercises'] as List)
-            .map((e) => ExerciseSession(
-          id: e['id'],
-          name: e['name'],
-          order: e['order'],
-          sets: (e['sets'] as List)
-              .map((s) => SetLog(
-            id: s['id'],
-            weight: (s['weight'] as num).toDouble(),
-            reps: s['reps'],
-            completed: s['completed'] ?? false,
-          ))
-              .toList(),
-        ))
-            .toList(),
+        groups: [
+          WorkoutGroup(
+            name: 'Session',
+            order: 0,
+            exercises: exercises,
+          )
+        ],
       );
     } catch (_) {
       return null;
@@ -43,11 +50,11 @@ class WorkoutApiService {
   }
 
   Future<void> startWorkout() async {
-    await api.post('/workout/start');
+    await dio.post('/workout/start');
   }
 
   Future<void> addSet(String exerciseId, double weight, int reps) async {
-    await api.post('/workout/set', data: {
+    await dio.post('/sets', data: {
       'exerciseId': exerciseId,
       'weight': weight,
       'reps': reps,
@@ -55,31 +62,21 @@ class WorkoutApiService {
   }
 
   Future<void> updateSet(
-      String exerciseId, String setId, int reps, double weight, bool completed) async {
-    final res = await api.put('/workout/set', data: {
+      String exerciseId,
+      String setId,
+      int reps,
+      double weight,
+      bool completed,
+      ) async {
+    await dio.patch('/sets/$setId', data: {
       'exerciseId': exerciseId,
-      'setId': setId,
       'reps': reps,
       'weight': weight,
       'completed': completed,
     });
-
-    if (res.statusCode != 200) {
-      throw Exception('updateSet failed');
-    }
   }
 
-  Future<void> reorderExercises(List<Map<String, dynamic>> exercises) async {
-    await api.put('/workout/exercise/reorder', data: {'exercises': exercises});
-  }
-
-  Future<List<Map<String, dynamic>>> getHistory(String exerciseId) async {
-    try {
-      final res = await api.get('/workout/history', query: {'exerciseId': exerciseId});
-      if (res.statusCode != 200 || res.data == null) return [];
-      return List<Map<String, dynamic>>.from(res.data);
-    } catch (_) {
-      return [];
-    }
+  Future<void> reorderExercises(List<Map<String, dynamic>> data) async {
+    await dio.post('/exercises/reorder', data: data);
   }
 }
