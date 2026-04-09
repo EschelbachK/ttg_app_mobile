@@ -13,6 +13,10 @@ class ProgressChart extends StatelessWidget {
     if (history.isEmpty) return const SizedBox.shrink();
 
     final spots = _buildSpots();
+    final maxWeight = spots.weight.isEmpty
+        ? 0.0
+        : spots.weight.map((e) => e.y).reduce((a, b) => a > b ? a : b);
+    final lastIndex = history.length - 1;
 
     return TtgGlassCard(
       child: SizedBox(
@@ -20,15 +24,19 @@ class ProgressChart extends StatelessWidget {
         child: LineChart(
           LineChartData(
             minX: 0,
-            maxX: (history.length - 1).toDouble(),
+            maxX: lastIndex.toDouble(),
             gridData: FlGridData(show: false),
             borderData: FlBorderData(show: false),
             titlesData: FlTitlesData(show: false),
             lineTouchData: LineTouchData(enabled: true),
             lineBarsData: [
-              _bar(spots.weight, Colors.blue),
-              _bar(spots.reps, Colors.green),
-              _bar(spots.volume, Colors.orange),
+              _bar(spots.weight, Colors.blue,
+                  highlightIndex: lastIndex,
+                  highlightValue: maxWeight),
+              _bar(spots.reps, Colors.green,
+                  highlightIndex: lastIndex),
+              _bar(spots.volume, Colors.orange,
+                  highlightIndex: lastIndex),
             ],
           ),
         ),
@@ -53,13 +61,45 @@ class ProgressChart extends StatelessWidget {
     return _ChartSpots(weight, reps, volume);
   }
 
-  LineChartBarData _bar(List<FlSpot> spots, Color color) {
+  LineChartBarData _bar(
+      List<FlSpot> spots,
+      Color color, {
+        int? highlightIndex,
+        double? highlightValue,
+      }) {
     return LineChartBarData(
       spots: spots,
       isCurved: true,
       barWidth: 2.5,
-      dotData: FlDotData(show: false),
       color: color,
+      dotData: FlDotData(
+        show: true,
+        getDotPainter: (spot, percent, bar, index) {
+          final isLast = highlightIndex != null && index == highlightIndex;
+          final isPR =
+              highlightValue != null && spot.y == highlightValue;
+
+          if (isPR) {
+            return FlDotCirclePainter(
+              radius: 5,
+              color: Colors.amber,
+              strokeWidth: 2,
+              strokeColor: Colors.white,
+            );
+          }
+
+          if (isLast) {
+            return FlDotCirclePainter(
+              radius: 4,
+              color: color,
+              strokeWidth: 2,
+              strokeColor: Colors.white,
+            );
+          }
+
+          return FlDotCirclePainter(radius: 0);
+        },
+      ),
     );
   }
 }
