@@ -44,22 +44,34 @@ class WorkoutController extends StateNotifier<WorkoutState> {
       final session = await api.getActiveWorkout();
 
       state = state.copyWith(
-        session: session ??
-            WorkoutSession(
-              id: DateTime.now().toIso8601String(),
-              startedAt: DateTime.now(),
-              exercises: [],
-            ),
+        session: session ?? _createFallbackSession(),
       );
     } catch (_) {
       state = state.copyWith(
-        session: WorkoutSession(
-          id: DateTime.now().toIso8601String(),
-          startedAt: DateTime.now(),
-          exercises: [],
-        ),
+        session: _createFallbackSession(),
       );
     }
+  }
+
+  WorkoutSession _createFallbackSession() {
+    return WorkoutSession(
+      id: DateTime.now().toIso8601String(),
+      startedAt: DateTime.now(),
+      exercises: [
+        ExerciseSession(
+          id: DateTime.now().toIso8601String(),
+          name: 'Exercise',
+          order: 0,
+          sets: [
+            SetLog(
+              id: DateTime.now().millisecondsSinceEpoch.toString(),
+              weight: 0,
+              reps: 0,
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   Future<void> addSet(String exerciseId, double weight, int reps) async {
