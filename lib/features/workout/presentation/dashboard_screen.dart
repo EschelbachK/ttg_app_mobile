@@ -8,7 +8,6 @@ import 'widgets/progress_chart.dart';
 import 'widgets/insight_card.dart';
 import 'widgets/ttg_glass_card.dart';
 import 'widgets/streak_widget.dart';
-import 'widgets/badge_widget.dart';
 
 class DashboardScreen extends ConsumerWidget {
   final List<WorkoutHistoryEntry> history;
@@ -28,30 +27,18 @@ class DashboardScreen extends ConsumerWidget {
     final change = analytics.volumeChangePercent(history);
     final improving = analytics.isImproving(history);
 
-    motivator.onStreak = (streak) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('🔥 Deine Streak ist jetzt $streak Tage!')),
-      );
-    };
-    motivator.onPR = (prExercises) {
-      for (var ex in prExercises) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('🏆 Neuer PR bei $ex!')),
-        );
-      }
-    };
+    final message = motivator.state.last?.message;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Dashboard')),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         children: [
+          if (message != null) ...[
+            _MotivationBanner(message: message),
+            const SizedBox(height: 16),
+          ],
           StreakWidget(motivator: motivator.engine),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            children: motivator.engine.badges.map((b) => BadgeWidget(badge: b)).toList(),
-          ),
           const SizedBox(height: 28),
           _SectionTitle(text: 'Overview', style: theme.textTheme.titleLarge),
           const SizedBox(height: 12),
@@ -89,6 +76,25 @@ class DashboardScreen extends ConsumerWidget {
   }
 }
 
+class _MotivationBanner extends StatelessWidget {
+  final String message;
+
+  const _MotivationBanner({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return TtgGlassCard(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Text(
+          message,
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+      ),
+    );
+  }
+}
+
 class _SectionTitle extends StatelessWidget {
   final String text;
   final TextStyle? style;
@@ -96,8 +102,12 @@ class _SectionTitle extends StatelessWidget {
   const _SectionTitle({required this.text, this.style});
 
   @override
-  Widget build(BuildContext context) =>
-      Text(text, style: style?.copyWith(fontWeight: FontWeight.w600));
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: style?.copyWith(fontWeight: FontWeight.w600),
+    );
+  }
 }
 
 class _KpiCard extends StatelessWidget {
@@ -110,6 +120,7 @@ class _KpiCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = highlight ? Colors.green : null;
+
     return TtgGlassCard(
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -118,7 +129,10 @@ class _KpiCard extends StatelessWidget {
           children: [
             Text(label, style: Theme.of(context).textTheme.bodySmall),
             const SizedBox(height: 6),
-            Text(value, style: Theme.of(context).textTheme.titleLarge?.copyWith(color: color)),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(color: color),
+            ),
           ],
         ),
       ),
