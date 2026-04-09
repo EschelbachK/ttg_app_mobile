@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'dio_provider.dart';
 
 final apiClientProvider = Provider<ApiClient>((ref) {
@@ -12,19 +11,14 @@ class ApiClient {
 
   ApiClient(this.dio);
 
-  Future<Response> get(String path, {Map<String, dynamic>? query}) {
-    return dio.get(path, queryParameters: query);
-  }
+  Future<Response> get(String path, {Map<String, dynamic>? query}) =>
+      dio.get(path, queryParameters: query);
 
-  Future<Response> post(String path, {Map<String, dynamic>? data}) {
-    return dio.post(path, data: data);
-  }
+  Future<Response> post(String path, {Map<String, dynamic>? data}) =>
+      dio.post(path, data: data);
 
-  Future<Response> put(String path, {Map<String, dynamic>? data}) {
-    return dio.put(path, data: data);
-  }
+  Future<Response> put(String path, {Map<String, dynamic>? data}) =>
+      dio.put(path, data: data);
 
-  Future<Response> delete(String path) {
-    return dio.delete(path);
-  }
+  Future<Response> delete(String path) => dio.delete(path);
 }
