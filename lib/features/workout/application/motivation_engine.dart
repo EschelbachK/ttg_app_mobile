@@ -18,45 +18,30 @@ class MotivationEngine {
     final reps = event.repsDiff ?? 0;
     final weight = event.weightDiff ?? 0;
 
-    final isPR = reps > 0 || weight > 0;
+    final isProgress = reps > 0 || weight > 0;
     final hasStreak = event.streakDays > 0;
 
-    final results = <MotivationResult>[];
-
-    MotivationLevel? prLevel;
+    MotivationLevel? progressLevel;
     MotivationLevel? streakLevel;
 
-    if (isPR) {
-      prLevel = MotivationRules.prLevel(reps, weight);
-      results.add(MotivationResult(
-        type: MotivationType.pr,
-        level: prLevel,
-        message: MotivationMessageBuilder.build(MotivationType.pr, prLevel),
-      ));
+    if (isProgress) {
+      progressLevel = MotivationRules.prLevel(reps, weight);
     }
 
     if (hasStreak) {
       streakLevel = MotivationRules.streakLevel(event.streakDays);
-      results.add(MotivationResult(
-        type: MotivationType.streak,
-        level: streakLevel,
-        message: MotivationMessageBuilder.build(MotivationType.streak, streakLevel),
-      ));
     }
 
-    if (isPR && hasStreak) {
-      final combinedScore =
-          MotivationRules.priority(prLevel!) +
+    if (isProgress && hasStreak) {
+      final combined =
+          MotivationRules.priority(progressLevel!) +
               MotivationRules.priority(streakLevel!);
 
-      final MotivationLevel level;
-      if (combinedScore >= 7) {
-        level = MotivationLevel.extreme;
-      } else if (combinedScore >= 5) {
-        level = MotivationLevel.high;
-      } else {
-        level = MotivationLevel.medium;
-      }
+      final MotivationLevel level = combined >= 7
+          ? MotivationLevel.extreme
+          : combined >= 5
+          ? MotivationLevel.high
+          : MotivationLevel.medium;
 
       return MotivationResult(
         type: MotivationType.pr,
@@ -76,30 +61,61 @@ class MotivationEngine {
       );
     }
 
-    if (results.isEmpty) {
+    if (event.totalWorkouts > 0 && event.totalWorkouts % 10 == 0) {
+      final level = event.totalWorkouts >= 50
+          ? MotivationLevel.extreme
+          : event.totalWorkouts >= 25
+          ? MotivationLevel.high
+          : MotivationLevel.medium;
+
       return MotivationResult(
-        type: MotivationType.neutral,
-        level: MotivationLevel.low,
+        type: MotivationType.milestone,
+        level: level,
         message: MotivationMessageBuilder.build(
-          MotivationType.neutral,
-          MotivationLevel.low,
+          MotivationType.milestone,
+          level,
         ),
       );
     }
 
-    results.sort((a, b) =>
-        MotivationRules.priority(b.level)
-            .compareTo(MotivationRules.priority(a.level)));
+    if (isProgress) {
+      return MotivationResult(
+        type: MotivationType.pr,
+        level: progressLevel!,
+        message: MotivationMessageBuilder.build(
+          MotivationType.pr,
+          progressLevel,
+        ),
+      );
+    }
 
-    return results.first;
+    if (hasStreak) {
+      return MotivationResult(
+        type: MotivationType.streak,
+        level: streakLevel!,
+        message: MotivationMessageBuilder.build(
+          MotivationType.streak,
+          streakLevel,
+        ),
+      );
+    }
+
+    return MotivationResult(
+      type: MotivationType.neutral,
+      level: MotivationLevel.low,
+      message: MotivationMessageBuilder.build(
+        MotivationType.neutral,
+        MotivationLevel.low,
+      ),
+    );
   }
 
   String _comboMessage(MotivationLevel level) {
     switch (level) {
       case MotivationLevel.extreme:
-        return "🚨 Streak läuft! Und du zerstörst PRs!";
+        return "🚨 Serie läuft! Und du erreichst neue Levels!";
       case MotivationLevel.high:
-        return "⚡ Streak läuft! Heute stark!";
+        return "⚡ Serie läuft! Heute richtig stark!";
       case MotivationLevel.medium:
         return "Gute Serie! Bleib dran!";
       case MotivationLevel.low:
