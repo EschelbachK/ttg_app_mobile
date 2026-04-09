@@ -1,4 +1,4 @@
-import '../domain/motivation_level.dart';
+import 'motivation_level.dart';
 
 class MotivationRules {
   static MotivationLevel prLevel(int reps, double weight) {
