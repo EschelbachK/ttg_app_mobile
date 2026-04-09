@@ -71,6 +71,12 @@ class WorkoutApiService {
     }
   }
 
+  Future<void> reorderExercises(List<Map<String, dynamic>> exercises) async {
+    await api.put('/workout/exercise/reorder', data: {
+      'exercises': exercises,
+    });
+  }
+
   Future<List<Map<String, dynamic>>> getHistory(String exerciseId) async {
     final res = await api.get('/workout/history', query: {
       'exerciseId': exerciseId,
