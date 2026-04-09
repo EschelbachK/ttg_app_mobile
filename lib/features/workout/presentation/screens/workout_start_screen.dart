@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/workout_provider.dart';
 import '../../providers/plan_provider.dart';
+import '../widgets/ttg_glass_card.dart';
+import '../widgets/ttg_primary_button.dart';
+import '../widgets/ttg_section_title.dart';
+import '../training_plan_card.dart';
 
 class WorkoutStartScreen extends ConsumerWidget {
   const WorkoutStartScreen({super.key});
@@ -12,34 +16,50 @@ class WorkoutStartScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: () async {
-                await ref.read(workoutProvider.notifier).startWorkout();
-                if (context.mounted) {
-                  Navigator.pushReplacementNamed(context, '/workout/active');
-                }
-              },
-              child: const Text('Quick Start'),
-            ),
-            const SizedBox(height: 24),
-            ...plans.map((p) => ListTile(
-              title: Text(p.name),
-              onTap: () async {
-                await ref
-                    .read(workoutProvider.notifier)
-                    .startWorkoutFromPlan();
-                if (context.mounted) {
-                  Navigator.pushReplacementNamed(
-                      context, '/workout/active');
-                }
-              },
-            )),
-          ],
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              const TtgSectionTitle(title: 'START WORKOUT'),
+              const SizedBox(height: 20),
+              TtgPrimaryButton(
+                text: 'Quick Start',
+                onTap: () async {
+                  await ref.read(workoutProvider.notifier).startWorkout();
+                  if (context.mounted) {
+                    Navigator.pushReplacementNamed(context, '/workout/active');
+                  }
+                },
+              ),
+              const SizedBox(height: 24),
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: TtgSectionTitle(title: 'PLÄNE'),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: ListView(
+                  children: plans
+                      .map(
+                        (p) => TrainingPlanCard(
+                      plan: p,
+                      onStart: () async {
+                        await ref
+                            .read(workoutProvider.notifier)
+                            .startWorkoutFromPlan(p);
+                        if (context.mounted) {
+                          Navigator.pushReplacementNamed(
+                              context, '/workout/active');
+                        }
+                      },
+                    ),
+                  )
+                      .toList(),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
