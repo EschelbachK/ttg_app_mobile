@@ -18,12 +18,9 @@ class WorkoutSummaryScreen extends ConsumerWidget {
       );
     }
 
-    final volumes = session.exercises.map((e) {
-      return e.sets.fold(
-        0.0,
-            (sum, s) => sum + s.weight * s.reps,
-      );
-    }).toList();
+    final volumes = session.exercises
+        .map((e) => e.sets.fold(0.0, (s, set) => s + set.weight * set.reps))
+        .toList();
 
     final totalVolume =
     volumes.fold(0.0, (sum, v) => sum + v);
@@ -45,15 +42,11 @@ class WorkoutSummaryScreen extends ConsumerWidget {
             const Text('Next Session Vorschlag'),
             const SizedBox(height: 12),
             ...suggestions.map((s) {
-              Color color;
-
-              if (s.reason.contains('increase')) {
-                color = Colors.green;
-              } else if (s.reason.contains('plateau')) {
-                color = Colors.orange;
-              } else {
-                color = Colors.white;
-              }
+              final color = s.reason.contains('increase')
+                  ? Colors.green
+                  : s.reason.contains('plateau')
+                  ? Colors.orange
+                  : Colors.white;
 
               return ListTile(
                 title: Text(s.exerciseName),
@@ -66,6 +59,17 @@ class WorkoutSummaryScreen extends ConsumerWidget {
             }),
             const SizedBox(height: 20),
             ElevatedButton(
+              onPressed: () async {
+                await controller.startWorkoutFromPlan();
+                if (context.mounted) {
+                  Navigator.pushReplacementNamed(
+                      context, '/workout/active');
+                }
+              },
+              child: const Text('Übernehmen & starten'),
+            ),
+            const SizedBox(height: 10),
+            ElevatedButton(
               onPressed: () {
                 Navigator.popUntil(
                   context,
@@ -73,7 +77,7 @@ class WorkoutSummaryScreen extends ConsumerWidget {
                 );
               },
               child: const Text('Finish Workout'),
-            )
+            ),
           ],
         ),
       ),
