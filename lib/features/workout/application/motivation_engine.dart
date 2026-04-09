@@ -19,45 +19,61 @@ class MotivationEngine {
     final weight = event.weightDiff ?? 0;
 
     final isPR = reps > 0 || weight > 0;
-    final hasStreak = event.streakDays >= 3;
-
-    if (isPR && hasStreak) {
-      return MotivationResult(
-        type: MotivationType.pr,
-        level: MotivationLevel.high,
-        message: "⚡ Streak läuft! Und heute PR!",
-      );
-    }
+    final hasStreak = event.streakDays > 0;
 
     final results = <MotivationResult>[];
 
+    MotivationLevel? prLevel;
+    MotivationLevel? streakLevel;
+
     if (isPR) {
-      final level = MotivationRules.prLevel(reps, weight);
+      prLevel = MotivationRules.prLevel(reps, weight);
       results.add(MotivationResult(
         type: MotivationType.pr,
-        level: level,
-        message: MotivationMessageBuilder.build(MotivationType.pr, level),
+        level: prLevel,
+        message: MotivationMessageBuilder.build(MotivationType.pr, prLevel),
       ));
     }
 
-    if (event.streakDays > 0) {
-      final level = MotivationRules.streakLevel(event.streakDays);
+    if (hasStreak) {
+      streakLevel = MotivationRules.streakLevel(event.streakDays);
       results.add(MotivationResult(
         type: MotivationType.streak,
-        level: level,
-        message: MotivationMessageBuilder.build(MotivationType.streak, level),
+        level: streakLevel,
+        message: MotivationMessageBuilder.build(MotivationType.streak, streakLevel),
       ));
+    }
+
+    if (isPR && hasStreak) {
+      final combinedScore =
+          MotivationRules.priority(prLevel!) +
+              MotivationRules.priority(streakLevel!);
+
+      final MotivationLevel level;
+      if (combinedScore >= 7) {
+        level = MotivationLevel.extreme;
+      } else if (combinedScore >= 5) {
+        level = MotivationLevel.high;
+      } else {
+        level = MotivationLevel.medium;
+      }
+
+      return MotivationResult(
+        type: MotivationType.pr,
+        level: level,
+        message: _comboMessage(level),
+      );
     }
 
     if (event.isComeback) {
-      results.add(MotivationResult(
+      return MotivationResult(
         type: MotivationType.comeback,
         level: MotivationLevel.high,
         message: MotivationMessageBuilder.build(
           MotivationType.comeback,
           MotivationLevel.high,
         ),
-      ));
+      );
     }
 
     if (results.isEmpty) {
@@ -76,5 +92,18 @@ class MotivationEngine {
             .compareTo(MotivationRules.priority(a.level)));
 
     return results.first;
+  }
+
+  String _comboMessage(MotivationLevel level) {
+    switch (level) {
+      case MotivationLevel.extreme:
+        return "🚨 Streak läuft! Und du zerstörst PRs!";
+      case MotivationLevel.high:
+        return "⚡ Streak läuft! Heute stark!";
+      case MotivationLevel.medium:
+        return "Gute Serie! Bleib dran!";
+      case MotivationLevel.low:
+        return "Weiter!";
+    }
   }
 }
