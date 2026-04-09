@@ -24,36 +24,40 @@ class WorkoutController extends StateNotifier<WorkoutState> {
 
   Future<void> loadActiveWorkout() async {
     state = state.copyWith(isLoading: true);
-    final session = await api.getActiveWorkout();
-    state = state.copyWith(session: session, isLoading: false);
-    if (session != null) motivator.updateStreak(session);
+    try {
+      final session = await api.getActiveWorkout();
+      state = state.copyWith(session: session, isLoading: false);
+      if (session != null) motivator.updateStreak(session);
+    } catch (_) {
+      state = state.copyWith(isLoading: false);
+    }
   }
 
   Future<void> startWorkout() async {
-    await api.startWorkout();
-    await loadActiveWorkout();
+    try {
+      await api.startWorkout();
+      await loadActiveWorkout();
+    } catch (_) {}
   }
 
   Future<void> addSet(String exerciseId, double weight, int reps) async {
     final s = state.session;
     if (s == null) return;
-
     final newSet = SetLog(id: DateTime.now().toIso8601String(), weight: weight, reps: reps);
     final updatedExercises = s.exercises.map((e) {
       if (e.id != exerciseId) return e;
       return e.copyWith(sets: [...e.sets, newSet]);
     }).toList();
-
     state = state.copyWith(session: s.copyWith(exercises: updatedExercises));
-    await api.addSet(exerciseId, weight, reps);
-
+    try {
+      await api.addSet(exerciseId, weight, reps);
+    } catch (_) {}
     motivator.checkPRs(exerciseId, updatedExercises);
   }
 
   void updateSet({required String exerciseId, required String setId, double? weight, int? reps, bool? completed}) {
     final s = state.session;
     if (s == null) return;
-
     final updatedExercises = s.exercises.map((e) {
       if (e.id != exerciseId) return e;
       return e.copyWith(
@@ -63,7 +67,6 @@ class WorkoutController extends StateNotifier<WorkoutState> {
         }).toList(),
       );
     }).toList();
-
     state = state.copyWith(session: s.copyWith(exercises: updatedExercises));
     _debounceSave(exerciseId, setId);
   }
@@ -90,7 +93,9 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     final s = state.session;
     if (s == null) return;
     state = state.copyWith(session: s.copyWith(exercises: updated));
-    await api.reorderExercises(updated.map((e) => {'id': e.id, 'order': e.order}).toList());
+    try {
+      await api.reorderExercises(updated.map((e) => {'id': e.id, 'order': e.order}).toList());
+    } catch (_) {}
   }
 
   ProgressionResult? getSuggestion(ExerciseSession exercise) {
@@ -133,12 +138,15 @@ class WorkoutController extends StateNotifier<WorkoutState> {
         sets: List.generate(3, (i) => SetLog(id: '${DateTime.now().millisecondsSinceEpoch}$i', weight: p.weight, reps: p.reps)),
       );
     }).toList();
-
     state = state.copyWith(session: WorkoutSession(id: DateTime.now().toIso8601String(), startedAt: DateTime.now(), exercises: exercises));
   }
 
   Future<List<WorkoutHistoryEntry>> loadHistory(String exerciseId) async {
-    final raw = await api.getHistory(exerciseId);
-    return raw.map((e) => WorkoutHistoryEntry(weight: (e['weight'] as num).toDouble(), reps: e['reps'], date: DateTime.parse(e['date']))).toList();
+    try {
+      final raw = await api.getHistory(exerciseId);
+      return raw.map((e) => WorkoutHistoryEntry(weight: (e['weight'] as num).toDouble(), reps: e['reps'], date: DateTime.parse(e['date']))).toList();
+    } catch (_) {
+      return [];
+    }
   }
 }
