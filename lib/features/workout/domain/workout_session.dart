@@ -1,3 +1,5 @@
+import 'set_log.dart';
+
 class WorkoutSession {
   final String id;
   final DateTime startedAt;
@@ -43,16 +45,4 @@ class ExerciseSession {
       sets: sets ?? this.sets,
     );
   }
-}
-
-class SetLog {
-  final String id;
-  final double weight;
-  final int reps;
-
-  SetLog({
-    required this.id,
-    required this.weight,
-    required this.reps,
-  });
 }

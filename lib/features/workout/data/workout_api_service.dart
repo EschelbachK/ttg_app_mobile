@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../domain/workout_session.dart';
+import '../domain/set_log.dart';
 
 class WorkoutApiService {
   final baseUrl = 'http://localhost:8080/api/workout';
 
   Future<WorkoutSession?> getActiveWorkout() async {
     final res = await http.get(Uri.parse('$baseUrl/active'));
-
     if (res.statusCode != 200) return null;
 
     final data = jsonDecode(res.body);
@@ -25,6 +25,7 @@ class WorkoutApiService {
           id: s['id'],
           weight: (s['weight'] as num).toDouble(),
           reps: s['reps'],
+          completed: s['completed'] ?? false,
         ))
             .toList(),
       ))
@@ -46,5 +47,12 @@ class WorkoutApiService {
         'reps': reps,
       }),
     );
+  }
+
+  Future<List<Map<String, dynamic>>> getHistory(String exerciseId) async {
+    final res =
+    await http.get(Uri.parse('$baseUrl/history?exerciseId=$exerciseId'));
+    if (res.statusCode != 200) return [];
+    return List<Map<String, dynamic>>.from(jsonDecode(res.body));
   }
 }

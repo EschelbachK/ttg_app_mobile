@@ -6,6 +6,7 @@ import '../domain/progression_result.dart';
 import '../domain/workout_history_entry.dart';
 import '../domain/next_session_suggestion.dart';
 import '../domain/training_plan.dart';
+import '../domain/set_log.dart';
 import 'workout_state.dart';
 import 'progression_engine.dart';
 
@@ -118,18 +119,23 @@ class WorkoutController extends StateNotifier<WorkoutState> {
   Future<void> startWorkoutFromPlan() async {
     final plan = buildPlanFromSuggestions();
 
-    final exercises = plan.exercises
-        .asMap()
-        .entries
-        .map(
-          (e) => ExerciseSession(
+    final exercises = plan.exercises.asMap().entries.map((e) {
+      final planned = e.value;
+
+      return ExerciseSession(
         id: DateTime.now().toIso8601String() + e.key.toString(),
-        name: e.value.name,
+        name: planned.name,
         order: e.key,
-        sets: [],
-      ),
-    )
-        .toList();
+        sets: List.generate(
+          3,
+              (i) => SetLog(
+            id: '${DateTime.now().millisecondsSinceEpoch}$i',
+            weight: planned.weight,
+            reps: planned.reps,
+          ),
+        ),
+      );
+    }).toList();
 
     state = state.copyWith(
       session: WorkoutSession(
@@ -138,5 +144,17 @@ class WorkoutController extends StateNotifier<WorkoutState> {
         exercises: exercises,
       ),
     );
+  }
+
+  Future<List<WorkoutHistoryEntry>> loadHistory(String exerciseId) async {
+    final raw = await api.getHistory(exerciseId);
+
+    return raw
+        .map((e) => WorkoutHistoryEntry(
+      weight: (e['weight'] as num).toDouble(),
+      reps: e['reps'],
+      date: DateTime.parse(e['date']),
+    ))
+        .toList();
   }
 }
