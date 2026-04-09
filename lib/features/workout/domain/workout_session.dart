@@ -1,23 +1,24 @@
 import 'set_log.dart';
+import 'workout_group.dart';
 
 class WorkoutSession {
   final String id;
   final DateTime startedAt;
-  final List<ExerciseSession> exercises;
+  final List<WorkoutGroup> groups;
 
   const WorkoutSession({
     required this.id,
     required this.startedAt,
-    required this.exercises,
+    required this.groups,
   });
 
   WorkoutSession copyWith({
-    List<ExerciseSession>? exercises,
+    List<WorkoutGroup>? groups,
   }) =>
       WorkoutSession(
         id: id,
         startedAt: startedAt,
-        exercises: exercises ?? this.exercises,
+        groups: groups ?? this.groups,
       );
 }
 
