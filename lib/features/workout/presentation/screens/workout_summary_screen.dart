@@ -20,7 +20,9 @@ class WorkoutSummaryScreen extends ConsumerWidget {
       );
     }
 
-    final volumes = session.exercises
+    final exercises = session.groups.expand((g) => g.exercises).toList();
+
+    final volumes = exercises
         .map((e) => e.sets.fold(0.0, (s, set) => s + set.weight * set.reps))
         .toList();
 
