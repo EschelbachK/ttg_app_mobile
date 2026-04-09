@@ -1,7 +1,7 @@
 class TrainingPlan {
   final List<PlannedExercise> exercises;
 
-  TrainingPlan({required this.exercises});
+  const TrainingPlan({required this.exercises});
 }
 
 class PlannedExercise {
@@ -9,7 +9,7 @@ class PlannedExercise {
   final int reps;
   final double weight;
 
-  PlannedExercise({
+  const PlannedExercise({
     required this.name,
     required this.reps,
     required this.weight,
