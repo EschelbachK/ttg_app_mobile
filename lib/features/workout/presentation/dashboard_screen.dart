@@ -1,133 +1,75 @@
-import 'package:flutter/material.dart';
-import '../application/insights_engine.dart';
-import '../application/analytics_engine.dart';
 import '../domain/workout_history_entry.dart';
-import 'widgets/progress_chart.dart';
-import 'widgets/insight_card.dart';
-import 'widgets/ttg_glass_card.dart';
 
-class DashboardScreen extends StatelessWidget {
-  final List<WorkoutHistoryEntry> history;
-
-  const DashboardScreen({super.key, required this.history});
-
-  @override
-  Widget build(BuildContext context) {
-    final insights = InsightsEngine().analyze(history);
-    final analytics = AnalyticsEngine();
-    final theme = Theme.of(context);
-
-    final totalVolume = analytics.totalVolume(history);
-    final avgWeight = analytics.averageWeight(history);
-    final reps = analytics.totalReps(history);
-    final change = analytics.volumeChangePercent(history);
-    final improving = analytics.isImproving(history);
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Dashboard')),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-        children: [
-          _SectionTitle(
-            text: 'Overview',
-            style: theme.textTheme.titleLarge,
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(child: _KpiCard('Volume', totalVolume.toStringAsFixed(0))),
-              const SizedBox(width: 12),
-              Expanded(child: _KpiCard('Avg Weight', avgWeight.toStringAsFixed(1))),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(child: _KpiCard('Reps', reps.toString())),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _KpiCard(
-                  'Change',
-                  '${change.toStringAsFixed(1)}%',
-                  highlight: improving,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 28),
-          _SectionTitle(
-            text: 'Progress',
-            style: theme.textTheme.titleLarge,
-          ),
-          const SizedBox(height: 12),
-          ProgressChart(history: history),
-          const SizedBox(height: 28),
-          if (insights.isNotEmpty) ...[
-            _SectionTitle(
-              text: 'Insights',
-              style: theme.textTheme.titleLarge,
-            ),
-            const SizedBox(height: 12),
-            ...insights.map(
-                  (e) => Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: InsightCard(insight: e),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
+class AnalyticsEngine {
+  double totalVolume(List<WorkoutHistoryEntry> history) {
+    return history.fold(0, (sum, e) => sum + (e.weight * e.reps));
   }
-}
 
-class _SectionTitle extends StatelessWidget {
-  final String text;
-  final TextStyle? style;
-
-  const _SectionTitle({
-    required this.text,
-    this.style,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: style?.copyWith(fontWeight: FontWeight.w600),
-    );
+  double averageWeight(List<WorkoutHistoryEntry> history) {
+    if (history.isEmpty) return 0;
+    final total = history.fold(0.0, (sum, e) => sum + e.weight);
+    return total / history.length;
   }
-}
 
-class _KpiCard extends StatelessWidget {
-  final String label;
-  final String value;
-  final bool highlight;
+  int totalReps(List<WorkoutHistoryEntry> history) {
+    return history.fold(0, (sum, e) => sum + e.reps);
+  }
 
-  const _KpiCard(this.label, this.value, {this.highlight = false});
+  double lastSessionVolume(List<WorkoutHistoryEntry> history) {
+    if (history.isEmpty) return 0;
+    final last = history.last;
+    return last.weight * last.reps;
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    final color = highlight ? Colors.green : null;
+  double previousSessionVolume(List<WorkoutHistoryEntry> history) {
+    if (history.length < 2) return 0;
+    final prev = history[history.length - 2];
+    return prev.weight * prev.reps;
+  }
 
-    return TtgGlassCard(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: Theme.of(context).textTheme.bodySmall),
-            const SizedBox(height: 6),
-            Text(
-              value,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleLarge
-                  ?.copyWith(color: color),
-            ),
-          ],
-        ),
-      ),
-    );
+  double volumeChangePercent(List<WorkoutHistoryEntry> history) {
+    final last = lastSessionVolume(history);
+    final prev = previousSessionVolume(history);
+    if (prev == 0) return 0;
+    return ((last - prev) / prev) * 100;
+  }
+
+  bool isImproving(List<WorkoutHistoryEntry> history) {
+    return volumeChangePercent(history) > 0;
+  }
+
+  List<double> last7Volumes(List<WorkoutHistoryEntry> history) {
+    final start = history.length > 7 ? history.length - 7 : 0;
+    return history
+        .sublist(start)
+        .map((e) => e.weight * e.reps)
+        .toList();
+  }
+
+  double weeklyAverageVolume(List<WorkoutHistoryEntry> history) {
+    final volumes = last7Volumes(history);
+    if (volumes.isEmpty) return 0;
+    return volumes.reduce((a, b) => a + b) / volumes.length;
+  }
+
+  bool isWeeklyImproving(List<WorkoutHistoryEntry> history) {
+    if (history.length < 14) return false;
+
+    final lastWeek = history
+        .sublist(history.length - 7)
+        .map((e) => e.weight * e.reps)
+        .toList();
+
+    final prevWeek = history
+        .sublist(history.length - 14, history.length - 7)
+        .map((e) => e.weight * e.reps)
+        .toList();
+
+    final lastAvg =
+        lastWeek.reduce((a, b) => a + b) / lastWeek.length;
+    final prevAvg =
+        prevWeek.reduce((a, b) => a + b) / prevWeek.length;
+
+    return lastAvg > prevAvg;
   }
 }
