@@ -6,7 +6,7 @@ import '../domain/progression_input.dart';
 import '../domain/progression_result.dart';
 import '../domain/workout_history_entry.dart';
 import '../domain/next_session_suggestion.dart';
-import '../domain/training_plan.dart';
+import '../domain/workout_training_plan.dart';
 import '../domain/set_log.dart';
 import 'workout_state.dart';
 import 'progression_engine.dart';
@@ -96,7 +96,14 @@ class WorkoutController extends StateNotifier<WorkoutState> {
 
   TrainingPlan buildPlanFromSuggestions() {
     final suggestions = buildNextSessionSuggestions();
-    return TrainingPlan(exercises: suggestions.map((s) => PlannedExercise(name: s.exerciseName, reps: s.reps, weight: s.weight)).toList());
+    return TrainingPlan(
+        name: 'Suggested Plan', // z. B. statischer Name
+        exercises: suggestions.map((s) => PlannedExercise(
+            name: s.exerciseName,
+            reps: s.reps,
+            weight: s.weight
+        )).toList()
+    );
   }
 
   Future<void> startWorkoutFromPlan() async {
