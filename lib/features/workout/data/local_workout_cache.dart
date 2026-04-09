@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../domain/set_log.dart';
 import '../domain/workout_session.dart';
+import '../domain/workout_group.dart';
 
 class LocalWorkoutCache {
   static const _key = 'workout_session';
@@ -12,17 +13,23 @@ class LocalWorkoutCache {
     final json = jsonEncode({
       'id': session.id,
       'startedAt': session.startedAt.toIso8601String(),
-      'exercises': session.exercises
-          .map((e) => {
-        'id': e.id,
-        'name': e.name,
-        'order': e.order,
-        'sets': e.sets
-            .map((s) => {
-          'id': s.id,
-          'weight': s.weight,
-          'reps': s.reps,
-          'completed': s.completed,
+      'groups': session.groups
+          .map((g) => {
+        'name': g.name,
+        'order': g.order,
+        'exercises': g.exercises
+            .map((e) => {
+          'id': e.id,
+          'name': e.name,
+          'order': e.order,
+          'sets': e.sets
+              .map((s) => {
+            'id': s.id,
+            'weight': s.weight,
+            'reps': s.reps,
+            'completed': s.completed,
+          })
+              .toList(),
         })
             .toList(),
       })
@@ -39,10 +46,11 @@ class LocalWorkoutCache {
 
     final data = jsonDecode(raw);
 
-    return WorkoutSession(
-      id: data['id'],
-      startedAt: DateTime.parse(data['startedAt']),
-      exercises: (data['exercises'] as List)
+    final groups = (data['groups'] as List? ?? [])
+        .map((g) => WorkoutGroup(
+      name: g['name'],
+      order: g['order'],
+      exercises: (g['exercises'] as List)
           .map((e) => ExerciseSession(
         id: e['id'],
         name: e['name'],
@@ -57,6 +65,13 @@ class LocalWorkoutCache {
             .toList(),
       ))
           .toList(),
+    ))
+        .toList();
+
+    return WorkoutSession(
+      id: data['id'],
+      startedAt: DateTime.parse(data['startedAt']),
+      groups: groups,
     );
   }
 
