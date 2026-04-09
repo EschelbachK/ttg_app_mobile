@@ -85,8 +85,8 @@ class ExerciseBlock extends ConsumerWidget {
               const SizedBox(height: 8),
               AddSetButton(
                 exerciseId: exercise.id,
-                suggestedWeight: suggestion?.suggestedWeight,
-                suggestedReps: suggestion?.suggestedReps,
+                suggestedWeight: suggestion?.weight,
+                suggestedReps: suggestion?.reps,
               ),
             ],
           ),
