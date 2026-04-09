@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../domain/motivation_badge.dart';
+import '../../domain/motivation/motivation_badge.dart';
 
 class BadgeWidget extends StatelessWidget {
   final MotivationBadge badge;
