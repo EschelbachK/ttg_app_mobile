@@ -55,7 +55,14 @@ class ExerciseBlock extends ConsumerWidget {
               if (suggestion != null)
                 Text(
                   suggestion.reason,
-                  style: const TextStyle(fontSize: 12),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: suggestion.reason.contains('increase')
+                        ? Colors.green
+                        : suggestion.reason.contains('plateau')
+                        ? Colors.orange
+                        : Colors.red,
+                  ),
                 ),
               AddSetButton(
                 exerciseId: exercise.id,
