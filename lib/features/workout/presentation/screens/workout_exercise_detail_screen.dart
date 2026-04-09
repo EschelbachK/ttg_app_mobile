@@ -31,9 +31,12 @@ class WorkoutExerciseDetailScreen extends ConsumerWidget {
       );
     }
 
-    final exercise = session.exercises.firstWhere(
+    final exercise = session.groups
+        .expand((g) => g.exercises)
+        .firstWhere(
           (e) => e.id == exerciseId,
-      orElse: () => ExerciseSession(id: '', name: '', order: 0, sets: []),
+      orElse: () =>
+      const ExerciseSession(id: '', name: '', order: 0, sets: []),
     );
 
     if (exercise.id.isEmpty) {
