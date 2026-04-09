@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../application/motivation_engine.dart';
@@ -14,6 +15,8 @@ class MotivationNotifier extends ChangeNotifier {
 
   MotivationState state = const MotivationState();
 
+  Timer? _timer;
+
   void updateStreakFromSession(WorkoutSession session) {
     engine.updateStreak(session);
     notifyListeners();
@@ -21,7 +24,20 @@ class MotivationNotifier extends ChangeNotifier {
 
   void evaluate(MotivationEvent event) {
     final result = engine.evaluate(event);
-    state = state.copyWith(last: result);
+
+    _timer?.cancel();
+
+    state = state.copyWith(
+      last: result,
+      visible: true,
+      timestamp: DateTime.now(),
+    );
+
     notifyListeners();
+
+    _timer = Timer(const Duration(seconds: 4), () {
+      state = state.copyWith(visible: false);
+      notifyListeners();
+    });
   }
 }
