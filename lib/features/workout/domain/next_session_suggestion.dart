@@ -4,7 +4,7 @@ class NextSessionSuggestion {
   final int reps;
   final String reason;
 
-  NextSessionSuggestion({
+  const NextSessionSuggestion({
     required this.exerciseName,
     required this.weight,
     required this.reps,
