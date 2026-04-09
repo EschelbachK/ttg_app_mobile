@@ -19,9 +19,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
 
   WorkoutController(this.api) : super(WorkoutState());
 
-  Future<void> init() async {
-    await loadActiveWorkout();
-  }
+  Future<void> init() async => loadActiveWorkout();
 
   Future<void> loadActiveWorkout() async {
     state = state.copyWith(isLoading: true);
@@ -93,12 +91,9 @@ class WorkoutController extends StateNotifier<WorkoutState> {
 
   void _debounceSave(String exerciseId, String setId) {
     final key = '$exerciseId-$setId';
-
     _debounceTimers[key]?.cancel();
-
-    _debounceTimers[key] = Timer(const Duration(milliseconds: 600), () {
-      _syncSet(exerciseId, setId);
-    });
+    _debounceTimers[key] =
+        Timer(const Duration(milliseconds: 600), () => _syncSet(exerciseId, setId));
   }
 
   Future<void> _syncSet(String exerciseId, String setId) async {
@@ -124,9 +119,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
   }
 
   void _retry(String exerciseId, String setId) {
-    Timer(const Duration(seconds: 2), () {
-      _syncSet(exerciseId, setId);
-    });
+    Timer(const Duration(seconds: 2), () => _syncSet(exerciseId, setId));
   }
 
   Future<void> reorderExercises(List<ExerciseSession> updated) async {
@@ -135,6 +128,15 @@ class WorkoutController extends StateNotifier<WorkoutState> {
 
     state = state.copyWith(
       session: session.copyWith(exercises: updated),
+    );
+
+    await api.reorderExercises(
+      updated
+          .map((e) => {
+        'id': e.id,
+        'order': e.order,
+      })
+          .toList(),
     );
   }
 
