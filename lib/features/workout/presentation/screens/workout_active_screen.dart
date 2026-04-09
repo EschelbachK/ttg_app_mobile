@@ -10,13 +10,22 @@ class WorkoutActiveScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(workoutProvider);
 
+    final session = state.session;
+
+    final totalVolume = session == null
+        ? 0
+        : session.exercises.fold(
+      0.0,
+          (sum, e) => sum +
+          e.sets.fold(
+              0.0, (s, set) => s + set.weight * set.reps),
+    );
+
     if (state.isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
-
-    final session = state.session;
 
     if (session == null) {
       return const Scaffold(
@@ -26,6 +35,9 @@ class WorkoutActiveScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Colors.black,
+      appBar: AppBar(
+        title: Text('Volume: ${totalVolume.toStringAsFixed(0)} kg'),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: session.exercises

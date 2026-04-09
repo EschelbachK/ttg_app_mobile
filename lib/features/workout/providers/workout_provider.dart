@@ -7,5 +7,7 @@ final workoutApiProvider = Provider((ref) => WorkoutApiService());
 
 final workoutProvider =
 StateNotifierProvider<WorkoutController, WorkoutState>((ref) {
-  return WorkoutController(ref.read(workoutApiProvider));
+  final controller = WorkoutController(ref.read(workoutApiProvider));
+  controller.init();
+  return controller;
 });

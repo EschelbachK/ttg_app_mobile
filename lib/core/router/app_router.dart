@@ -5,9 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/auth/screens/loading_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/dashboard/navigation/dashboard_routes.dart';
-import '../../features/dashboard/screens/training_set_screen.dart';
-import '../../features/workout/screens/workoutplanscreen.dart';
-import '../../features/workout/screens/workoutfolderscreen.dart';
+
+import '../../features/workout/presentation/screens/workout_start_screen.dart';
+import '../../features/workout/presentation/screens/workout_active_screen.dart';
+import '../../features/workout/presentation/screens/workout_redirect_screen.dart';
+import '../../features/workout/presentation/screens/workout_exercise_detail_screen.dart';
 
 import '../auth/auth_provider.dart';
 import '../navigation/main_navigation.dart';
@@ -17,30 +19,35 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     initialLocation: '/loading',
     refreshListenable: _RouterRefresh(ref),
     routes: [
-      GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
-      GoRoute(path: '/loading', builder: (_, __) => const LoadingScreen()),
+      GoRoute(
+        path: '/login',
+        builder: (_, __) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/loading',
+        builder: (_, __) => const LoadingScreen(),
+      ),
       ShellRoute(
         builder: (_, __, child) => MainNavigation(child: child),
         routes: [
           ...dashboardRoutes,
           GoRoute(
             path: '/workout',
-            builder: (_, __) => const TrainingPlansScreen(),
+            builder: (_, __) => const WorkoutRedirectScreen(),
             routes: [
               GoRoute(
-                path: 'plans/:planId',
-                builder: (_, s) {
-                  final planId = s.pathParameters['planId'];
-                  if (planId == null) return const Scaffold(body: Center(child: Text('Routing Error')));
-                  return TrainingFoldersScreen(planId: planId);
-                },
+                path: 'start',
+                builder: (_, __) => const WorkoutStartScreen(),
               ),
               GoRoute(
-                path: 'exercises/:exerciseId/sets',
-                builder: (_, s) {
-                  final id = s.pathParameters['exerciseId'];
-                  if (id == null) return const Scaffold(body: Center(child: Text('Routing Error')));
-                  return TrainingSetScreen(exerciseId: id);
+                path: 'active',
+                builder: (_, __) => const WorkoutActiveScreen(),
+              ),
+              GoRoute(
+                path: 'exercise/:exerciseId',
+                builder: (_, state) {
+                  final id = state.pathParameters['exerciseId']!;
+                  return WorkoutExerciseDetailScreen(exerciseId: id);
                 },
               ),
             ],
@@ -52,8 +59,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final auth = ref.read(authProvider);
       final loggedIn = auth.isLoggedIn;
       final loc = state.uri.toString();
+
       if (!loggedIn && loc != '/login') return '/login';
       if (loggedIn && (loc == '/login' || loc == '/loading')) return '/dashboard';
+
       return null;
     },
   );
@@ -63,5 +72,6 @@ class _RouterRefresh extends ChangeNotifier {
   _RouterRefresh(this.ref) {
     ref.listen(authProvider, (_, __) => notifyListeners());
   }
+
   final Ref ref;
 }

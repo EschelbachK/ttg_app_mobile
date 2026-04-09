@@ -8,6 +8,10 @@ class WorkoutController extends StateNotifier<WorkoutState> {
 
   WorkoutController(this.api) : super(WorkoutState());
 
+  Future<void> init() async {
+    await loadActiveWorkout();
+  }
+
   Future<void> loadActiveWorkout() async {
     state = state.copyWith(isLoading: true);
     final session = await api.getActiveWorkout();
@@ -18,12 +22,13 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     await api.startWorkout();
     await loadActiveWorkout();
   }
+
   Future<void> addSet(String exerciseId, double weight, int reps) async {
     final session = state.session;
     if (session == null) return;
 
     final newSet = SetLog(
-      id: DateTime.now().toString(),
+      id: DateTime.now().toIso8601String(),
       weight: weight,
       reps: reps,
     );
