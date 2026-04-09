@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:ttg_app_mobile/features/workout/providers/workout_provider.dart';
+import 'package:ttg_app_mobile/features/dashboard/models/training_plan.dart';
 import 'package:ttg_app_mobile/features/workout/presentation/training_plan_card.dart';
-import '../domain/workout_training_plan.dart';
-import '../providers/workout_provider.dart';
+import 'package:ttg_app_mobile/features/workout/presentation/widgets/ttg_glass_card.dart';
 
 class PlanScreen extends ConsumerWidget {
   final List<TrainingPlan> availablePlans;
+
   const PlanScreen({super.key, required this.availablePlans});
 
   @override
@@ -13,20 +16,29 @@ class PlanScreen extends ConsumerWidget {
     final controller = ref.read(workoutProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Trainingspläne')),
-      body: ListView.builder(
+      backgroundColor: Colors.black,
+      appBar: AppBar(title: const Text('PLÄNE')),
+      body: Padding(
         padding: const EdgeInsets.all(16),
-        itemCount: availablePlans.length,
-        itemBuilder: (_, index) {
-          final plan = availablePlans[index];
-          return TrainingPlanCard(
-            plan: plan,
-            onStart: () async {
-              await controller.startWorkoutFromPlan();
-              Navigator.of(context).pop();
-            },
-          );
-        },
+        child: ListView.builder(
+          itemCount: availablePlans.length,
+          itemBuilder: (context, index) {
+            final plan = availablePlans[index];
+
+            return TtgGlassCard(
+              child: TrainingPlanCard(
+                plan: plan,
+                onStart: () async {
+                  await controller.startWorkoutFromPlan(plan);
+                  if (context.mounted) {
+                    Navigator.pushReplacementNamed(
+                        context, '/workout/active');
+                  }
+                },
+              ),
+            );
+          },
+        ),
       ),
     );
   }
