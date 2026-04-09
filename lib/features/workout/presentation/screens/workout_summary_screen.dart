@@ -9,6 +9,7 @@ class WorkoutSummaryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(workoutProvider);
+    final controller = ref.read(workoutProvider.notifier);
     final session = state.session;
 
     if (session == null) {
@@ -27,16 +28,42 @@ class WorkoutSummaryScreen extends ConsumerWidget {
     final totalVolume =
     volumes.fold(0.0, (sum, v) => sum + v);
 
+    final suggestions = controller.buildNextSessionSuggestions();
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(title: const Text('Summary')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Volume: ${totalVolume.toStringAsFixed(0)} kg'),
             const SizedBox(height: 20),
             VolumeChart(volumes: volumes),
+            const SizedBox(height: 20),
+            const Text('Next Session Vorschlag'),
+            const SizedBox(height: 12),
+            ...suggestions.map((s) {
+              Color color;
+
+              if (s.reason.contains('increase')) {
+                color = Colors.green;
+              } else if (s.reason.contains('plateau')) {
+                color = Colors.orange;
+              } else {
+                color = Colors.white;
+              }
+
+              return ListTile(
+                title: Text(s.exerciseName),
+                subtitle: Text('${s.weight} kg x ${s.reps}'),
+                trailing: Text(
+                  s.reason,
+                  style: TextStyle(color: color),
+                ),
+              );
+            }),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {

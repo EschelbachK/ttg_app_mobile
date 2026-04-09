@@ -4,6 +4,7 @@ import '../domain/workout_session.dart';
 import '../domain/progression_input.dart';
 import '../domain/progression_result.dart';
 import '../domain/workout_history_entry.dart';
+import '../domain/next_session_suggestion.dart';
 import 'workout_state.dart';
 import 'progression_engine.dart';
 
@@ -82,5 +83,21 @@ class WorkoutController extends StateNotifier<WorkoutState> {
         history: history,
       ),
     );
+  }
+
+  List<NextSessionSuggestion> buildNextSessionSuggestions() {
+    final session = state.session;
+    if (session == null) return [];
+
+    return session.exercises.map((e) {
+      final suggestion = getSuggestion(e);
+
+      return NextSessionSuggestion(
+        exerciseName: e.name,
+        weight: suggestion?.suggestedWeight ?? 0,
+        reps: suggestion?.suggestedReps ?? 0,
+        reason: suggestion?.reason ?? 'none',
+      );
+    }).toList();
   }
 }
