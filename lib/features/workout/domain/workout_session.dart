@@ -5,7 +5,7 @@ class WorkoutSession {
   final DateTime startedAt;
   final List<ExerciseSession> exercises;
 
-  WorkoutSession({
+  const WorkoutSession({
     required this.id,
     required this.startedAt,
     required this.exercises,
@@ -13,13 +13,12 @@ class WorkoutSession {
 
   WorkoutSession copyWith({
     List<ExerciseSession>? exercises,
-  }) {
-    return WorkoutSession(
-      id: id,
-      startedAt: startedAt,
-      exercises: exercises ?? this.exercises,
-    );
-  }
+  }) =>
+      WorkoutSession(
+        id: id,
+        startedAt: startedAt,
+        exercises: exercises ?? this.exercises,
+      );
 }
 
 class ExerciseSession {
@@ -28,7 +27,7 @@ class ExerciseSession {
   final int order;
   final List<SetLog> sets;
 
-  ExerciseSession({
+  const ExerciseSession({
     required this.id,
     required this.name,
     required this.order,
@@ -37,12 +36,11 @@ class ExerciseSession {
 
   ExerciseSession copyWith({
     List<SetLog>? sets,
-  }) {
-    return ExerciseSession(
-      id: id,
-      name: name,
-      order: order,
-      sets: sets ?? this.sets,
-    );
-  }
+  }) =>
+      ExerciseSession(
+        id: id,
+        name: name,
+        order: order,
+        sets: sets ?? this.sets,
+      );
 }
