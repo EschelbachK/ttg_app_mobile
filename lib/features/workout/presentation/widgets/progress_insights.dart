@@ -16,29 +16,36 @@ class ProgressInsights extends StatelessWidget {
 
     final weightDiff = last.weight - prev.weight;
     final repsDiff = last.reps - prev.reps;
+    final volumeDiff =
+        (last.weight * last.reps) - (prev.weight * prev.reps);
 
-    String text;
-    Color color;
-
-    if (weightDiff > 0 || repsDiff > 0) {
-      text = 'Progress 👍';
-      color = Colors.green;
-    } else if (weightDiff == 0 && repsDiff == 0) {
-      text = 'Plateau';
-      color = Colors.orange;
-    } else {
-      text = 'Regression';
-      color = Colors.red;
-    }
+    final data = _resolve(weightDiff, repsDiff, volumeDiff);
 
     return TtgGlassCard(
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Text(
-          text,
-          style: TextStyle(color: color),
+          data.text,
+          style: TextStyle(color: data.color),
         ),
       ),
     );
   }
+
+  _InsightData _resolve(double w, int r, double v) {
+    if (v > 0 || w > 0 || r > 0) {
+      return _InsightData('Progress 👍', Colors.green);
+    }
+    if (v == 0 && w == 0 && r == 0) {
+      return _InsightData('Plateau', Colors.orange);
+    }
+    return _InsightData('Regression', Colors.red);
+  }
+}
+
+class _InsightData {
+  final String text;
+  final Color color;
+
+  _InsightData(this.text, this.color);
 }
