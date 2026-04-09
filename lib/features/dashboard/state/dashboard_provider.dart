@@ -122,11 +122,10 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     );
   });
 
-  Future<void> _refresh(Future<void> Function() fn) async =>
-      _execute(() async {
-        await fn();
-        await loadTrainingPlans();
-      });
+  Future<void> _refresh(Future<void> Function() fn) async {
+    await fn();
+    await loadTrainingPlans();
+  }
 
   Future<void> createTrainingPlan(String name) async =>
       _refresh(() => api.createTrainingPlan(name));
@@ -265,8 +264,14 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         planId: planId,
         folderId: folderId,
         name: exercise.name,
+        bodyRegion: _mapBodyRegion(exercise.bodyRegion),
+        sets: exercise.sets
+            .map((s) => {
+          'weight': s.weight,
+          'repetitions': s.reps,
+        })
+            .toList(),
       ));
-
   Future<void> importExercise(
       String folderId,
       String planId,
@@ -278,23 +283,46 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       String folderId,
       String planId,
       Exercise exercise,
-      ) async {
-    state = state.copyWith(
-      folders: state.folders.map((f) {
-        if (f.id == folderId) {
-          return f.copyWith(
-            exercises: [...f.exercises, exercise],
-          );
-        }
-        return f;
-      }).toList(),
-    );
-
-    try {
-      await api.createExercise(
+      ) async =>
+      _refresh(() => api.createExercise(
         planId: planId,
         folderId: folderId,
         name: exercise.name,
-      );
-    } catch (_) {}
-  }}
+        bodyRegion: _mapBodyRegion(exercise.bodyRegion),
+        sets: exercise.sets
+            .map((s) => {
+          'weight': s.weight,
+          'repetitions': s.reps,
+        })
+            .toList(),
+      ));
+
+  String _mapBodyRegion(String category) {
+    switch (category) {
+      case "Brustmuskulatur":
+        return "BRUST";
+      case "Rücken":
+        return "RUECKEN";
+      case "Beine":
+        return "BEINE";
+      case "Schultern":
+        return "SCHULTERN";
+      case "Bizeps":
+        return "BIZEPS";
+      case "Trizeps":
+        return "TRIZEPS";
+      case "Bauchmuskulatur":
+        return "BAUCH";
+      case "Nacken":
+        return "NACKEN";
+      case "Unterarme":
+        return "UNTERARME";
+      case "Cardio":
+        return "CARDIO";
+      case "Ganzkörpertraining":
+        return "GANZKOERPER";
+      default:
+        return "GANZKOERPER";
+    }
+  }
+}

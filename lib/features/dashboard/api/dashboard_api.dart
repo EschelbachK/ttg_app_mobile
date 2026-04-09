@@ -4,11 +4,18 @@ class DashboardApi {
   final Dio dio;
   DashboardApi(this.dio);
 
-  Future<List<dynamic>> _extractList(dynamic data) async {
+  List<dynamic> _extractList(dynamic data) {
     if (data is List) return data;
-    if (data is Map && data['content'] is List) {
-      return List<dynamic>.from(data['content']);
+
+    if (data is Map) {
+      final content = data['content'];
+      if (content is List) return content;
+
+      if (data.values.any((v) => v is List)) {
+        return data.values.firstWhere((v) => v is List);
+      }
     }
+
     return [];
   }
 
@@ -94,9 +101,15 @@ class DashboardApi {
     required String planId,
     required String folderId,
     required String name,
+    required String bodyRegion,
+    required List<Map<String, dynamic>> sets,
   }) =>
       dio.post(
         '/training-plans/$planId/folders/$folderId/exercises',
-        data: {'name': name},
+        data: {
+          'name': name,
+          'bodyRegion': bodyRegion,
+          'sets': sets,
+        },
       );
 }

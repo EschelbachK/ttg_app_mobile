@@ -105,13 +105,18 @@ class _ExerciseSelectionCardState extends ConsumerState<ExerciseSelectionCard> {
     final exercise = Exercise(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: selectedExercise!,
+      bodyRegion: selectedCategory!,
       sets: List.generate(
         sets,
             (index) => ExerciseSet(weight: weight, reps: reps),
       ),
     );
 
-    ref.read(dashboardProvider.notifier).addExercise(widget.folderId, widget.planId, exercise);
+    ref.read(dashboardProvider.notifier).addExercise(
+      widget.folderId,
+      widget.planId,
+      exercise,
+    );
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Übung erfolgreich hinzugefügt")),

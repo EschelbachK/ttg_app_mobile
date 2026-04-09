@@ -82,6 +82,7 @@ class _ExerciseInputDialogState extends ConsumerState<ExerciseInputDialog> {
             final exercise = Exercise(
               id: DateTime.now().millisecondsSinceEpoch.toString(),
               name: widget.name,
+              bodyRegion: widget.category,
               sets: List.generate(
                 sets,
                     (index) => ExerciseSet(weight: weight, reps: reps),
