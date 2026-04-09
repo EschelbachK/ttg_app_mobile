@@ -16,18 +16,22 @@ class AddSetButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ElevatedButton(
-      onPressed: () {
-        showModalBottomSheet(
-          context: context,
-          builder: (_) => _AddSetSheet(
-            exerciseId: exerciseId,
-            suggestedWeight: suggestedWeight,
-            suggestedReps: suggestedReps,
-          ),
-        );
-      },
-      child: const Text('Add Set'),
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            builder: (_) => _AddSetSheet(
+              exerciseId: exerciseId,
+              suggestedWeight: suggestedWeight,
+              suggestedReps: suggestedReps,
+            ),
+          );
+        },
+        child: const Text('Add Set'),
+      ),
     );
   }
 }
@@ -54,27 +58,53 @@ class _AddSetSheetState extends ConsumerState<_AddSetSheet> {
   @override
   void initState() {
     super.initState();
-    weightCtrl = TextEditingController(text: widget.suggestedWeight?.toString() ?? '');
-    repsCtrl = TextEditingController(text: widget.suggestedReps?.toString() ?? '');
+    weightCtrl = TextEditingController(
+      text: widget.suggestedWeight?.toStringAsFixed(1) ?? '',
+    );
+    repsCtrl = TextEditingController(
+      text: widget.suggestedReps?.toString() ?? '',
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset + 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          TextField(controller: weightCtrl, keyboardType: TextInputType.number),
-          TextField(controller: repsCtrl, keyboardType: TextInputType.number),
-          ElevatedButton(
-            onPressed: () async {
-              final weight = double.parse(weightCtrl.text);
-              final reps = int.parse(repsCtrl.text);
-              await ref.read(workoutProvider.notifier).addSet(widget.exerciseId, weight, reps);
-              Navigator.pop(context);
-            },
-            child: const Text('Save'),
+          TextField(
+            controller: weightCtrl,
+            keyboardType: TextInputType.number,
+            autofocus: true,
+            decoration: const InputDecoration(labelText: 'Weight'),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: repsCtrl,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(labelText: 'Reps'),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () async {
+                final weight = double.tryParse(weightCtrl.text);
+                final reps = int.tryParse(repsCtrl.text);
+
+                if (weight == null || reps == null) return;
+
+                await ref
+                    .read(workoutProvider.notifier)
+                    .addSet(widget.exerciseId, weight, reps);
+
+                if (mounted) Navigator.pop(context);
+              },
+              child: const Text('Save'),
+            ),
           ),
         ],
       ),
