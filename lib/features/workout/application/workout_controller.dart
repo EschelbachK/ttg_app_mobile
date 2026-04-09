@@ -14,10 +14,9 @@ import 'progression_engine.dart';
 class WorkoutController extends StateNotifier<WorkoutState> {
   final WorkoutApiService api;
   final ProgressionEngine engine = ProgressionEngine();
-
   final Map<String, Timer> _debounceTimers = {};
 
-  WorkoutController(this.api) : super(WorkoutState());
+  WorkoutController(this.api) : super(const WorkoutState());
 
   Future<void> init() async => loadActiveWorkout();
 
@@ -33,204 +32,95 @@ class WorkoutController extends StateNotifier<WorkoutState> {
   }
 
   Future<void> addSet(String exerciseId, double weight, int reps) async {
-    final session = state.session;
-    if (session == null) return;
+    final s = state.session;
+    if (s == null) return;
 
-    final newSet = SetLog(
-      id: DateTime.now().toIso8601String(),
-      weight: weight,
-      reps: reps,
-    );
+    final newSet = SetLog(id: DateTime.now().toIso8601String(), weight: weight, reps: reps);
+    final updatedExercises = s.exercises.map((e) => e.id == exerciseId ? e.copyWith(sets: [...e.sets, newSet]) : e).toList();
 
-    final updatedExercises = session.exercises.map((e) {
-      if (e.id == exerciseId) {
-        return e.copyWith(sets: [...e.sets, newSet]);
-      }
-      return e;
-    }).toList();
-
-    state = state.copyWith(
-      session: session.copyWith(exercises: updatedExercises),
-    );
-
+    state = state.copyWith(session: s.copyWith(exercises: updatedExercises));
     await api.addSet(exerciseId, weight, reps);
   }
 
-  void updateSet({
-    required String exerciseId,
-    required String setId,
-    double? weight,
-    int? reps,
-    bool? completed,
-  }) {
-    final session = state.session;
-    if (session == null) return;
+  void updateSet({required String exerciseId, required String setId, double? weight, int? reps, bool? completed}) {
+    final s = state.session;
+    if (s == null) return;
 
-    final updatedExercises = session.exercises.map((e) {
+    final updatedExercises = s.exercises.map((e) {
       if (e.id != exerciseId) return e;
-
-      final updatedSets = e.sets.map((s) {
-        if (s.id != setId) return s;
-
-        return s.copyWith(
-          weight: weight,
-          reps: reps,
-          completed: completed,
-        );
-      }).toList();
-
-      return e.copyWith(sets: updatedSets);
+      return e.copyWith(
+        sets: e.sets.map((set) => set.id == setId ? set.copyWith(weight: weight, reps: reps, completed: completed) : set).toList(),
+      );
     }).toList();
 
-    state = state.copyWith(
-      session: session.copyWith(exercises: updatedExercises),
-    );
-
+    state = state.copyWith(session: s.copyWith(exercises: updatedExercises));
     _debounceSave(exerciseId, setId);
   }
 
   void _debounceSave(String exerciseId, String setId) {
     final key = '$exerciseId-$setId';
     _debounceTimers[key]?.cancel();
-    _debounceTimers[key] =
-        Timer(const Duration(milliseconds: 600), () => _syncSet(exerciseId, setId));
+    _debounceTimers[key] = Timer(const Duration(milliseconds: 600), () => _syncSet(exerciseId, setId));
   }
 
   Future<void> _syncSet(String exerciseId, String setId) async {
-    final session = state.session;
-    if (session == null) return;
-
-    final exercise =
-    session.exercises.firstWhere((e) => e.id == exerciseId);
-
-    final set = exercise.sets.firstWhere((s) => s.id == setId);
+    final s = state.session;
+    if (s == null) return;
+    final ex = s.exercises.firstWhere((e) => e.id == exerciseId);
+    final set = ex.sets.firstWhere((s) => s.id == setId);
 
     try {
-      await api.updateSet(
-        exerciseId,
-        set.id,
-        set.reps,
-        set.weight,
-        set.completed,
-      );
+      await api.updateSet(exerciseId, set.id, set.reps, set.weight, set.completed);
     } catch (_) {
-      _retry(exerciseId, setId);
+      Timer(const Duration(seconds: 2), () => _syncSet(exerciseId, setId));
     }
   }
 
-  void _retry(String exerciseId, String setId) {
-    Timer(const Duration(seconds: 2), () => _syncSet(exerciseId, setId));
-  }
-
   Future<void> reorderExercises(List<ExerciseSession> updated) async {
-    final session = state.session;
-    if (session == null) return;
-
-    state = state.copyWith(
-      session: session.copyWith(exercises: updated),
-    );
-
-    await api.reorderExercises(
-      updated
-          .map((e) => {
-        'id': e.id,
-        'order': e.order,
-      })
-          .toList(),
-    );
+    final s = state.session;
+    if (s == null) return;
+    state = state.copyWith(session: s.copyWith(exercises: updated));
+    await api.reorderExercises(updated.map((e) => {'id': e.id, 'order': e.order}).toList());
   }
 
   ProgressionResult? getSuggestion(ExerciseSession exercise) {
     if (exercise.sets.isEmpty) return null;
-
     final last = exercise.sets.last;
-
-    final history = exercise.sets
-        .map((s) => WorkoutHistoryEntry(
-      weight: s.weight,
-      reps: s.reps,
-      date: DateTime.now(),
-    ))
-        .toList();
-
-    return engine.calculate(
-      ProgressionInput(
-        lastWeight: last.weight,
-        lastReps: last.reps,
-        targetReps: last.reps,
-        history: history,
-      ),
-    );
+    final history = exercise.sets.map((s) => WorkoutHistoryEntry(weight: s.weight, reps: s.reps, date: DateTime.now())).toList();
+    return engine.calculate(ProgressionInput(lastWeight: last.weight, lastReps: last.reps, targetReps: last.reps, history: history));
   }
 
   List<NextSessionSuggestion> buildNextSessionSuggestions() {
-    final session = state.session;
-    if (session == null) return [];
-
-    return session.exercises.map((e) {
-      final s = getSuggestion(e);
-      return NextSessionSuggestion(
-        exerciseName: e.name,
-        weight: s?.suggestedWeight ?? 0,
-        reps: s?.suggestedReps ?? 0,
-        reason: s?.reason ?? 'none',
-      );
+    final s = state.session;
+    if (s == null) return [];
+    return s.exercises.map((e) {
+      final sug = getSuggestion(e);
+      return NextSessionSuggestion(exerciseName: e.name, weight: sug?.suggestedWeight ?? 0, reps: sug?.suggestedReps ?? 0, reason: sug?.reason ?? 'none');
     }).toList();
   }
 
   TrainingPlan buildPlanFromSuggestions() {
     final suggestions = buildNextSessionSuggestions();
-
-    return TrainingPlan(
-      exercises: suggestions
-          .map((s) => PlannedExercise(
-        name: s.exerciseName,
-        reps: s.reps,
-        weight: s.weight,
-      ))
-          .toList(),
-    );
+    return TrainingPlan(exercises: suggestions.map((s) => PlannedExercise(name: s.exerciseName, reps: s.reps, weight: s.weight)).toList());
   }
 
   Future<void> startWorkoutFromPlan() async {
     final plan = buildPlanFromSuggestions();
-
     final exercises = plan.exercises.asMap().entries.map((e) {
-      final planned = e.value;
-
+      final p = e.value;
       return ExerciseSession(
         id: DateTime.now().toIso8601String() + e.key.toString(),
-        name: planned.name,
+        name: p.name,
         order: e.key,
-        sets: List.generate(
-          3,
-              (i) => SetLog(
-            id: '${DateTime.now().millisecondsSinceEpoch}$i',
-            weight: planned.weight,
-            reps: planned.reps,
-          ),
-        ),
+        sets: List.generate(3, (i) => SetLog(id: '${DateTime.now().millisecondsSinceEpoch}$i', weight: p.weight, reps: p.reps)),
       );
     }).toList();
 
-    state = state.copyWith(
-      session: WorkoutSession(
-        id: DateTime.now().toIso8601String(),
-        startedAt: DateTime.now(),
-        exercises: exercises,
-      ),
-    );
+    state = state.copyWith(session: WorkoutSession(id: DateTime.now().toIso8601String(), startedAt: DateTime.now(), exercises: exercises));
   }
 
   Future<List<WorkoutHistoryEntry>> loadHistory(String exerciseId) async {
     final raw = await api.getHistory(exerciseId);
-
-    return raw
-        .map((e) => WorkoutHistoryEntry(
-      weight: (e['weight'] as num).toDouble(),
-      reps: e['reps'],
-      date: DateTime.parse(e['date']),
-    ))
-        .toList();
+    return raw.map((e) => WorkoutHistoryEntry(weight: (e['weight'] as num).toDouble(), reps: e['reps'], date: DateTime.parse(e['date']))).toList();
   }
 }
