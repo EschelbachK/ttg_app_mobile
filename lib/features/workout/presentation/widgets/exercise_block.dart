@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/workout_session.dart';
+import '../../providers/workout_provider.dart';
 import 'set_row.dart';
 import 'ttg_glass_card.dart';
 import 'add_set_button.dart';
 import 'rest_timer_widget.dart';
 
-class ExerciseBlock extends StatelessWidget {
+class ExerciseBlock extends ConsumerWidget {
   final ExerciseSession exercise;
 
   const ExerciseBlock({super.key, required this.exercise});
 
   @override
-  Widget build(BuildContext context) {
-    final lastSet = exercise.sets.isNotEmpty ? exercise.sets.last : null;
-
-    final suggestedWeight =
-    lastSet != null ? lastSet.weight + 2.5 : null;
-    final suggestedReps = lastSet?.reps;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final controller = ref.read(workoutProvider.notifier);
+    final suggestion = controller.getSuggestion(exercise);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
@@ -53,10 +52,15 @@ class ExerciseBlock extends StatelessWidget {
                 },
               ),
               const SizedBox(height: 12),
+              if (suggestion != null)
+                Text(
+                  suggestion.reason,
+                  style: const TextStyle(fontSize: 12),
+                ),
               AddSetButton(
                 exerciseId: exercise.id,
-                suggestedWeight: suggestedWeight,
-                suggestedReps: suggestedReps,
+                suggestedWeight: suggestion?.suggestedWeight,
+                suggestedReps: suggestion?.suggestedReps,
               ),
             ],
           ),

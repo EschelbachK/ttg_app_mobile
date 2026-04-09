@@ -1,10 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/workout_api_service.dart';
 import '../domain/workout_session.dart';
+import '../domain/progression_input.dart';
+import '../domain/progression_result.dart';
 import 'workout_state.dart';
+import 'progression_engine.dart';
 
 class WorkoutController extends StateNotifier<WorkoutState> {
   final WorkoutApiService api;
+  final ProgressionEngine engine = ProgressionEngine();
 
   WorkoutController(this.api) : super(WorkoutState());
 
@@ -56,11 +60,17 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     );
   }
 
-  double getSuggestedWeight(double lastWeight) {
-    return lastWeight + 2.5;
-  }
+  ProgressionResult? getSuggestion(ExerciseSession exercise) {
+    if (exercise.sets.isEmpty) return null;
 
-  int getSuggestedReps(int lastReps) {
-    return lastReps;
+    final last = exercise.sets.last;
+
+    return engine.calculate(
+      ProgressionInput(
+        lastWeight: last.weight,
+        lastReps: last.reps,
+        targetReps: last.reps,
+      ),
+    );
   }
 }
