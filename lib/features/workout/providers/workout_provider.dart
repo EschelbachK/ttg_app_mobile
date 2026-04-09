@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/network/api_client.dart';
 import '../../../core/network/dio_provider.dart';
 import '../application/workout_controller.dart';
 import '../application/workout_state.dart';
@@ -8,10 +7,12 @@ import '../providers/motivation_provider.dart';
 
 final workoutProvider =
 StateNotifierProvider<WorkoutController, WorkoutState>((ref) {
+  final api = WorkoutApiService(
+    ref.read(dioProvider),
+  );
+
   return WorkoutController(
-    WorkoutApiService(
-      ApiClient(ref.read(dioProvider)),
-    ),
+    api,
     ref.read(motivationProvider.notifier),
     ref,
   );
