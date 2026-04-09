@@ -4,7 +4,7 @@ class SetLog {
   final int reps;
   final bool completed;
 
-  SetLog({
+  const SetLog({
     required this.id,
     required this.weight,
     required this.reps,
@@ -15,12 +15,11 @@ class SetLog {
     double? weight,
     int? reps,
     bool? completed,
-  }) {
-    return SetLog(
-      id: id,
-      weight: weight ?? this.weight,
-      reps: reps ?? this.reps,
-      completed: completed ?? this.completed,
-    );
-  }
+  }) =>
+      SetLog(
+        id: id,
+        weight: weight ?? this.weight,
+        reps: reps ?? this.reps,
+        completed: completed ?? this.completed,
+      );
 }
