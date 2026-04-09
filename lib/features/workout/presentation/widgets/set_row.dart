@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ttg_app_mobile/features/workout/presentation/widgets/reps_input_stepper.dart';
 import 'package:ttg_app_mobile/features/workout/presentation/widgets/weight_input_stepper.dart';
 import '../../providers/workout_provider.dart';
-import 'widgets/weight_input_stepper.dart';
-import 'widgets/reps_input_stepper.dart';
 
 class SetRow extends ConsumerWidget {
   final int index;
