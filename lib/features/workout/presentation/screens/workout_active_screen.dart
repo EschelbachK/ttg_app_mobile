@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/workout_provider.dart';
-import '../widgets/exercise_block.dart';
 import '../widgets/workout_header.dart';
+import '../widgets/workout_group_block.dart';
 
 class WorkoutActiveScreen extends ConsumerWidget {
   const WorkoutActiveScreen({super.key});
@@ -24,11 +24,12 @@ class WorkoutActiveScreen extends ConsumerWidget {
       );
     }
 
-    final exercises = [...session.exercises];
+    final exercises = session.groups.expand((g) => g.exercises);
 
     final totalVolume = exercises.fold(
       0.0,
-          (sum, e) => sum +
+          (sum, e) =>
+      sum +
           e.sets.fold(0.0, (s, set) => s + set.weight * set.reps),
     );
 
@@ -38,24 +39,17 @@ class WorkoutActiveScreen extends ConsumerWidget {
         children: [
           WorkoutHeader(volume: totalVolume),
           Expanded(
-            child: ReorderableListView(
+            child: ListView.builder(
               padding: const EdgeInsets.all(16),
-              onReorder: (oldIndex, newIndex) {
-                if (newIndex > oldIndex) newIndex--;
-                final item = exercises.removeAt(oldIndex);
-                exercises.insert(newIndex, item);
-                ref
-                    .read(workoutProvider.notifier)
-                    .reorderExercises(exercises);
+              itemCount: session.groups.length,
+              itemBuilder: (context, index) {
+                final group = session.groups[index];
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: WorkoutGroupBlock(group: group),
+                );
               },
-              children: [
-                for (final e in exercises)
-                  Container(
-                    key: ValueKey(e.id),
-                    margin: const EdgeInsets.only(bottom: 12),
-                    child: ExerciseBlock(exercise: e),
-                  )
-              ],
             ),
           ),
         ],
