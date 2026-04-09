@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../dashboard/state/dashboard_provider.dart';
 import '../../providers/workout_provider.dart';
-import '../../providers/plan_provider.dart';
-import '../widgets/ttg_glass_card.dart';
 import '../widgets/ttg_primary_button.dart';
 import '../widgets/ttg_section_title.dart';
-import '../training_plan_card.dart';
+import 'package:ttg_app_mobile/features/workout/presentation/training_plan_card.dart';
 
 class WorkoutStartScreen extends ConsumerWidget {
   const WorkoutStartScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final plans = ref.watch(planProvider);
+    final dashboardState = ref.watch(dashboardProvider);
+    final plans = dashboardState.trainingPlans;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -40,22 +40,23 @@ class WorkoutStartScreen extends ConsumerWidget {
               const SizedBox(height: 12),
               Expanded(
                 child: ListView(
-                  children: plans
-                      .map(
-                        (p) => TrainingPlanCard(
+                  children: plans.map((p) {
+                    return TrainingPlanCard(
                       plan: p,
                       onStart: () async {
                         await ref
                             .read(workoutProvider.notifier)
                             .startWorkoutFromPlan(p);
+
                         if (context.mounted) {
                           Navigator.pushReplacementNamed(
-                              context, '/workout/active');
+                            context,
+                            '/workout/active',
+                          );
                         }
                       },
-                    ),
-                  )
-                      .toList(),
+                    );
+                  }).toList(),
                 ),
               ),
             ],
