@@ -34,10 +34,8 @@ class WorkoutController extends StateNotifier<WorkoutState> {
   Future<void> addSet(String exerciseId, double weight, int reps) async {
     final s = state.session;
     if (s == null) return;
-
     final newSet = SetLog(id: DateTime.now().toIso8601String(), weight: weight, reps: reps);
     final updatedExercises = s.exercises.map((e) => e.id == exerciseId ? e.copyWith(sets: [...e.sets, newSet]) : e).toList();
-
     state = state.copyWith(session: s.copyWith(exercises: updatedExercises));
     await api.addSet(exerciseId, weight, reps);
   }
@@ -45,14 +43,12 @@ class WorkoutController extends StateNotifier<WorkoutState> {
   void updateSet({required String exerciseId, required String setId, double? weight, int? reps, bool? completed}) {
     final s = state.session;
     if (s == null) return;
-
     final updatedExercises = s.exercises.map((e) {
       if (e.id != exerciseId) return e;
       return e.copyWith(
         sets: e.sets.map((set) => set.id == setId ? set.copyWith(weight: weight, reps: reps, completed: completed) : set).toList(),
       );
     }).toList();
-
     state = state.copyWith(session: s.copyWith(exercises: updatedExercises));
     _debounceSave(exerciseId, setId);
   }
@@ -68,7 +64,6 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     if (s == null) return;
     final ex = s.exercises.firstWhere((e) => e.id == exerciseId);
     final set = ex.sets.firstWhere((s) => s.id == setId);
-
     try {
       await api.updateSet(exerciseId, set.id, set.reps, set.weight, set.completed);
     } catch (_) {
@@ -115,7 +110,6 @@ class WorkoutController extends StateNotifier<WorkoutState> {
         sets: List.generate(3, (i) => SetLog(id: '${DateTime.now().millisecondsSinceEpoch}$i', weight: p.weight, reps: p.reps)),
       );
     }).toList();
-
     state = state.copyWith(session: WorkoutSession(id: DateTime.now().toIso8601String(), startedAt: DateTime.now(), exercises: exercises));
   }
 
