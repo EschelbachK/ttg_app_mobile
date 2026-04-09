@@ -33,11 +33,11 @@ class DashboardScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         children: [
-          StreakWidget(motivator: motivator),
+          StreakWidget(motivator: motivator.engine),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
-            children: motivator.badges.map((b) => BadgeWidget(badge: b)).toList(),
+            children: motivator.engine.badges.map((b) => BadgeWidget(badge: b)).toList(),
           ),
           const SizedBox(height: 28),
           _SectionTitle(text: 'Overview', style: theme.textTheme.titleLarge),
