@@ -13,12 +13,18 @@ class ProgressInsights extends StatelessWidget {
     final insights = InsightsEngine().analyze(history);
     if (insights.isEmpty) return const SizedBox.shrink();
 
-    final text = insights.first.message;
-
     return TtgGlassCard(
       child: Padding(
         padding: const EdgeInsets.all(12),
-        child: Text(text),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: insights
+              .map((e) => Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Text(e.message),
+          ))
+              .toList(),
+        ),
       ),
     );
   }
