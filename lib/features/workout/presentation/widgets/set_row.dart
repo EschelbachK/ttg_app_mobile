@@ -24,6 +24,16 @@ class SetRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(workoutProvider.notifier);
 
+    void update({double? w, int? r, bool? c}) {
+      controller.updateSet(
+        exerciseId: exerciseId,
+        setId: setId,
+        weight: w,
+        reps: r,
+        completed: c,
+      );
+    }
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -31,24 +41,12 @@ class SetRow extends ConsumerWidget {
         Row(
           children: [
             IconButton(
-              onPressed: () {
-                controller.updateSet(
-                  exerciseId: exerciseId,
-                  setId: setId,
-                  weight: weight - 2.5,
-                );
-              },
+              onPressed: () => update(w: weight - 2.5),
               icon: const Icon(Icons.remove),
             ),
             Text('${weight.toStringAsFixed(1)} kg'),
             IconButton(
-              onPressed: () {
-                controller.updateSet(
-                  exerciseId: exerciseId,
-                  setId: setId,
-                  weight: weight + 2.5,
-                );
-              },
+              onPressed: () => update(w: weight + 2.5),
               icon: const Icon(Icons.add),
             ),
           ],
@@ -56,37 +54,19 @@ class SetRow extends ConsumerWidget {
         Row(
           children: [
             IconButton(
-              onPressed: () {
-                controller.updateSet(
-                  exerciseId: exerciseId,
-                  setId: setId,
-                  reps: reps - 1,
-                );
-              },
+              onPressed: () => update(r: reps - 1),
               icon: const Icon(Icons.remove),
             ),
             Text('$reps reps'),
             IconButton(
-              onPressed: () {
-                controller.updateSet(
-                  exerciseId: exerciseId,
-                  setId: setId,
-                  reps: reps + 1,
-                );
-              },
+              onPressed: () => update(r: reps + 1),
               icon: const Icon(Icons.add),
             ),
           ],
         ),
         Checkbox(
           value: completed,
-          onChanged: (val) {
-            controller.updateSet(
-              exerciseId: exerciseId,
-              setId: setId,
-              completed: val,
-            );
-          },
+          onChanged: (val) => update(c: val),
         ),
       ],
     );
