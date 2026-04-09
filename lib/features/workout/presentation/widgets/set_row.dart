@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ttg_app_mobile/features/workout/presentation/widgets/reps_input_stepper.dart';
+import 'package:ttg_app_mobile/features/workout/presentation/widgets/weight_input_stepper.dart';
 import '../../providers/workout_provider.dart';
+import 'widgets/weight_input_stepper.dart';
+import 'widgets/reps_input_stepper.dart';
 
 class SetRow extends ConsumerWidget {
   final int index;
@@ -38,35 +42,23 @@ class SetRow extends ConsumerWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text('#${index + 1}'),
-        Row(
-          children: [
-            IconButton(
-              onPressed: () => update(w: weight - 2.5),
-              icon: const Icon(Icons.remove),
-            ),
-            Text('${weight.toStringAsFixed(1)} kg'),
-            IconButton(
-              onPressed: () => update(w: weight + 2.5),
-              icon: const Icon(Icons.add),
-            ),
-          ],
+        SizedBox(
+          width: 120,
+          child: WeightInputStepper(
+            value: weight,
+            onChanged: (v) => update(w: v),
+          ),
         ),
-        Row(
-          children: [
-            IconButton(
-              onPressed: () => update(r: reps - 1),
-              icon: const Icon(Icons.remove),
-            ),
-            Text('$reps reps'),
-            IconButton(
-              onPressed: () => update(r: reps + 1),
-              icon: const Icon(Icons.add),
-            ),
-          ],
+        SizedBox(
+          width: 120,
+          child: RepsInputStepper(
+            value: reps,
+            onChanged: (v) => update(r: v),
+          ),
         ),
         Checkbox(
           value: completed,
-          onChanged: (val) => update(c: val),
+          onChanged: (val) => update(c: val ?? false),
         ),
       ],
     );
