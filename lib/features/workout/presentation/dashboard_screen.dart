@@ -28,6 +28,19 @@ class DashboardScreen extends ConsumerWidget {
     final change = analytics.volumeChangePercent(history);
     final improving = analytics.isImproving(history);
 
+    motivator.onStreak = (streak) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('🔥 Deine Streak ist jetzt $streak Tage!')),
+      );
+    };
+    motivator.onPR = (prExercises) {
+      for (var ex in prExercises) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('🏆 Neuer PR bei $ex!')),
+        );
+      }
+    };
+
     return Scaffold(
       appBar: AppBar(title: const Text('Dashboard')),
       body: ListView(
