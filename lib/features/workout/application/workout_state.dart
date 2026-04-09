@@ -4,7 +4,7 @@ class WorkoutState {
   final WorkoutSession? session;
   final bool isLoading;
 
-  WorkoutState({
+  const WorkoutState({
     this.session,
     this.isLoading = false,
   });
