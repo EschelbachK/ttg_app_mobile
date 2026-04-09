@@ -20,6 +20,8 @@ class DashboardScreen extends StatelessWidget {
     final totalVolume = analytics.totalVolume(history);
     final avgWeight = analytics.averageWeight(history);
     final reps = analytics.totalReps(history);
+    final change = analytics.volumeChangePercent(history);
+    final improving = analytics.isImproving(history);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Dashboard')),
@@ -39,7 +41,19 @@ class DashboardScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          _KpiCard('Total Reps', reps.toString()),
+          Row(
+            children: [
+              Expanded(child: _KpiCard('Reps', reps.toString())),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _KpiCard(
+                  'Change',
+                  '${change.toStringAsFixed(1)}%',
+                  highlight: improving,
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 28),
           _SectionTitle(
             text: 'Progress',
@@ -88,11 +102,14 @@ class _SectionTitle extends StatelessWidget {
 class _KpiCard extends StatelessWidget {
   final String label;
   final String value;
+  final bool highlight;
 
-  const _KpiCard(this.label, this.value);
+  const _KpiCard(this.label, this.value, {this.highlight = false});
 
   @override
   Widget build(BuildContext context) {
+    final color = highlight ? Colors.green : null;
+
     return TtgGlassCard(
       child: Padding(
         padding: const EdgeInsets.all(14),
@@ -103,7 +120,10 @@ class _KpiCard extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               value,
-              style: Theme.of(context).textTheme.titleLarge,
+              style: Theme.of(context)
+                  .textTheme
+                  .titleLarge
+                  ?.copyWith(color: color),
             ),
           ],
         ),
