@@ -8,6 +8,7 @@ import 'set_row.dart';
 import 'ttg_glass_card.dart';
 import 'add_set_button.dart';
 import 'rest_timer_widget.dart';
+import 'coach_message_widget.dart';
 
 final _historyProvider = FutureProvider.family((ref, String exerciseId) => ref.read(workoutProvider.notifier).loadHistory(exerciseId));
 
@@ -18,7 +19,6 @@ class ExerciseBlock extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(workoutProvider.notifier);
-    final suggestion = controller.getSuggestion(exercise);
     final historyAsync = ref.watch(_historyProvider(exercise.id));
 
     Color _color(String r) => r.contains('increase') ? Colors.green : r.contains('plateau') ? Colors.orange : Colors.red;
@@ -47,8 +47,8 @@ class ExerciseBlock extends ConsumerWidget {
               ]);
             }),
             const SizedBox(height: 12),
-            if (suggestion != null) Text(suggestion.reason, style: TextStyle(fontSize: 12, color: _color(suggestion.reason))),
-            AddSetButton(exerciseId: exercise.id, suggestedWeight: suggestion?.suggestedWeight, suggestedReps: suggestion?.suggestedReps),
+            CoachMessageWidget(exercise: exercise, controller: controller),
+            AddSetButton(exerciseId: exercise.id, suggestedWeight: controller.getSuggestion(exercise)?.suggestedWeight, suggestedReps: controller.getSuggestion(exercise)?.suggestedReps),
           ]),
         ),
       ),
