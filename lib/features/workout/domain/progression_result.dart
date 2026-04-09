@@ -3,9 +3,5 @@ class ProgressionResult {
   final int suggestedReps;
   final String reason;
 
-  const ProgressionResult({
-    required this.suggestedWeight,
-    required this.suggestedReps,
-    required this.reason,
-  });
+  const ProgressionResult({required this.suggestedWeight, required this.suggestedReps, required this.reason});
 }
