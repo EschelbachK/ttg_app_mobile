@@ -10,6 +10,7 @@ import '../../features/workout/presentation/screens/workout_start_screen.dart';
 import '../../features/workout/presentation/screens/workout_active_screen.dart';
 import '../../features/workout/presentation/screens/workout_redirect_screen.dart';
 import '../../features/workout/presentation/screens/workout_exercise_detail_screen.dart';
+import '../../features/workout/presentation/screens/workout_summary_screen.dart';
 
 import '../auth/auth_provider.dart';
 import '../navigation/main_navigation.dart';
@@ -49,6 +50,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   final id = state.pathParameters['exerciseId']!;
                   return WorkoutExerciseDetailScreen(exerciseId: id);
                 },
+              ),
+              GoRoute(
+                path: 'summary',
+                builder: (_, __) => const WorkoutSummaryScreen(),
               ),
             ],
           ),

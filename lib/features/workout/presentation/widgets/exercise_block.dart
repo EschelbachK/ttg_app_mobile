@@ -18,31 +18,48 @@ class ExerciseBlock extends StatelessWidget {
     lastSet != null ? lastSet.weight + 2.5 : null;
     final suggestedReps = lastSet?.reps;
 
-    return TtgGlassCard(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Text(exercise.name),
-            ...exercise.sets.asMap().entries.map(
-                  (e) => Column(
-                children: [
-                  SetRow(
-                    index: e.key,
-                    weight: e.value.weight,
-                    reps: e.value.reps,
-                  ),
-                  if (e.key == exercise.sets.length - 1)
-                    const RestTimerWidget(seconds: 60),
-                ],
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      margin: const EdgeInsets.only(bottom: 12),
+      child: TtgGlassCard(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                exercise.name,
+                style: const TextStyle(fontSize: 18),
               ),
-            ),
-            AddSetButton(
-              exerciseId: exercise.id,
-              suggestedWeight: suggestedWeight,
-              suggestedReps: suggestedReps,
-            ),
-          ],
+              const SizedBox(height: 12),
+              ...exercise.sets.asMap().entries.map(
+                    (e) {
+                  final isLast = e.key == exercise.sets.length - 1;
+
+                  return Column(
+                    children: [
+                      SetRow(
+                        index: e.key,
+                        weight: e.value.weight,
+                        reps: e.value.reps,
+                      ),
+                      if (isLast && exercise.sets.isNotEmpty)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8),
+                          child: RestTimerWidget(seconds: 60),
+                        ),
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              AddSetButton(
+                exerciseId: exercise.id,
+                suggestedWeight: suggestedWeight,
+                suggestedReps: suggestedReps,
+              ),
+            ],
+          ),
         ),
       ),
     );

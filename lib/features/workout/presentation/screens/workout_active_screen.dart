@@ -3,46 +3,60 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/workout_provider.dart';
 import '../widgets/exercise_block.dart';
 
-class WorkoutActiveScreen extends ConsumerWidget {
+class WorkoutActiveScreen extends ConsumerStatefulWidget {
   const WorkoutActiveScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(workoutProvider);
+  ConsumerState<WorkoutActiveScreen> createState() => _WorkoutActiveScreenState();
+}
 
+class _WorkoutActiveScreenState extends ConsumerState<WorkoutActiveScreen> {
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(workoutProvider);
     final session = state.session;
 
-    final totalVolume = session == null
-        ? 0
-        : session.exercises.fold(
-      0.0,
-          (sum, e) => sum +
-          e.sets.fold(
-              0.0, (s, set) => s + set.weight * set.reps),
-    );
-
     if (state.isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (session == null) {
-      return const Scaffold(
-        body: Center(child: Text('No active workout')),
-      );
+      return const Scaffold(body: Center(child: Text('No active workout')));
     }
+
+    final exercises = [...session.exercises];
 
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text('Volume: ${totalVolume.toStringAsFixed(0)} kg'),
+        title: const Text('Workout'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/workout/summary');
+            },
+            icon: const Icon(Icons.check),
+          )
+        ],
       ),
-      body: ListView(
+      body: ReorderableListView(
         padding: const EdgeInsets.all(16),
-        children: session.exercises
-            .map((e) => ExerciseBlock(exercise: e))
-            .toList(),
+        onReorder: (oldIndex, newIndex) {
+          if (newIndex > oldIndex) newIndex--;
+
+          final item = exercises.removeAt(oldIndex);
+          exercises.insert(newIndex, item);
+
+          ref.read(workoutProvider.notifier).reorderExercises(exercises);
+        },
+        children: [
+          for (final e in exercises)
+            Container(
+              key: ValueKey(e.id),
+              margin: const EdgeInsets.only(bottom: 12),
+              child: ExerciseBlock(exercise: e),
+            )
+        ],
       ),
     );
   }
