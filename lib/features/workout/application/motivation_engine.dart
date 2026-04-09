@@ -15,12 +15,23 @@ class MotivationEngine {
   }
 
   MotivationResult evaluate(MotivationEvent event) {
-    final results = <MotivationResult>[];
-
     final reps = event.repsDiff ?? 0;
     final weight = event.weightDiff ?? 0;
 
-    if (reps > 0 || weight > 0) {
+    final isPR = reps > 0 || weight > 0;
+    final hasStreak = event.streakDays >= 3;
+
+    if (isPR && hasStreak) {
+      return MotivationResult(
+        type: MotivationType.pr,
+        level: MotivationLevel.high,
+        message: "⚡ Streak läuft! Und heute PR!",
+      );
+    }
+
+    final results = <MotivationResult>[];
+
+    if (isPR) {
       final level = MotivationRules.prLevel(reps, weight);
       results.add(MotivationResult(
         type: MotivationType.pr,
