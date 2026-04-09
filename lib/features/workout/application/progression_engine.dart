@@ -8,11 +8,7 @@ class ProgressionEngine {
     if (history.length >= 3) {
       final last3 = history.take(3).toList();
 
-      final isPlateau = last3.every(
-            (e) => e.reps <= input.targetReps,
-      );
-
-      if (isPlateau) {
+      if (last3.every((e) => e.reps <= input.targetReps)) {
         return ProgressionResult(
           suggestedWeight: input.lastWeight - 2.5,
           suggestedReps: input.targetReps,
