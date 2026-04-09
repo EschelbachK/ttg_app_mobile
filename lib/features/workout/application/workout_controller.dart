@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ttg_app_mobile/features/dashboard/models/training_plan.dart';
 import '../data/workout_api_service.dart';
 import '../domain/workout_session.dart';
 import '../domain/progression_input.dart';
 import '../domain/progression_result.dart';
 import '../domain/workout_history_entry.dart';
 import '../domain/next_session_suggestion.dart';
-import '../domain/workout_training_plan.dart';
 import '../domain/set_log.dart';
 import '../domain/motivation/motivation_event.dart';
 import '../providers/motivation_provider.dart';
@@ -42,7 +42,6 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     try {
       await api.startWorkout();
       final session = await api.getActiveWorkout();
-
       state = state.copyWith(
         session: session ?? _createFallbackSession(),
       );
@@ -71,6 +70,33 @@ class WorkoutController extends StateNotifier<WorkoutState> {
           ],
         ),
       ],
+    );
+  }
+
+  Future<void> startWorkoutFromPlan(TrainingPlan plan) async {
+    final exercises = plan.exercises.asMap().entries.map((e) {
+      final p = e.value;
+
+      return ExerciseSession(
+        id: DateTime.now().toIso8601String() + e.key.toString(),
+        name: p.name,
+        order: e.key,
+        sets: [
+          SetLog(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            weight: p.weight,
+            reps: p.reps,
+          ),
+        ],
+      );
+    }).toList();
+
+    state = state.copyWith(
+      session: WorkoutSession(
+        id: DateTime.now().toIso8601String(),
+        startedAt: DateTime.now(),
+        exercises: exercises,
+      ),
     );
   }
 
@@ -224,67 +250,5 @@ class WorkoutController extends StateNotifier<WorkoutState> {
         reason: sug?.reason ?? 'none',
       );
     }).toList();
-  }
-
-  TrainingPlan buildPlanFromSuggestions() {
-    final suggestions = buildNextSessionSuggestions();
-
-    return TrainingPlan(
-      name: 'Suggested Plan',
-      exercises: suggestions.map((s) {
-        return PlannedExercise(
-          name: s.exerciseName,
-          reps: s.reps,
-          weight: s.weight,
-        );
-      }).toList(),
-    );
-  }
-
-  Future<void> startWorkoutFromPlan() async {
-    final plan = buildPlanFromSuggestions();
-
-    final exercises = plan.exercises.asMap().entries.map((e) {
-      final p = e.value;
-
-      return ExerciseSession(
-        id: DateTime.now().toIso8601String() + e.key.toString(),
-        name: p.name,
-        order: e.key,
-        sets: List.generate(
-          3,
-              (i) => SetLog(
-            id: '${DateTime.now().millisecondsSinceEpoch}$i',
-            weight: p.weight,
-            reps: p.reps,
-          ),
-        ),
-      );
-    }).toList();
-
-    state = state.copyWith(
-      session: WorkoutSession(
-        id: DateTime.now().toIso8601String(),
-        startedAt: DateTime.now(),
-        exercises: exercises,
-      ),
-    );
-  }
-
-  Future<List<WorkoutHistoryEntry>> loadHistory(
-      String exerciseId) async {
-    try {
-      final raw = await api.getHistory(exerciseId);
-
-      return raw.map((e) {
-        return WorkoutHistoryEntry(
-          weight: (e['weight'] as num).toDouble(),
-          reps: e['reps'],
-          date: DateTime.parse(e['date']),
-        );
-      }).toList();
-    } catch (_) {
-      return [];
-    }
   }
 }
