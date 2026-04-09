@@ -13,30 +13,33 @@ class WorkoutApiService {
   WorkoutApiService(this.api);
 
   Future<WorkoutSession?> getActiveWorkout() async {
-    final res = await api.get('/workout/active');
-    if (res.statusCode != 200 || res.data == null) return null;
+    try {
+      final res = await api.get('/workout/active');
+      if (res.statusCode != 200 || res.data == null) return null;
 
-    final data = res.data;
-
-    return WorkoutSession(
-      id: data['id'],
-      startedAt: DateTime.parse(data['startedAt']),
-      exercises: (data['exercises'] as List)
-          .map((e) => ExerciseSession(
-        id: e['id'],
-        name: e['name'],
-        order: e['order'],
-        sets: (e['sets'] as List)
-            .map((s) => SetLog(
-          id: s['id'],
-          weight: (s['weight'] as num).toDouble(),
-          reps: s['reps'],
-          completed: s['completed'] ?? false,
+      final data = res.data;
+      return WorkoutSession(
+        id: data['id'],
+        startedAt: DateTime.parse(data['startedAt']),
+        exercises: (data['exercises'] as List)
+            .map((e) => ExerciseSession(
+          id: e['id'],
+          name: e['name'],
+          order: e['order'],
+          sets: (e['sets'] as List)
+              .map((s) => SetLog(
+            id: s['id'],
+            weight: (s['weight'] as num).toDouble(),
+            reps: s['reps'],
+            completed: s['completed'] ?? false,
+          ))
+              .toList(),
         ))
             .toList(),
-      ))
-          .toList(),
-    );
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> startWorkout() async {
@@ -52,12 +55,7 @@ class WorkoutApiService {
   }
 
   Future<void> updateSet(
-      String exerciseId,
-      String setId,
-      int reps,
-      double weight,
-      bool completed,
-      ) async {
+      String exerciseId, String setId, int reps, double weight, bool completed) async {
     final res = await api.put('/workout/set', data: {
       'exerciseId': exerciseId,
       'setId': setId,
@@ -72,17 +70,16 @@ class WorkoutApiService {
   }
 
   Future<void> reorderExercises(List<Map<String, dynamic>> exercises) async {
-    await api.put('/workout/exercise/reorder', data: {
-      'exercises': exercises,
-    });
+    await api.put('/workout/exercise/reorder', data: {'exercises': exercises});
   }
 
   Future<List<Map<String, dynamic>>> getHistory(String exerciseId) async {
-    final res = await api.get('/workout/history', query: {
-      'exerciseId': exerciseId,
-    });
-
-    if (res.statusCode != 200 || res.data == null) return [];
-    return List<Map<String, dynamic>>.from(res.data);
+    try {
+      final res = await api.get('/workout/history', query: {'exerciseId': exerciseId});
+      if (res.statusCode != 200 || res.data == null) return [];
+      return List<Map<String, dynamic>>.from(res.data);
+    } catch (_) {
+      return [];
+    }
   }
 }
