@@ -15,11 +15,12 @@ class SetLog {
     double? weight,
     int? reps,
     bool? completed,
-  }) =>
-      SetLog(
-        id: id,
-        weight: weight ?? this.weight,
-        reps: reps ?? this.reps,
-        completed: completed ?? this.completed,
-      );
+  }) {
+    return SetLog(
+      id: id,
+      weight: weight ?? this.weight,
+      reps: reps ?? this.reps,
+      completed: completed ?? this.completed,
+    );
+  }
 }
