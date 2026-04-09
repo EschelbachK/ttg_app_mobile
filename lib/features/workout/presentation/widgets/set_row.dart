@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ttg_app_mobile/features/workout/presentation/widgets/reps_input_stepper.dart';
-import 'package:ttg_app_mobile/features/workout/presentation/widgets/weight_input_stepper.dart';
 import '../../providers/workout_provider.dart';
+import 'reps_input_stepper.dart';
+import 'weight_input_stepper.dart';
 
 class SetRow extends ConsumerWidget {
   final int index;
@@ -36,29 +36,47 @@ class SetRow extends ConsumerWidget {
       );
     }
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text('#${index + 1}'),
-        SizedBox(
-          width: 120,
-          child: WeightInputStepper(
-            value: weight,
-            onChanged: (v) => update(w: v),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 28,
+            child: Text('#${index + 1}'),
           ),
-        ),
-        SizedBox(
-          width: 120,
-          child: RepsInputStepper(
-            value: reps,
-            onChanged: (v) => update(r: v),
+          const SizedBox(width: 8),
+          Expanded(
+            child: WeightInputStepper(
+              value: weight,
+              onChanged: (v) => update(w: v),
+            ),
           ),
-        ),
-        Checkbox(
-          value: completed,
-          onChanged: (val) => update(c: val ?? false),
-        ),
-      ],
+          const SizedBox(width: 8),
+          Expanded(
+            child: RepsInputStepper(
+              value: reps,
+              onChanged: (v) => update(r: v),
+            ),
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: () => update(c: !completed),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: completed ? Colors.green : Colors.transparent,
+                border: Border.all(color: Colors.white24),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: completed
+                  ? const Icon(Icons.check, size: 18, color: Colors.white)
+                  : null,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
