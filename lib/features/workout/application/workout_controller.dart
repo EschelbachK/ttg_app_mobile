@@ -12,6 +12,7 @@ import '../domain/motivation/motivation_event.dart';
 import '../providers/motivation_provider.dart';
 import 'workout_state.dart';
 import 'progression_engine.dart';
+import 'motivation_event_builder.dart';
 
 class WorkoutController extends StateNotifier<WorkoutState> {
   final WorkoutApiService api;
@@ -67,13 +68,16 @@ class WorkoutController extends StateNotifier<WorkoutState> {
       await api.addSet(exerciseId, weight, reps);
     } catch (_) {}
 
+    final exercise =
+    updatedExercises.firstWhere((e) => e.id == exerciseId);
+
+    final event = MotivationEventBuilder.fromExercise(
+      exercise: exercise,
+    );
+
     motivator.evaluate(
-      MotivationEvent(
-        repsDiff: reps,
-        weightDiff: weight,
+      event.copyWith(
         streakDays: motivator.engine.streak.streakCount,
-        isComeback: false,
-        totalWorkouts: 0,
       ),
     );
   }
@@ -238,7 +242,8 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     );
   }
 
-  Future<List<WorkoutHistoryEntry>> loadHistory(String exerciseId) async {
+  Future<List<WorkoutHistoryEntry>> loadHistory(
+      String exerciseId) async {
     try {
       final raw = await api.getHistory(exerciseId);
 
