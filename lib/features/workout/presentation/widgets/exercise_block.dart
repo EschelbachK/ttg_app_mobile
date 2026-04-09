@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/workout_session.dart';
 import '../../providers/workout_provider.dart';
+import '../widgets/progress_chart.dart';
 import 'set_row.dart';
 import 'ttg_glass_card.dart';
 import 'add_set_button.dart';
 import 'rest_timer_widget.dart';
+
+final _historyProvider = FutureProvider.family((ref, String exerciseId) {
+  return ref.read(workoutProvider.notifier).loadHistory(exerciseId);
+});
 
 class ExerciseBlock extends ConsumerWidget {
   final ExerciseSession exercise;
@@ -16,6 +21,7 @@ class ExerciseBlock extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(workoutProvider.notifier);
     final suggestion = controller.getSuggestion(exercise);
+    final historyAsync = ref.watch(_historyProvider(exercise.id));
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
@@ -28,6 +34,15 @@ class ExerciseBlock extends ConsumerWidget {
             children: [
               Text(exercise.name, style: const TextStyle(fontSize: 18)),
               const SizedBox(height: 12),
+
+              historyAsync.when(
+                data: (history) => ProgressChart(history: history),
+                loading: () => const SizedBox(height: 100),
+                error: (_, __) => const SizedBox(),
+              ),
+
+              const SizedBox(height: 12),
+
               ...exercise.sets.asMap().entries.map((e) {
                 final isLast = e.key == exercise.sets.length - 1;
                 final set = e.value;
@@ -50,7 +65,9 @@ class ExerciseBlock extends ConsumerWidget {
                   ],
                 );
               }),
+
               const SizedBox(height: 12),
+
               if (suggestion != null)
                 Text(
                   suggestion.reason,
@@ -63,6 +80,7 @@ class ExerciseBlock extends ConsumerWidget {
                         : Colors.red,
                   ),
                 ),
+
               AddSetButton(
                 exerciseId: exercise.id,
                 suggestedWeight: suggestion?.suggestedWeight,
