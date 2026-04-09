@@ -35,9 +35,9 @@ class WorkoutSummaryScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              Text(
+              const Text(
                 'WORKOUT SUMMARY',
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
               TtgGlassCard(
