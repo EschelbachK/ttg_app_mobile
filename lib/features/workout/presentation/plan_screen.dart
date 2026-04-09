@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import 'package:ttg_app_mobile/features/workout/providers/workout_provider.dart';
-import 'package:ttg_app_mobile/features/dashboard/models/training_plan.dart';
 import 'package:ttg_app_mobile/features/workout/presentation/training_plan_card.dart';
 import 'package:ttg_app_mobile/features/workout/presentation/widgets/ttg_glass_card.dart';
+import '../../dashboard/models/training_plan.dart';
+import '../providers/workout_provider.dart';
+
 
 class PlanScreen extends ConsumerWidget {
   final List<TrainingPlan> availablePlans;
