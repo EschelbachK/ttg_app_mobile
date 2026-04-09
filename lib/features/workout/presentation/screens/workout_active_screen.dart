@@ -2,19 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/workout_provider.dart';
 import '../widgets/exercise_block.dart';
+import '../widgets/workout_header.dart';
 
-class WorkoutActiveScreen extends ConsumerStatefulWidget {
+class WorkoutActiveScreen extends ConsumerWidget {
   const WorkoutActiveScreen({super.key});
 
   @override
-  ConsumerState<WorkoutActiveScreen> createState() =>
-      _WorkoutActiveScreenState();
-}
-
-class _WorkoutActiveScreenState
-    extends ConsumerState<WorkoutActiveScreen> {
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(workoutProvider);
     final session = state.session;
 
@@ -32,46 +26,45 @@ class _WorkoutActiveScreenState
 
     final exercises = [...session.exercises];
 
-    final totalVolume = session.exercises.fold(
+    final totalVolume = exercises.fold(
       0.0,
-          (sum, e) =>
-      sum +
-          e.sets.fold(
-              0.0, (s, set) => s + set.weight * set.reps),
+          (sum, e) => sum +
+          e.sets.fold(0.0, (s, set) => s + set.weight * set.reps),
     );
 
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: Text('Volume: ${totalVolume.toStringAsFixed(0)} kg'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.pushNamed(context, '/workout/summary');
-            },
-            icon: const Icon(Icons.check),
-          )
+      body: Column(
+        children: [
+          WorkoutHeader(volume: totalVolume),
+          Expanded(
+            child: ReorderableListView(
+              padding: const EdgeInsets.all(16),
+              onReorder: (oldIndex, newIndex) {
+                if (newIndex > oldIndex) newIndex--;
+                final item = exercises.removeAt(oldIndex);
+                exercises.insert(newIndex, item);
+                ref
+                    .read(workoutProvider.notifier)
+                    .reorderExercises(exercises);
+              },
+              children: [
+                for (final e in exercises)
+                  Container(
+                    key: ValueKey(e.id),
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: ExerciseBlock(exercise: e),
+                  )
+              ],
+            ),
+          ),
         ],
       ),
-      body: ReorderableListView(
-        padding: const EdgeInsets.all(16),
-        onReorder: (oldIndex, newIndex) {
-          if (newIndex > oldIndex) newIndex--;
-
-          final item = exercises.removeAt(oldIndex);
-          exercises.insert(newIndex, item);
-
-          ref
-              .read(workoutProvider.notifier)
-              .reorderExercises(exercises);
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, '/workout/summary');
         },
-        children: [
-          for (final e in exercises)
-            Container(
-              key: ValueKey(e.id),
-              child: ExerciseBlock(exercise: e),
-            )
-        ],
+        child: const Icon(Icons.check),
       ),
     );
   }
