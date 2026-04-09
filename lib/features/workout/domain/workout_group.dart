@@ -1,11 +1,13 @@
-import '../../dashboard/models/exercise.dart';
+import 'workout_session.dart';
 
 class WorkoutGroup {
   final String name;
-  final List<Exercise> exercises;
+  final int order;
+  final List<ExerciseSession> exercises;
 
-  WorkoutGroup({
+  const WorkoutGroup({
     required this.name,
+    required this.order,
     required this.exercises,
   });
 }
