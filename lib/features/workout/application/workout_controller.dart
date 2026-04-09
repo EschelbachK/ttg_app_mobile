@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/workout_api_service.dart';
 import '../domain/workout_session.dart';
@@ -13,6 +14,8 @@ import 'progression_engine.dart';
 class WorkoutController extends StateNotifier<WorkoutState> {
   final WorkoutApiService api;
   final ProgressionEngine engine = ProgressionEngine();
+
+  final Map<String, Timer> _debounceTimers = {};
 
   WorkoutController(this.api) : super(WorkoutState());
 
@@ -84,6 +87,46 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     state = state.copyWith(
       session: session.copyWith(exercises: updatedExercises),
     );
+
+    _debounceSave(exerciseId, setId);
+  }
+
+  void _debounceSave(String exerciseId, String setId) {
+    final key = '$exerciseId-$setId';
+
+    _debounceTimers[key]?.cancel();
+
+    _debounceTimers[key] = Timer(const Duration(milliseconds: 600), () {
+      _syncSet(exerciseId, setId);
+    });
+  }
+
+  Future<void> _syncSet(String exerciseId, String setId) async {
+    final session = state.session;
+    if (session == null) return;
+
+    final exercise =
+    session.exercises.firstWhere((e) => e.id == exerciseId);
+
+    final set = exercise.sets.firstWhere((s) => s.id == setId);
+
+    try {
+      await api.updateSet(
+        exerciseId,
+        set.id,
+        set.reps,
+        set.weight,
+        set.completed,
+      );
+    } catch (_) {
+      _retry(exerciseId, setId);
+    }
+  }
+
+  void _retry(String exerciseId, String setId) {
+    Timer(const Duration(seconds: 2), () {
+      _syncSet(exerciseId, setId);
+    });
   }
 
   Future<void> reorderExercises(List<ExerciseSession> updated) async {

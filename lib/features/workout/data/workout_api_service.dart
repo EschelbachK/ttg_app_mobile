@@ -49,6 +49,30 @@ class WorkoutApiService {
     );
   }
 
+  Future<void> updateSet(
+      String exerciseId,
+      String setId,
+      int reps,
+      double weight,
+      bool completed,
+      ) async {
+    final res = await http.put(
+      Uri.parse('$baseUrl/set'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'exerciseId': exerciseId,
+        'setId': setId,
+        'reps': reps,
+        'weight': weight,
+        'completed': completed,
+      }),
+    );
+
+    if (res.statusCode != 200) {
+      throw Exception('updateSet failed');
+    }
+  }
+
   Future<List<Map<String, dynamic>>> getHistory(String exerciseId) async {
     final res =
     await http.get(Uri.parse('$baseUrl/history?exerciseId=$exerciseId'));
