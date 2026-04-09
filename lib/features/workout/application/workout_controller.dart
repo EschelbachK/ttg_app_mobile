@@ -8,17 +8,17 @@ import '../domain/workout_history_entry.dart';
 import '../domain/next_session_suggestion.dart';
 import '../domain/workout_training_plan.dart';
 import '../domain/set_log.dart';
+import '../providers/motivation_provider.dart';
 import 'workout_state.dart';
 import 'progression_engine.dart';
-import 'motivation_engine.dart';
 
 class WorkoutController extends StateNotifier<WorkoutState> {
   final WorkoutApiService api;
   final ProgressionEngine engine = ProgressionEngine();
-  final MotivationEngine motivator = MotivationEngine();
+  final MotivationNotifier motivator;
   final Map<String, Timer> _debounceTimers = {};
 
-  WorkoutController(this.api) : super(const WorkoutState());
+  WorkoutController(this.api, this.motivator) : super(const WorkoutState());
 
   Future<void> init() async => loadActiveWorkout();
 
@@ -27,7 +27,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     try {
       final session = await api.getActiveWorkout();
       state = state.copyWith(session: session, isLoading: false);
-      if (session != null) motivator.updateStreak(session);
+      if (session != null) motivator.updateStreakFromSession(session);
     } catch (_) {
       state = state.copyWith(isLoading: false);
     }
@@ -43,11 +43,13 @@ class WorkoutController extends StateNotifier<WorkoutState> {
   Future<void> addSet(String exerciseId, double weight, int reps) async {
     final s = state.session;
     if (s == null) return;
+
     final newSet = SetLog(id: DateTime.now().toIso8601String(), weight: weight, reps: reps);
     final updatedExercises = s.exercises.map((e) {
       if (e.id != exerciseId) return e;
       return e.copyWith(sets: [...e.sets, newSet]);
     }).toList();
+
     state = state.copyWith(session: s.copyWith(exercises: updatedExercises));
     try {
       await api.addSet(exerciseId, weight, reps);
@@ -58,6 +60,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
   void updateSet({required String exerciseId, required String setId, double? weight, int? reps, bool? completed}) {
     final s = state.session;
     if (s == null) return;
+
     final updatedExercises = s.exercises.map((e) {
       if (e.id != exerciseId) return e;
       return e.copyWith(
@@ -67,6 +70,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
         }).toList(),
       );
     }).toList();
+
     state = state.copyWith(session: s.copyWith(exercises: updatedExercises));
     _debounceSave(exerciseId, setId);
   }
