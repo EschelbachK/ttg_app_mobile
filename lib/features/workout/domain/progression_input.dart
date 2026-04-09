@@ -6,7 +6,7 @@ class ProgressionInput {
   final int targetReps;
   final List<WorkoutHistoryEntry> history;
 
-  ProgressionInput({
+  const ProgressionInput({
     required this.lastWeight,
     required this.lastReps,
     required this.targetReps,
