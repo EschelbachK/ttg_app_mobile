@@ -3,7 +3,7 @@ class WorkoutHistoryEntry {
   final int reps;
   final DateTime date;
 
-  WorkoutHistoryEntry({
+  const WorkoutHistoryEntry({
     required this.weight,
     required this.reps,
     required this.date,
