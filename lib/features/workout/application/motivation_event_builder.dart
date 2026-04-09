@@ -5,8 +5,11 @@ class MotivationEventBuilder {
   static MotivationEvent fromExercise({
     required ExerciseSession exercise,
   }) {
-    if (exercise.sets.length < 2) {
-      return MotivationEvent(
+    final completedSets =
+    exercise.sets.where((s) => s.completed == true).toList();
+
+    if (completedSets.length < 2) {
+      return const MotivationEvent(
         repsDiff: 0,
         weightDiff: 0,
         streakDays: 0,
@@ -15,8 +18,8 @@ class MotivationEventBuilder {
       );
     }
 
-    final last = exercise.sets[exercise.sets.length - 1];
-    final prev = exercise.sets[exercise.sets.length - 2];
+    final last = completedSets[completedSets.length - 1];
+    final prev = completedSets[completedSets.length - 2];
 
     final repsDiff = last.reps - prev.reps;
     final weightDiff = last.weight - prev.weight;
@@ -26,7 +29,7 @@ class MotivationEventBuilder {
       weightDiff: weightDiff > 0 ? weightDiff : 0,
       streakDays: 0,
       isComeback: false,
-      totalWorkouts: 0,
+      totalWorkouts: completedSets.length,
     );
   }
 }
