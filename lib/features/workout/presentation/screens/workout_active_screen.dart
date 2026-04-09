@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/workout_provider.dart';
 import '../widgets/workout_header.dart';
-import '../widgets/workout_group_block.dart';
+import '../widgets/exercise_block.dart';
+import '../widgets/sticky_group_header.dart';
 
 class WorkoutActiveScreen extends ConsumerWidget {
   const WorkoutActiveScreen({super.key});
@@ -39,17 +40,30 @@ class WorkoutActiveScreen extends ConsumerWidget {
         children: [
           WorkoutHeader(volume: totalVolume),
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: session.groups.length,
-              itemBuilder: (context, index) {
-                final group = session.groups[index];
-
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: WorkoutGroupBlock(group: group),
-                );
-              },
+            child: CustomScrollView(
+              slivers: [
+                for (final group in session.groups) ...[
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _StickyHeaderDelegate(
+                      child: StickyGroupHeader(title: group.name),
+                    ),
+                  ),
+                  SliverList(
+                    delegate: SliverChildListDelegate(
+                      group.exercises.map((e) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 6,
+                          ),
+                          child: ExerciseBlock(exercise: e),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ]
+              ],
             ),
           ),
         ],
@@ -62,4 +76,24 @@ class WorkoutActiveScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+
+  _StickyHeaderDelegate({required this.child});
+
+  @override
+  double get minExtent => 50;
+
+  @override
+  double get maxExtent => 50;
+
+  @override
+  Widget build(context, shrinkOffset, overlapsContent) {
+    return child;
+  }
+
+  @override
+  bool shouldRebuild(covariant _StickyHeaderDelegate oldDelegate) => false;
 }
