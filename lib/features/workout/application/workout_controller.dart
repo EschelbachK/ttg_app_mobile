@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ttg_app_mobile/features/dashboard/models/training_plan.dart';
 import '../data/workout_api_service.dart';
 import '../domain/workout_session.dart';
+import '../domain/workout_group.dart';
 import '../domain/progression_input.dart';
 import '../domain/progression_result.dart';
 import '../domain/workout_history_entry.dart';
@@ -22,7 +23,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
   final MotivationNotifier motivator;
   final Ref ref;
 
-  final Map<String, Timer> _debounceTimers = {}; // 🔥 HIER
+  final Map<String, Timer> _debounceTimers = {};
 
   WorkoutController(this.api, this.motivator, this.ref)
       : super(const WorkoutState());
@@ -60,16 +61,22 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     return WorkoutSession(
       id: DateTime.now().toIso8601String(),
       startedAt: DateTime.now(),
-      exercises: [
-        ExerciseSession(
-          id: DateTime.now().toIso8601String(),
-          name: 'Exercise',
+      groups: [
+        WorkoutGroup(
+          name: 'Default',
           order: 0,
-          sets: [
-            SetLog(
-              id: DateTime.now().millisecondsSinceEpoch.toString(),
-              weight: 0,
-              reps: 0,
+          exercises: [
+            ExerciseSession(
+              id: DateTime.now().toIso8601String(),
+              name: 'Exercise',
+              order: 0,
+              sets: [
+                SetLog(
+                  id: DateTime.now().millisecondsSinceEpoch.toString(),
+                  weight: 0,
+                  reps: 0,
+                ),
+              ],
             ),
           ],
         ),
@@ -80,7 +87,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
   Future<void> startWorkoutFromPlan(TrainingPlan plan) async {
     final dashboardState = ref.read(dashboardProvider);
 
-    final exercises = WorkoutMapper.fromPlan(
+    final groups = WorkoutMapper.fromPlan(
       plan: plan,
       folders: dashboardState.folders,
     );
@@ -89,7 +96,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
       session: WorkoutSession(
         id: DateTime.now().toIso8601String(),
         startedAt: DateTime.now(),
-        exercises: exercises,
+        groups: groups,
       ),
     );
   }
@@ -109,21 +116,28 @@ class WorkoutController extends StateNotifier<WorkoutState> {
       reps: reps,
     );
 
-    final updatedExercises = s.exercises.map((e) {
-      if (e.id != exerciseId) return e;
-      return e.copyWith(sets: [...e.sets, newSet]);
+    final updatedGroups = s.groups.map((g) {
+      return WorkoutGroup(
+        name: g.name,
+        order: g.order,
+        exercises: g.exercises.map((e) {
+          if (e.id != exerciseId) return e;
+          return e.copyWith(sets: [...e.sets, newSet]);
+        }).toList(),
+      );
     }).toList();
 
     state = state.copyWith(
-      session: s.copyWith(exercises: updatedExercises),
+      session: s.copyWith(groups: updatedGroups),
     );
 
     try {
       await api.addSet(exerciseId, weight, reps);
     } catch (_) {}
 
-    final exercise =
-    updatedExercises.firstWhere((e) => e.id == exerciseId);
+    final exercise = updatedGroups
+        .expand((g) => g.exercises)
+        .firstWhere((e) => e.id == exerciseId);
 
     final event = MotivationEventBuilder.fromExercise(
       exercise: exercise,
@@ -146,22 +160,28 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     final s = state.session;
     if (s == null) return;
 
-    final updatedExercises = s.exercises.map((e) {
-      if (e.id != exerciseId) return e;
-      return e.copyWith(
-        sets: e.sets.map((set) {
-          if (set.id != setId) return set;
-          return set.copyWith(
-            weight: weight,
-            reps: reps,
-            completed: completed,
+    final updatedGroups = s.groups.map((g) {
+      return WorkoutGroup(
+        name: g.name,
+        order: g.order,
+        exercises: g.exercises.map((e) {
+          if (e.id != exerciseId) return e;
+          return e.copyWith(
+            sets: e.sets.map((set) {
+              if (set.id != setId) return set;
+              return set.copyWith(
+                weight: weight,
+                reps: reps,
+                completed: completed,
+              );
+            }).toList(),
           );
         }).toList(),
       );
     }).toList();
 
     state = state.copyWith(
-      session: s.copyWith(exercises: updatedExercises),
+      session: s.copyWith(groups: updatedGroups),
     );
 
     _debounceSave(exerciseId, setId);
@@ -180,7 +200,10 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     final s = state.session;
     if (s == null) return;
 
-    final ex = s.exercises.firstWhere((e) => e.id == exerciseId);
+    final ex = s.groups
+        .expand((g) => g.exercises)
+        .firstWhere((e) => e.id == exerciseId);
+
     final set = ex.sets.firstWhere((s) => s.id == setId);
 
     try {
@@ -203,7 +226,17 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     final s = state.session;
     if (s == null) return;
 
-    state = state.copyWith(session: s.copyWith(exercises: updated));
+    final updatedGroups = s.groups.map((g) {
+      return WorkoutGroup(
+        name: g.name,
+        order: g.order,
+        exercises: updated.where((e) => g.exercises.any((ge) => ge.id == e.id)).toList(),
+      );
+    }).toList();
+
+    state = state.copyWith(
+      session: s.copyWith(groups: updatedGroups),
+    );
 
     try {
       await api.reorderExercises(
@@ -239,7 +272,9 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     final s = state.session;
     if (s == null) return [];
 
-    return s.exercises.map((e) {
+    final exercises = s.groups.expand((g) => g.exercises);
+
+    return exercises.map((e) {
       final sug = getSuggestion(e);
 
       return NextSessionSuggestion(
