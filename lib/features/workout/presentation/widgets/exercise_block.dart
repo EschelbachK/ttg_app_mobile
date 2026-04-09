@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/workout_session.dart';
 import '../../providers/workout_provider.dart';
+import '../coach_message_widget.dart';
 import 'progress_chart.dart';
 import 'progress_insights.dart';
 import 'set_row.dart';
 import 'ttg_glass_card.dart';
 import 'add_set_button.dart';
 import 'rest_timer_widget.dart';
-import 'coach_message_widget.dart';
 
 final _historyProvider = FutureProvider.family((ref, String exerciseId) => ref.read(workoutProvider.notifier).loadHistory(exerciseId));
 
