@@ -13,14 +13,18 @@ import '../providers/motivation_provider.dart';
 import 'workout_state.dart';
 import 'progression_engine.dart';
 import 'motivation_event_builder.dart';
+import 'workout_mapper.dart';
+import '../../dashboard/state/dashboard_provider.dart';
 
 class WorkoutController extends StateNotifier<WorkoutState> {
   final WorkoutApiService api;
   final ProgressionEngine engine = ProgressionEngine();
   final MotivationNotifier motivator;
-  final Map<String, Timer> _debounceTimers = {};
+  final Ref ref;
 
-  WorkoutController(this.api, this.motivator)
+  final Map<String, Timer> _debounceTimers = {}; // 🔥 HIER
+
+  WorkoutController(this.api, this.motivator, this.ref)
       : super(const WorkoutState());
 
   Future<void> init() async => loadActiveWorkout();
@@ -74,22 +78,12 @@ class WorkoutController extends StateNotifier<WorkoutState> {
   }
 
   Future<void> startWorkoutFromPlan(TrainingPlan plan) async {
-    final exercises = plan.exercises.asMap().entries.map((e) {
-      final p = e.value;
+    final dashboardState = ref.read(dashboardProvider);
 
-      return ExerciseSession(
-        id: DateTime.now().toIso8601String() + e.key.toString(),
-        name: p.name,
-        order: e.key,
-        sets: [
-          SetLog(
-            id: DateTime.now().millisecondsSinceEpoch.toString(),
-            weight: p.weight,
-            reps: p.reps,
-          ),
-        ],
-      );
-    }).toList();
+    final exercises = WorkoutMapper.fromPlan(
+      plan: plan,
+      folders: dashboardState.folders,
+    );
 
     state = state.copyWith(
       session: WorkoutSession(
@@ -98,6 +92,11 @@ class WorkoutController extends StateNotifier<WorkoutState> {
         exercises: exercises,
       ),
     );
+  }
+
+  TrainingPlan buildPlanFromSuggestions() {
+    final suggestions = buildNextSessionSuggestions();
+    return WorkoutMapper.fromSuggestions(suggestions);
   }
 
   Future<void> addSet(String exerciseId, double weight, int reps) async {
