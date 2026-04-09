@@ -59,7 +59,9 @@ class _AddSetSheetState extends ConsumerState<_AddSetSheet> {
   void initState() {
     super.initState();
     weightCtrl = TextEditingController(
-      text: widget.suggestedWeight?.toStringAsFixed(1) ?? '',
+      text: widget.suggestedWeight != null
+          ? widget.suggestedWeight!.toStringAsFixed(1)
+          : '',
     );
     repsCtrl = TextEditingController(
       text: widget.suggestedReps?.toString() ?? '',
@@ -67,8 +69,16 @@ class _AddSetSheetState extends ConsumerState<_AddSetSheet> {
   }
 
   @override
+  void dispose() {
+    weightCtrl.dispose();
+    repsCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final controller = ref.read(workoutProvider.notifier);
 
     return Padding(
       padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset + 16),
@@ -94,12 +104,9 @@ class _AddSetSheetState extends ConsumerState<_AddSetSheet> {
               onPressed: () async {
                 final weight = double.tryParse(weightCtrl.text);
                 final reps = int.tryParse(repsCtrl.text);
-
                 if (weight == null || reps == null) return;
 
-                await ref
-                    .read(workoutProvider.notifier)
-                    .addSet(widget.exerciseId, weight, reps);
+                await controller.addSet(widget.exerciseId, weight, reps);
 
                 if (mounted) Navigator.pop(context);
               },
