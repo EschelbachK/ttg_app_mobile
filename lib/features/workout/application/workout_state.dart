@@ -6,7 +6,13 @@ class WorkoutState {
 
   const WorkoutState({this.session, this.isLoading = false});
 
-  WorkoutState copyWith({WorkoutSession? session, bool? isLoading}) {
-    return WorkoutState(session: session ?? this.session, isLoading: isLoading ?? this.isLoading);
+  WorkoutState copyWith({
+    WorkoutSession? session,
+    bool? isLoading,
+  }) {
+    return WorkoutState(
+      session: session ?? this.session,
+      isLoading: isLoading ?? this.isLoading,
+    );
   }
 }
