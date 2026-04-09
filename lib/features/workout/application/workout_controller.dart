@@ -14,6 +14,10 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     state = state.copyWith(session: session, isLoading: false);
   }
 
+  Future<void> startWorkout() async {
+    await api.startWorkout();
+    await loadActiveWorkout();
+  }
   Future<void> addSet(String exerciseId, double weight, int reps) async {
     final session = state.session;
     if (session == null) return;

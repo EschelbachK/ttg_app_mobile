@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../domain/workout_session.dart';
 import 'set_row.dart';
 import 'ttg_glass_card.dart';
+import 'add_set_button.dart';
 
 class ExerciseBlock extends StatelessWidget {
   final ExerciseSession exercise;
@@ -23,6 +24,7 @@ class ExerciseBlock extends StatelessWidget {
                 reps: e.value.reps,
               ),
             ),
+            AddSetButton(exerciseId: exercise.id),
           ],
         ),
       ),
