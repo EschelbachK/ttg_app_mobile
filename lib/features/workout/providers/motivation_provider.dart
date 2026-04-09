@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../application/motivation_engine.dart';
 import '../domain/workout_session.dart';
-import '../domain/workout_training_plan.dart';
 
 final motivationProvider =
 ChangeNotifierProvider<MotivationNotifier>((ref) => MotivationNotifier());
@@ -23,10 +22,8 @@ class MotivationNotifier extends ChangeNotifier {
   }
 
   void checkPRs(String exerciseId, List<ExerciseSession> exercises) {
-    final List<String> newPRs = engine.checkPRs(exerciseId, exercises);
-    if (newPRs.isNotEmpty) {
-      onPR?.call(newPRs);
-    }
+    final newPRs = engine.checkPRs(exerciseId, exercises);
+    if (newPRs.isNotEmpty) onPR?.call(newPRs);
     notifyListeners();
   }
 }
