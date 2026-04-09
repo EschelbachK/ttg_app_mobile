@@ -1,5 +1,5 @@
-import '../domain/motivation_type.dart';
-import '../domain/motivation_level.dart';
+import 'motivation_type.dart';
+import 'motivation_level.dart';
 
 class MotivationMessageBuilder {
   static String build(MotivationType type, MotivationLevel level) {
