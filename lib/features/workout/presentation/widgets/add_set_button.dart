@@ -48,16 +48,14 @@ class _AddSetSheet extends ConsumerStatefulWidget {
 }
 
 class _AddSetSheetState extends ConsumerState<_AddSetSheet> {
-  late TextEditingController weightCtrl;
-  late TextEditingController repsCtrl;
+  late final TextEditingController weightCtrl;
+  late final TextEditingController repsCtrl;
 
   @override
   void initState() {
     super.initState();
-    weightCtrl = TextEditingController(
-        text: widget.suggestedWeight?.toString() ?? '');
-    repsCtrl =
-        TextEditingController(text: widget.suggestedReps?.toString() ?? '');
+    weightCtrl = TextEditingController(text: widget.suggestedWeight?.toString() ?? '');
+    repsCtrl = TextEditingController(text: widget.suggestedReps?.toString() ?? '');
   }
 
   @override
@@ -65,22 +63,19 @@ class _AddSetSheetState extends ConsumerState<_AddSetSheet> {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          TextField(controller: weightCtrl),
-          TextField(controller: repsCtrl),
+          TextField(controller: weightCtrl, keyboardType: TextInputType.number),
+          TextField(controller: repsCtrl, keyboardType: TextInputType.number),
           ElevatedButton(
             onPressed: () async {
               final weight = double.parse(weightCtrl.text);
               final reps = int.parse(repsCtrl.text);
-
-              await ref
-                  .read(workoutProvider.notifier)
-                  .addSet(widget.exerciseId, weight, reps);
-
+              await ref.read(workoutProvider.notifier).addSet(widget.exerciseId, weight, reps);
               Navigator.pop(context);
             },
             child: const Text('Save'),
-          )
+          ),
         ],
       ),
     );
