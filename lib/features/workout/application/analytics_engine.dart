@@ -37,4 +37,39 @@ class AnalyticsEngine {
   bool isImproving(List<WorkoutHistoryEntry> history) {
     return volumeChangePercent(history) > 0;
   }
+
+  List<double> last7Volumes(List<WorkoutHistoryEntry> history) {
+    final start = history.length > 7 ? history.length - 7 : 0;
+    return history
+        .sublist(start)
+        .map((e) => e.weight * e.reps)
+        .toList();
+  }
+
+  double weeklyAverageVolume(List<WorkoutHistoryEntry> history) {
+    final volumes = last7Volumes(history);
+    if (volumes.isEmpty) return 0;
+    return volumes.reduce((a, b) => a + b) / volumes.length;
+  }
+
+  bool isWeeklyImproving(List<WorkoutHistoryEntry> history) {
+    if (history.length < 14) return false;
+
+    final lastWeek = history
+        .sublist(history.length - 7)
+        .map((e) => e.weight * e.reps)
+        .toList();
+
+    final prevWeek = history
+        .sublist(history.length - 14, history.length - 7)
+        .map((e) => e.weight * e.reps)
+        .toList();
+
+    final lastAvg =
+        lastWeek.reduce((a, b) => a + b) / lastWeek.length;
+    final prevAvg =
+        prevWeek.reduce((a, b) => a + b) / prevWeek.length;
+
+    return lastAvg > prevAvg;
+  }
 }
