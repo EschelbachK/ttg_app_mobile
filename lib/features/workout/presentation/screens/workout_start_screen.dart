@@ -4,7 +4,8 @@ import '../../../dashboard/state/dashboard_provider.dart';
 import '../../providers/workout_provider.dart';
 import '../widgets/ttg_primary_button.dart';
 import '../widgets/ttg_section_title.dart';
-import 'package:ttg_app_mobile/features/workout/presentation/training_plan_card.dart';
+import '../training_plan_card.dart';
+import 'workout_active_screen.dart';
 
 class WorkoutStartScreen extends ConsumerWidget {
   const WorkoutStartScreen({super.key});
@@ -27,9 +28,13 @@ class WorkoutStartScreen extends ConsumerWidget {
                 text: 'Quick Start',
                 onTap: () async {
                   await ref.read(workoutProvider.notifier).startWorkout();
-                  if (context.mounted) {
-                    Navigator.pushReplacementNamed(context, '/workout/active');
-                  }
+                  if (!context.mounted) return;
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const WorkoutActiveScreen(),
+                    ),
+                  );
                 },
               ),
               const SizedBox(height: 24),
@@ -48,12 +53,13 @@ class WorkoutStartScreen extends ConsumerWidget {
                             .read(workoutProvider.notifier)
                             .startWorkoutFromPlan(p);
 
-                        if (context.mounted) {
-                          Navigator.pushReplacementNamed(
-                            context,
-                            '/workout/active',
-                          );
-                        }
+                        if (!context.mounted) return;
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const WorkoutActiveScreen(),
+                          ),
+                        );
                       },
                     );
                   }).toList(),
