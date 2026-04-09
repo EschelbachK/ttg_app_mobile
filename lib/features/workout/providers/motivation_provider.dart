@@ -1,29 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../application/motivation_engine.dart';
+import '../application/motivation_state.dart';
+import '../domain/motivation/motivation_event.dart';
 import '../domain/workout_session.dart';
 
 final motivationProvider =
-ChangeNotifierProvider<MotivationNotifier>((ref) => MotivationNotifier());
+ChangeNotifierProvider<MotivationNotifier>(
+        (ref) => MotivationNotifier());
 
 class MotivationNotifier extends ChangeNotifier {
   final MotivationEngine engine = MotivationEngine();
 
-  void Function(int)? onStreak;
-  void Function(List<String>)? onPR;
+  MotivationState state = const MotivationState();
 
   void updateStreakFromSession(WorkoutSession session) {
-    final oldStreak = engine.streak.streakCount;
     engine.updateStreak(session);
-    if (engine.streak.streakCount > oldStreak) {
-      onStreak?.call(engine.streak.streakCount);
-    }
     notifyListeners();
   }
 
-  void checkPRs(String exerciseId, List<ExerciseSession> exercises) {
-    final newPRs = engine.checkPRs(exerciseId, exercises);
-    if (newPRs.isNotEmpty) onPR?.call(newPRs);
+  void evaluate(MotivationEvent event) {
+    final result = engine.evaluate(event);
+    state = state.copyWith(last: result);
     notifyListeners();
   }
 }
