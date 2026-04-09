@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/workout_provider.dart';
 
-class SetRow extends StatelessWidget {
+class SetRow extends ConsumerWidget {
   final int index;
+  final String exerciseId;
+  final String setId;
   final double weight;
   final int reps;
   final bool completed;
@@ -9,34 +13,80 @@ class SetRow extends StatelessWidget {
   const SetRow({
     super.key,
     required this.index,
+    required this.exerciseId,
+    required this.setId,
     required this.weight,
     required this.reps,
-    this.completed = false,
+    required this.completed,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final controller = ref.read(workoutProvider.notifier);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text('#${index + 1}'),
         Row(
           children: [
-            IconButton(onPressed: () {}, icon: const Icon(Icons.remove)),
-            Text('$weight kg'),
-            IconButton(onPressed: () {}, icon: const Icon(Icons.add)),
+            IconButton(
+              onPressed: () {
+                controller.updateSet(
+                  exerciseId: exerciseId,
+                  setId: setId,
+                  weight: weight - 2.5,
+                );
+              },
+              icon: const Icon(Icons.remove),
+            ),
+            Text('${weight.toStringAsFixed(1)} kg'),
+            IconButton(
+              onPressed: () {
+                controller.updateSet(
+                  exerciseId: exerciseId,
+                  setId: setId,
+                  weight: weight + 2.5,
+                );
+              },
+              icon: const Icon(Icons.add),
+            ),
           ],
         ),
         Row(
           children: [
-            IconButton(onPressed: () {}, icon: const Icon(Icons.remove)),
+            IconButton(
+              onPressed: () {
+                controller.updateSet(
+                  exerciseId: exerciseId,
+                  setId: setId,
+                  reps: reps - 1,
+                );
+              },
+              icon: const Icon(Icons.remove),
+            ),
             Text('$reps reps'),
-            IconButton(onPressed: () {}, icon: const Icon(Icons.add)),
+            IconButton(
+              onPressed: () {
+                controller.updateSet(
+                  exerciseId: exerciseId,
+                  setId: setId,
+                  reps: reps + 1,
+                );
+              },
+              icon: const Icon(Icons.add),
+            ),
           ],
         ),
         Checkbox(
           value: completed,
-          onChanged: (_) {},
+          onChanged: (val) {
+            controller.updateSet(
+              exerciseId: exerciseId,
+              setId: setId,
+              completed: val,
+            );
+          },
         ),
       ],
     );

@@ -26,31 +26,30 @@ class ExerciseBlock extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                exercise.name,
-                style: const TextStyle(fontSize: 18),
-              ),
+              Text(exercise.name, style: const TextStyle(fontSize: 18)),
               const SizedBox(height: 12),
-              ...exercise.sets.asMap().entries.map(
-                    (e) {
-                  final isLast = e.key == exercise.sets.length - 1;
+              ...exercise.sets.asMap().entries.map((e) {
+                final isLast = e.key == exercise.sets.length - 1;
+                final set = e.value;
 
-                  return Column(
-                    children: [
-                      SetRow(
-                        index: e.key,
-                        weight: e.value.weight,
-                        reps: e.value.reps,
+                return Column(
+                  children: [
+                    SetRow(
+                      index: e.key,
+                      exerciseId: exercise.id,
+                      setId: set.id,
+                      weight: set.weight,
+                      reps: set.reps,
+                      completed: set.completed,
+                    ),
+                    if (isLast && exercise.sets.isNotEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        child: RestTimerWidget(seconds: 60),
                       ),
-                      if (isLast && exercise.sets.isNotEmpty)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8),
-                          child: RestTimerWidget(seconds: 60),
-                        ),
-                    ],
-                  );
-                },
-              ),
+                  ],
+                );
+              }),
               const SizedBox(height: 12),
               if (suggestion != null)
                 Text(

@@ -55,6 +55,37 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     await api.addSet(exerciseId, weight, reps);
   }
 
+  void updateSet({
+    required String exerciseId,
+    required String setId,
+    double? weight,
+    int? reps,
+    bool? completed,
+  }) {
+    final session = state.session;
+    if (session == null) return;
+
+    final updatedExercises = session.exercises.map((e) {
+      if (e.id != exerciseId) return e;
+
+      final updatedSets = e.sets.map((s) {
+        if (s.id != setId) return s;
+
+        return s.copyWith(
+          weight: weight,
+          reps: reps,
+          completed: completed,
+        );
+      }).toList();
+
+      return e.copyWith(sets: updatedSets);
+    }).toList();
+
+    state = state.copyWith(
+      session: session.copyWith(exercises: updatedExercises),
+    );
+  }
+
   Future<void> reorderExercises(List<ExerciseSession> updated) async {
     final session = state.session;
     if (session == null) return;
