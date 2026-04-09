@@ -10,11 +10,16 @@ class MotivationEngine {
     streak.update(session.startedAt);
   }
 
-  void checkPRs(String exerciseId, List<ExerciseSession> exercises) {
+  List<String> checkPRs(String exerciseId, List<ExerciseSession> exercises) {
+    final List<String> newPRs = [];
     final exercise = exercises.firstWhere((e) => e.id == exerciseId);
-    if (exercise.sets.isEmpty) return;
+    if (exercise.sets.isEmpty) return newPRs;
     final lastSet = exercise.sets.last;
-    final isPR = lastSet.weight == (exercise.sets.map((s) => s.weight).reduce((a, b) => a > b ? a : b));
-    if (isPR) badges.add(MotivationBadge(name: 'PR', description: 'New personal record in ${exercise.name}'));
+    final maxWeight = exercise.sets.map((s) => s.weight).reduce((a, b) => a > b ? a : b);
+    if (lastSet.weight == maxWeight) {
+      badges.add(MotivationBadge(name: 'PR', description: 'New personal record in ${exercise.name}'));
+      newPRs.add(exercise.name);
+    }
+    return newPRs;
   }
 }
