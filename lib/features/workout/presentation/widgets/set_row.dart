@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/workout_provider.dart';
 import 'reps_input_stepper.dart';
 import 'weight_input_stepper.dart';
+import 'swipe_to_delete_wrapper.dart';
 
 class SetRow extends ConsumerWidget {
   final int index;
@@ -36,46 +37,57 @@ class SetRow extends ConsumerWidget {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 28,
-            child: Text('#${index + 1}'),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: WeightInputStepper(
-              value: weight,
-              onChanged: (v) => update(w: v),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: RepsInputStepper(
-              value: reps,
-              onChanged: (v) => update(r: v),
-            ),
-          ),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: () => update(c: !completed),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
+    return SwipeToDeleteWrapper(
+      onDelete: () {
+        controller.updateSet(
+          exerciseId: exerciseId,
+          setId: setId,
+          completed: false,
+          weight: 0,
+          reps: 0,
+        );
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        child: Row(
+          children: [
+            SizedBox(
               width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                color: completed ? Colors.green : Colors.transparent,
-                border: Border.all(color: Colors.white24),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: completed
-                  ? const Icon(Icons.check, size: 18, color: Colors.white)
-                  : null,
+              child: Text('#${index + 1}'),
             ),
-          ),
-        ],
+            const SizedBox(width: 8),
+            Expanded(
+              child: WeightInputStepper(
+                value: weight,
+                onChanged: (v) => update(w: v),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: RepsInputStepper(
+                value: reps,
+                onChanged: (v) => update(r: v),
+              ),
+            ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () => update(c: !completed),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  color: completed ? Colors.green : Colors.transparent,
+                  border: Border.all(color: Colors.white24),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: completed
+                    ? const Icon(Icons.check, size: 18, color: Colors.white)
+                    : null,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
