@@ -12,22 +12,32 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final insights = InsightsEngine().analyze(history);
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Dashboard')),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         children: [
-          const _SectionTitle('Progress'),
+          _SectionTitle(
+            text: 'Progress',
+            style: theme.textTheme.titleLarge,
+          ),
+          const SizedBox(height: 12),
           ProgressChart(history: history),
-          const SizedBox(height: 20),
+          const SizedBox(height: 28),
           if (insights.isNotEmpty) ...[
-            const _SectionTitle('Insights'),
-            const SizedBox(height: 8),
-            ...insights.map((e) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: InsightCard(insight: e),
-            )),
+            _SectionTitle(
+              text: 'Insights',
+              style: theme.textTheme.titleLarge,
+            ),
+            const SizedBox(height: 12),
+            ...insights.map(
+                  (e) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: InsightCard(insight: e),
+              ),
+            ),
           ],
         ],
       ),
@@ -37,17 +47,18 @@ class DashboardScreen extends StatelessWidget {
 
 class _SectionTitle extends StatelessWidget {
   final String text;
+  final TextStyle? style;
 
-  const _SectionTitle(this.text);
+  const _SectionTitle({
+    required this.text,
+    this.style,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.titleMedium,
-      ),
+    return Text(
+      text,
+      style: style?.copyWith(fontWeight: FontWeight.w600),
     );
   }
 }
