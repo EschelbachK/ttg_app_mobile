@@ -22,4 +22,6 @@ class MotivationState {
       timestamp: timestamp ?? this.timestamp,
     );
   }
+
+  bool get hasMessage => last != null && visible;
 }

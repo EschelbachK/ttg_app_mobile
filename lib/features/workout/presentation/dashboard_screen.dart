@@ -19,7 +19,6 @@ class DashboardScreen extends ConsumerWidget {
     final insights = InsightsEngine().analyze(history);
     final analytics = AnalyticsEngine();
     final motivator = ref.watch(motivationProvider);
-    final theme = Theme.of(context);
 
     final totalVolume = analytics.totalVolume(history);
     final avgWeight = analytics.averageWeight(history);
@@ -30,18 +29,20 @@ class DashboardScreen extends ConsumerWidget {
     final message = motivator.state.last?.message;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Dashboard')),
+      backgroundColor: Colors.black,
       body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        padding: const EdgeInsets.all(16),
         children: [
           if (message != null) ...[
             _MotivationBanner(message: message),
             const SizedBox(height: 16),
           ],
           StreakWidget(motivator: motivator.engine),
-          const SizedBox(height: 28),
-          _SectionTitle(text: 'Overview', style: theme.textTheme.titleLarge),
+          const SizedBox(height: 24),
+
+          const _SectionTitle('Overview'),
           const SizedBox(height: 12),
+
           Row(
             children: [
               Expanded(child: _KpiCard('Volume', totalVolume.toStringAsFixed(0))),
@@ -50,6 +51,7 @@ class DashboardScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 12),
+
           Row(
             children: [
               Expanded(child: _KpiCard('Reps', reps.toString())),
@@ -57,13 +59,16 @@ class DashboardScreen extends ConsumerWidget {
               Expanded(child: _KpiCard('Change', '${change.toStringAsFixed(1)}%', highlight: improving)),
             ],
           ),
-          const SizedBox(height: 28),
-          _SectionTitle(text: 'Progress', style: theme.textTheme.titleLarge),
+
+          const SizedBox(height: 24),
+          const _SectionTitle('Progress'),
           const SizedBox(height: 12),
+
           ProgressChart(history: history),
-          const SizedBox(height: 28),
+
           if (insights.isNotEmpty) ...[
-            _SectionTitle(text: 'Insights', style: theme.textTheme.titleLarge),
+            const SizedBox(height: 24),
+            const _SectionTitle('Insights'),
             const SizedBox(height: 12),
             ...insights.map((e) => Padding(
               padding: const EdgeInsets.only(bottom: 12),
@@ -78,34 +83,29 @@ class DashboardScreen extends ConsumerWidget {
 
 class _MotivationBanner extends StatelessWidget {
   final String message;
-
   const _MotivationBanner({required this.message});
 
   @override
   Widget build(BuildContext context) {
     return TtgGlassCard(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Text(
-          message,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-      ),
+      child: Text(message),
     );
   }
 }
 
 class _SectionTitle extends StatelessWidget {
   final String text;
-  final TextStyle? style;
-
-  const _SectionTitle({required this.text, this.style});
+  const _SectionTitle(this.text);
 
   @override
   Widget build(BuildContext context) {
     return Text(
-      text,
-      style: style?.copyWith(fontWeight: FontWeight.w600),
+      text.toUpperCase(),
+      style: const TextStyle(
+        fontSize: 14,
+        color: Colors.white54,
+        letterSpacing: 1,
+      ),
     );
   }
 }
@@ -119,22 +119,21 @@ class _KpiCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = highlight ? Colors.green : null;
-
     return TtgGlassCard(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: Theme.of(context).textTheme.bodySmall),
-            const SizedBox(height: 6),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(color: color),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.white54)),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: highlight ? Colors.green : Colors.white,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

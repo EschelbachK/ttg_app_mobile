@@ -13,6 +13,7 @@ class TtgSectionTitle extends StatelessWidget {
         fontSize: 20,
         fontWeight: FontWeight.bold,
         letterSpacing: 0.5,
+        color: Colors.white,
       ),
     );
   }

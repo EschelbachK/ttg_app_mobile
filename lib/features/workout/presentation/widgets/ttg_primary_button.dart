@@ -4,7 +4,11 @@ class TtgPrimaryButton extends StatelessWidget {
   final String text;
   final VoidCallback onTap;
 
-  const TtgPrimaryButton({super.key, required this.text, required this.onTap});
+  const TtgPrimaryButton({
+    super.key,
+    required this.text,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +26,11 @@ class TtgPrimaryButton extends StatelessWidget {
         alignment: Alignment.center,
         child: Text(
           text,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
         ),
       ),
     );

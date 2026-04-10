@@ -9,7 +9,6 @@ import '../domain/progression_result.dart';
 import '../domain/workout_history_entry.dart';
 import '../domain/next_session_suggestion.dart';
 import '../domain/set_log.dart';
-import '../domain/motivation/motivation_event.dart';
 import '../providers/motivation_provider.dart';
 import 'workout_state.dart';
 import 'progression_engine.dart';
@@ -35,9 +34,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     try {
       final session = await api.getActiveWorkout();
       state = state.copyWith(session: session, isLoading: false);
-      if (session != null) {
-        motivator.updateStreakFromSession(session);
-      }
+      if (session != null) motivator.updateStreakFromSession(session);
     } catch (_) {
       state = state.copyWith(isLoading: false);
     }
@@ -47,17 +44,13 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     try {
       await api.startWorkout();
       final session = await api.getActiveWorkout();
-      state = state.copyWith(
-        session: session ?? _createFallbackSession(),
-      );
+      state = state.copyWith(session: session ?? _fallback());
     } catch (_) {
-      state = state.copyWith(
-        session: _createFallbackSession(),
-      );
+      state = state.copyWith(session: _fallback());
     }
   }
 
-  WorkoutSession _createFallbackSession() {
+  WorkoutSession _fallback() {
     return WorkoutSession(
       id: DateTime.now().toIso8601String(),
       startedAt: DateTime.now(),
@@ -85,25 +78,18 @@ class WorkoutController extends StateNotifier<WorkoutState> {
   }
 
   Future<void> startWorkoutFromPlan(TrainingPlan plan) async {
-    final dashboardState = ref.read(dashboardProvider);
-
-    final groups = WorkoutMapper.fromPlan(
-      plan: plan,
-      folders: dashboardState.folders,
-    );
+    final dashboard = ref.read(dashboardProvider);
 
     state = state.copyWith(
       session: WorkoutSession(
         id: DateTime.now().toIso8601String(),
         startedAt: DateTime.now(),
-        groups: groups,
+        groups: WorkoutMapper.fromPlan(
+          plan: plan,
+          folders: dashboard.folders,
+        ),
       ),
     );
-  }
-
-  TrainingPlan buildPlanFromSuggestions() {
-    final suggestions = buildNextSessionSuggestions();
-    return WorkoutMapper.fromSuggestions(suggestions);
   }
 
   Future<void> addSet(String exerciseId, double weight, int reps) async {
@@ -116,10 +102,8 @@ class WorkoutController extends StateNotifier<WorkoutState> {
       reps: reps,
     );
 
-    final updatedGroups = s.groups.map((g) {
-      return WorkoutGroup(
-        name: g.name,
-        order: g.order,
+    final groups = s.groups.map((g) {
+      return g.copyWith(
         exercises: g.exercises.map((e) {
           if (e.id != exerciseId) return e;
           return e.copyWith(sets: [...e.sets, newSet]);
@@ -127,27 +111,13 @@ class WorkoutController extends StateNotifier<WorkoutState> {
       );
     }).toList();
 
-    state = state.copyWith(
-      session: s.copyWith(groups: updatedGroups),
-    );
+    state = state.copyWith(session: s.copyWith(groups: groups));
 
     try {
       await api.addSet(exerciseId, weight, reps);
     } catch (_) {}
 
-    final exercise = updatedGroups
-        .expand((g) => g.exercises)
-        .firstWhere((e) => e.id == exerciseId);
-
-    final event = MotivationEventBuilder.fromExercise(
-      exercise: exercise,
-    );
-
-    motivator.evaluate(
-      event.copyWith(
-        streakDays: motivator.engine.streak.streakCount,
-      ),
-    );
+    _runMotivation(exerciseId);
   }
 
   void updateSet({
@@ -160,10 +130,8 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     final s = state.session;
     if (s == null) return;
 
-    final updatedGroups = s.groups.map((g) {
-      return WorkoutGroup(
-        name: g.name,
-        order: g.order,
+    final groups = s.groups.map((g) {
+      return g.copyWith(
         exercises: g.exercises.map((e) {
           if (e.id != exerciseId) return e;
           return e.copyWith(
@@ -180,18 +148,39 @@ class WorkoutController extends StateNotifier<WorkoutState> {
       );
     }).toList();
 
-    state = state.copyWith(
-      session: s.copyWith(groups: updatedGroups),
-    );
+    state = state.copyWith(session: s.copyWith(groups: groups));
 
     _debounceSave(exerciseId, setId);
+    _runMotivation(exerciseId);
+  }
+
+  void deleteSet(String exerciseId, String setId) {
+    final s = state.session;
+    if (s == null) return;
+
+    final groups = s.groups.map((g) {
+      return g.copyWith(
+        exercises: g.exercises.map((e) {
+          if (e.id != exerciseId) return e;
+          return e.copyWith(
+            sets: e.sets.where((s) => s.id != setId).toList(),
+          );
+        }).toList(),
+      );
+    }).toList();
+
+    state = state.copyWith(session: s.copyWith(groups: groups));
+
+    try {
+      api.deleteSet(exerciseId, setId);
+    } catch (_) {}
   }
 
   void _debounceSave(String exerciseId, String setId) {
     final key = '$exerciseId-$setId';
     _debounceTimers[key]?.cancel();
     _debounceTimers[key] = Timer(
-      const Duration(milliseconds: 600),
+      const Duration(milliseconds: 500),
           () => _syncSet(exerciseId, setId),
     );
   }
@@ -200,8 +189,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     final s = state.session;
     if (s == null) return;
 
-    final ex = s.groups
-        .expand((g) => g.exercises)
+    final ex = s.groups.expand((g) => g.exercises)
         .firstWhere((e) => e.id == exerciseId);
 
     final set = ex.sets.firstWhere((s) => s.id == setId);
@@ -215,55 +203,55 @@ class WorkoutController extends StateNotifier<WorkoutState> {
         set.completed,
       );
     } catch (_) {
-      Timer(
-        const Duration(seconds: 2),
-            () => _syncSet(exerciseId, setId),
-      );
+      Timer(const Duration(seconds: 2),
+              () => _syncSet(exerciseId, setId));
     }
   }
 
-  Future<void> reorderExercises(List<ExerciseSession> updated) async {
+  Future<void> finishWorkout() async {
     final s = state.session;
     if (s == null) return;
 
-    final updatedGroups = s.groups.map((g) {
-      return WorkoutGroup(
-        name: g.name,
-        order: g.order,
-        exercises: updated.where((e) => g.exercises.any((ge) => ge.id == e.id)).toList(),
-      );
-    }).toList();
-
-    state = state.copyWith(
-      session: s.copyWith(groups: updatedGroups),
-    );
-
     try {
-      await api.reorderExercises(
-        updated.map((e) => {'id': e.id, 'order': e.order}).toList(),
-      );
+      await api.finishWorkout(s);
+      state = state.copyWith(isFinished: true);
     } catch (_) {}
   }
 
-  ProgressionResult? getSuggestion(ExerciseSession exercise) {
-    if (exercise.sets.isEmpty) return null;
+  void _runMotivation(String exerciseId) {
+    final s = state.session;
+    if (s == null) return;
 
-    final last = exercise.sets.last;
+    final exercise = s.groups
+        .expand((g) => g.exercises)
+        .firstWhere((e) => e.id == exerciseId);
 
-    final history = exercise.sets.map((s) {
-      return WorkoutHistoryEntry(
-        weight: s.weight,
-        reps: s.reps,
-        date: DateTime.now(),
-      );
-    }).toList();
+    final event = MotivationEventBuilder.fromExercise(exercise: exercise);
+
+    motivator.evaluate(
+      event.copyWith(
+        streakDays: motivator.engine.streak.streakCount,
+      ),
+    );
+  }
+
+  ProgressionResult? getSuggestion(ExerciseSession e) {
+    if (e.sets.isEmpty) return null;
+
+    final last = e.sets.last;
 
     return engine.calculate(
       ProgressionInput(
         lastWeight: last.weight,
         lastReps: last.reps,
         targetReps: last.reps,
-        history: history,
+        history: e.sets.map((s) {
+          return WorkoutHistoryEntry(
+            weight: s.weight,
+            reps: s.reps,
+            date: DateTime.now(),
+          );
+        }).toList(),
       ),
     );
   }
@@ -272,11 +260,8 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     final s = state.session;
     if (s == null) return [];
 
-    final exercises = s.groups.expand((g) => g.exercises);
-
-    return exercises.map((e) {
+    return s.groups.expand((g) => g.exercises).map((e) {
       final sug = getSuggestion(e);
-
       return NextSessionSuggestion(
         exerciseName: e.name,
         weight: sug?.weight ?? 0,
@@ -284,5 +269,10 @@ class WorkoutController extends StateNotifier<WorkoutState> {
         reason: sug?.reason ?? 'none',
       );
     }).toList();
+  }
+
+  TrainingPlan buildPlanFromSuggestions() {
+    final suggestions = buildNextSessionSuggestions();
+    return WorkoutMapper.fromSuggestions(suggestions);
   }
 }

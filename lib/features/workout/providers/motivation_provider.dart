@@ -1,7 +1,8 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
+
 import '../application/motivation_engine.dart';
 import '../application/motivation_state.dart';
 import '../domain/motivation/motivation_event.dart';
@@ -9,8 +10,9 @@ import '../domain/motivation/motivation_level.dart';
 import '../domain/workout_session.dart';
 
 final motivationProvider =
-ChangeNotifierProvider<MotivationNotifier>(
-        (ref) => MotivationNotifier());
+ChangeNotifierProvider<MotivationNotifier>((ref) {
+  return MotivationNotifier();
+});
 
 class MotivationNotifier extends ChangeNotifier {
   final MotivationEngine engine = MotivationEngine();
@@ -28,7 +30,6 @@ class MotivationNotifier extends ChangeNotifier {
     final result = engine.evaluate(event);
 
     _timer?.cancel();
-
     _triggerHaptic(result.level);
 
     state = state.copyWith(
