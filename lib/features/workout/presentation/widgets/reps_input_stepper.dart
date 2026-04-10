@@ -16,21 +16,14 @@ class RepsInputStepper extends StatelessWidget {
     this.max = 100,
   });
 
-  void _increment() {
-    final newValue = (value + step).clamp(min, max);
-    onChanged(newValue);
-  }
-
-  void _decrement() {
-    final newValue = (value - step).clamp(min, max);
-    onChanged(newValue);
-  }
+  void _inc() => onChanged((value + step).clamp(min, max));
+  void _dec() => onChanged((value - step).clamp(min, max));
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _StepperButton(icon: Icons.remove, onTap: _decrement),
+        _Btn(icon: Icons.remove, onTap: _dec),
         Expanded(
           child: Center(
             child: Text(
@@ -38,39 +31,37 @@ class RepsInputStepper extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
+                color: Colors.white,
               ),
             ),
           ),
         ),
-        _StepperButton(icon: Icons.add, onTap: _increment),
+        _Btn(icon: Icons.add, onTap: _inc),
       ],
     );
   }
 }
 
-class _StepperButton extends StatelessWidget {
+class _Btn extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
 
-  const _StepperButton({
-    required this.icon,
-    required this.onTap,
-  });
+  const _Btn({required this.icon, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(12),
       onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
       child: Container(
         width: 36,
         height: 36,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(12),
+          color: Colors.white10,
+          borderRadius: BorderRadius.circular(10),
         ),
-        child: Icon(icon, size: 18),
+        child: Icon(icon, size: 18, color: Colors.white),
       ),
     );
   }

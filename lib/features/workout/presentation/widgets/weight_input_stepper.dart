@@ -17,12 +17,12 @@ class WeightInputStepper extends StatelessWidget {
   });
 
   void _increment() {
-    final newValue = (value + step).clamp(min, max);
+    final newValue = (value + step).clamp(min, max).toDouble();
     onChanged(newValue);
   }
 
   void _decrement() {
-    final newValue = (value - step).clamp(min, max);
+    final newValue = (value - step).clamp(min, max).toDouble();
     onChanged(newValue);
   }
 
@@ -30,10 +30,7 @@ class WeightInputStepper extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _StepperButton(
-          icon: Icons.remove,
-          onTap: _decrement,
-        ),
+        _StepperButton(icon: Icons.remove, onTap: _decrement),
         Expanded(
           child: Center(
             child: Text(
@@ -45,10 +42,7 @@ class WeightInputStepper extends StatelessWidget {
             ),
           ),
         ),
-        _StepperButton(
-          icon: Icons.add,
-          onTap: _increment,
-        ),
+        _StepperButton(icon: Icons.add, onTap: _increment),
       ],
     );
   }
