@@ -1,155 +1,168 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/ui/ttg_background.dart';
 import '../../providers/workout_provider.dart';
-import '../widgets/volume_chart.dart';
-import '../widgets/ttg_glass_card.dart';
-import '../widgets/ttg_primary_button.dart';
 
 class WorkoutSummaryScreen extends ConsumerWidget {
   const WorkoutSummaryScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(workoutProvider);
-    final controller = ref.read(workoutProvider.notifier);
-    final session = state.session;
+    final session = ref.watch(workoutProvider).session;
 
     if (session == null) {
       return const Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(
-          child: Text(
-            'Kein Workout vorhanden',
-            style: TextStyle(color: Colors.white70),
+        backgroundColor: Colors.transparent,
+        body: TtgBackground(
+          child: Center(
+            child: Text('Keine Daten', style: TextStyle(color: Colors.white)),
           ),
         ),
       );
     }
 
-    final exercises = session.groups.expand((g) => g.exercises).toList();
+    final exercises = session.groups.expand((g) => g.exercises);
 
-    final volumes = exercises
-        .map((e) =>
-        e.sets.fold(0.0, (s, set) => s + set.weight * set.reps))
-        .toList();
-
-    final totalVolume =
-    volumes.fold(0.0, (sum, v) => sum + v);
-
-    final suggestions = controller.buildNextSessionSuggestions();
-    final suggestedPlan =
-    controller.buildPlanFromSuggestions();
-
-    Color _color(String reason) {
-      if (reason.contains('Reduce')) return Colors.red;
-      if (reason.contains('Increase')) return Colors.green;
-      if (reason.contains('plateau')) return Colors.orange;
-      return Colors.white70;
-    }
+    final totalVolume = exercises.fold(
+      0.0,
+          (sum, e) => sum + e.sets.fold(0.0, (s, set) => s + set.weight * set.reps),
+    );
 
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              const Text(
-                'WORKOUT SUMMARY',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              TtgGlassCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: Colors.transparent,
+      body: TtgBackground(
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Text(
-                      'Volumen: ${totalVolume.toStringAsFixed(0)} kg',
-                      style: const TextStyle(color: Colors.white),
+                    GestureDetector(
+                      onTap: () => context.go('/workout'),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.06),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.arrow_back, color: Colors.white, size: 18),
+                      ),
                     ),
-                    const SizedBox(height: 12),
-                    VolumeChart(volumes: volumes),
+                    const SizedBox(width: 12),
+                    const Text('ZUSAMMENFASSUNG',
+                        style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w700)),
                   ],
                 ),
-              ),
-
-              const SizedBox(height: 16),
-
-              TtgGlassCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'NÄCHSTE SESSION',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    const SizedBox(height: 8),
-                    ...suggestions.map((s) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        child: Row(
-                          mainAxisAlignment:
-                          MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                s.exerciseName,
-                                style: const TextStyle(
-                                    color: Colors.white),
-                                overflow: TextOverflow.ellipsis,
+                const SizedBox(height: 16),
+                _GlassCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Volumen: ${totalVolume.toStringAsFixed(0)} kg',
+                          style: const TextStyle(color: Colors.white)),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: List.generate(
+                          3,
+                              (i) => Expanded(
+                            child: Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              height: 60,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            Text(
-                              '${s.weight}kg × ${s.reps}',
-                              style: const TextStyle(
-                                  color: Colors.white),
-                            ),
-                            Text(
-                              s.reason,
-                              style: TextStyle(color: _color(s.reason)),
-                            ),
-                          ],
+                          ),
                         ),
-                      );
-                    }),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-
-              const Spacer(),
-
-              TtgPrimaryButton(
-                text: 'Next Session starten',
-                onTap: () async {
-                  await controller.startWorkoutFromPlan(
-                      suggestedPlan);
-
-                  if (!context.mounted) return;
-
-                  Navigator.pushReplacementNamed(
-                      context, '/workout/active');
-                },
-              ),
-
-              const SizedBox(height: 12),
-
-              TtgPrimaryButton(
-                text: 'Beenden',
-                onTap: () {
-                  Navigator.popUntil(
-                    context,
-                    ModalRoute.withName('/dashboard'),
-                  );
-                },
-              ),
-            ],
+                const SizedBox(height: 16),
+                _GlassCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('NÄCHSTE EINHEIT', style: TextStyle(color: Colors.white70)),
+                      const SizedBox(height: 12),
+                      ...exercises.map((e) {
+                        final last = e.sets.isNotEmpty ? e.sets.last : null;
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(e.name, style: const TextStyle(color: Colors.white)),
+                              Row(
+                                children: [
+                                  Text('${last?.weight ?? 0}kg × ${last?.reps ?? 0}',
+                                      style: const TextStyle(color: Colors.white)),
+                                  const SizedBox(width: 6),
+                                  const Text('Gewicht erhöhen', style: TextStyle(color: Colors.green)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+                _PrimaryButton(text: 'Nächste Einheit starten', onTap: () => context.go('/workout')),
+                const SizedBox(height: 12),
+                _PrimaryButton(text: 'Beenden', onTap: () => context.go('/workout')),
+              ],
+            ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GlassCard extends StatelessWidget {
+  final Widget child;
+  const _GlassCard({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.55),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
+      ),
+      child: child,
+    );
+  }
+}
+
+class _PrimaryButton extends StatelessWidget {
+  final String text;
+  final VoidCallback onTap;
+  const _PrimaryButton({required this.text, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 52,
+        width: double.infinity,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(14),
+        ),
+        child: Text(
+          text,
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
         ),
       ),
     );
