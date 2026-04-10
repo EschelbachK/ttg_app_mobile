@@ -12,7 +12,10 @@ class InsightCard extends StatelessWidget {
     return TtgGlassCard(
       child: Padding(
         padding: const EdgeInsets.all(12),
-        child: Text(insight.message),
+        child: Text(
+          insight.message,
+          style: const TextStyle(color: Colors.white),
+        ),
       ),
     );
   }

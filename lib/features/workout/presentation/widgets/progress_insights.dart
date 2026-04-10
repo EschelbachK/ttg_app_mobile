@@ -21,7 +21,10 @@ class ProgressInsights extends StatelessWidget {
           children: insights
               .map((e) => Padding(
             padding: const EdgeInsets.only(bottom: 6),
-            child: Text(e.message),
+            child: Text(
+              e.message,
+              style: const TextStyle(color: Colors.white70),
+            ),
           ))
               .toList(),
         ),

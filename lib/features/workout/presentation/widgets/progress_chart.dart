@@ -20,7 +20,7 @@ class ProgressChart extends StatelessWidget {
 
     return TtgGlassCard(
       child: SizedBox(
-        height: 260,
+        height: 240,
         child: LineChart(
           LineChartData(
             minX: 0,
@@ -30,12 +30,12 @@ class ProgressChart extends StatelessWidget {
             titlesData: FlTitlesData(show: false),
             lineTouchData: LineTouchData(enabled: true),
             lineBarsData: [
-              _bar(spots.weight, Colors.blue,
+              _bar(spots.weight, Colors.white,
                   highlightIndex: lastIndex,
                   highlightValue: maxWeight),
-              _bar(spots.reps, Colors.green,
+              _bar(spots.reps, Colors.white70,
                   highlightIndex: lastIndex),
-              _bar(spots.volume, Colors.orange,
+              _bar(spots.volume, Colors.white24,
                   highlightIndex: lastIndex),
             ],
           ),
@@ -70,7 +70,7 @@ class ProgressChart extends StatelessWidget {
     return LineChartBarData(
       spots: spots,
       isCurved: true,
-      barWidth: 2.5,
+      barWidth: 2.2,
       color: color,
       dotData: FlDotData(
         show: true,
@@ -82,9 +82,9 @@ class ProgressChart extends StatelessWidget {
           if (isPR) {
             return FlDotCirclePainter(
               radius: 5,
-              color: Colors.amber,
+              color: Colors.white,
               strokeWidth: 2,
-              strokeColor: Colors.white,
+              strokeColor: Colors.black,
             );
           }
 
@@ -92,7 +92,7 @@ class ProgressChart extends StatelessWidget {
             return FlDotCirclePainter(
               radius: 4,
               color: color,
-              strokeWidth: 2,
+              strokeWidth: 1,
               strokeColor: Colors.white,
             );
           }
