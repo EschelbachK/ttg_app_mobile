@@ -15,21 +15,27 @@ class WorkoutStartScreen extends ConsumerWidget {
     final dashboardState = ref.watch(dashboardProvider);
     final plans = dashboardState.trainingPlans;
 
+    final controller = ref.read(workoutProvider.notifier);
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const TtgSectionTitle(title: 'START WORKOUT'),
+
               const SizedBox(height: 20),
+
               TtgPrimaryButton(
                 text: 'Quick Start',
                 onTap: () async {
-                  await ref.read(workoutProvider.notifier).startWorkout();
+                  await controller.startWorkout();
                   if (!context.mounted) return;
-                  Navigator.push(
+
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
                       builder: (_) => const WorkoutActiveScreen(),
@@ -37,32 +43,44 @@ class WorkoutStartScreen extends ConsumerWidget {
                   );
                 },
               ),
-              const SizedBox(height: 24),
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: TtgSectionTitle(title: 'PLÄNE'),
-              ),
+
+              const SizedBox(height: 28),
+
+              const TtgSectionTitle(title: 'PLÄNE'),
+
               const SizedBox(height: 12),
+
               Expanded(
-                child: ListView(
-                  children: plans.map((p) {
+                child: plans.isEmpty
+                    ? const Center(
+                  child: Text(
+                    'Keine Trainingspläne vorhanden',
+                    style: TextStyle(color: Colors.white54),
+                  ),
+                )
+                    : ListView.separated(
+                  itemCount: plans.length,
+                  separatorBuilder: (_, __) =>
+                  const SizedBox(height: 12),
+                  itemBuilder: (_, index) {
+                    final p = plans[index];
+
                     return TrainingPlanCard(
                       plan: p,
                       onStart: () async {
-                        await ref
-                            .read(workoutProvider.notifier)
-                            .startWorkoutFromPlan(p);
-
+                        await controller.startWorkoutFromPlan(p);
                         if (!context.mounted) return;
-                        Navigator.push(
+
+                        Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const WorkoutActiveScreen(),
+                            builder: (_) =>
+                            const WorkoutActiveScreen(),
                           ),
                         );
                       },
                     );
-                  }).toList(),
+                  },
                 ),
               ),
             ],

@@ -11,17 +11,25 @@ class WorkoutActiveScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(workoutProvider);
+    final controller = ref.read(workoutProvider.notifier);
     final session = state.session;
 
     if (state.isLoading) {
       return const Scaffold(
+        backgroundColor: Colors.black,
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
     if (session == null) {
       return const Scaffold(
-        body: Center(child: Text('No active workout')),
+        backgroundColor: Colors.black,
+        body: Center(
+          child: Text(
+            'Kein aktives Workout',
+            style: TextStyle(color: Colors.white70),
+          ),
+        ),
       );
     }
 
@@ -30,49 +38,62 @@ class WorkoutActiveScreen extends ConsumerWidget {
     final totalVolume = exercises.fold(
       0.0,
           (sum, e) =>
-      sum +
-          e.sets.fold(0.0, (s, set) => s + set.weight * set.reps),
+      sum + e.sets.fold(0.0, (s, set) => s + set.weight * set.reps),
     );
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Column(
-        children: [
-          WorkoutHeader(volume: totalVolume),
-          Expanded(
-            child: CustomScrollView(
-              slivers: [
-                for (final group in session.groups) ...[
-                  SliverPersistentHeader(
-                    pinned: true,
-                    delegate: _StickyHeaderDelegate(
-                      child: StickyGroupHeader(title: group.name),
+      body: SafeArea(
+        child: Column(
+          children: [
+            WorkoutHeader(volume: totalVolume),
+
+            Expanded(
+              child: CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  for (final group in session.groups) ...[
+                    SliverPersistentHeader(
+                      pinned: true,
+                      delegate: _StickyHeaderDelegate(
+                        child: StickyGroupHeader(title: group.name),
+                      ),
                     ),
-                  ),
-                  SliverList(
-                    delegate: SliverChildListDelegate(
-                      group.exercises.map((e) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 6,
-                          ),
-                          child: ExerciseBlock(exercise: e),
-                        );
-                      }).toList(),
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                          final e = group.exercises[index];
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 6,
+                            ),
+                            child: ExerciseBlock(exercise: e),
+                          );
+                        },
+                        childCount: group.exercises.length,
+                      ),
                     ),
+                  ],
+
+                  const SliverToBoxAdapter(
+                    child: SizedBox(height: 100),
                   ),
-                ]
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
+
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
+        backgroundColor: Colors.white,
+        onPressed: () async {
+          await controller.finishWorkout();
           Navigator.pushNamed(context, '/workout/summary');
         },
-        child: const Icon(Icons.check),
+        child: const Icon(Icons.check, color: Colors.black),
       ),
     );
   }
@@ -91,7 +112,10 @@ class _StickyHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(context, shrinkOffset, overlapsContent) {
-    return child;
+    return Container(
+      color: Colors.black,
+      child: child,
+    );
   }
 
   @override

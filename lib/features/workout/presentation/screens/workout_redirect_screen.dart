@@ -13,14 +13,15 @@ class WorkoutRedirectScreen extends ConsumerWidget {
 
     if (state.isLoading) {
       return const Scaffold(
+        backgroundColor: Colors.black,
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
-    if (state.session != null) {
-      return const WorkoutActiveScreen();
-    }
+    final hasWorkout = state.session != null && !state.isFinished;
 
-    return const WorkoutStartScreen();
+    return hasWorkout
+        ? const WorkoutActiveScreen()
+        : const WorkoutStartScreen();
   }
 }

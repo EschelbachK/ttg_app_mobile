@@ -16,19 +16,36 @@ class WorkoutSummaryScreen extends ConsumerWidget {
 
     if (session == null) {
       return const Scaffold(
-        body: Center(child: Text('No workout')),
+        backgroundColor: Colors.black,
+        body: Center(
+          child: Text(
+            'Kein Workout vorhanden',
+            style: TextStyle(color: Colors.white70),
+          ),
+        ),
       );
     }
 
     final exercises = session.groups.expand((g) => g.exercises).toList();
 
     final volumes = exercises
-        .map((e) => e.sets.fold(0.0, (s, set) => s + set.weight * set.reps))
+        .map((e) =>
+        e.sets.fold(0.0, (s, set) => s + set.weight * set.reps))
         .toList();
 
-    final totalVolume = volumes.fold(0.0, (sum, v) => sum + v);
+    final totalVolume =
+    volumes.fold(0.0, (sum, v) => sum + v);
+
     final suggestions = controller.buildNextSessionSuggestions();
-    final suggestedPlan = controller.buildPlanFromSuggestions();
+    final suggestedPlan =
+    controller.buildPlanFromSuggestions();
+
+    Color _color(String reason) {
+      if (reason.contains('Reduce')) return Colors.red;
+      if (reason.contains('Increase')) return Colors.green;
+      if (reason.contains('plateau')) return Colors.orange;
+      return Colors.white70;
+    }
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -39,41 +56,64 @@ class WorkoutSummaryScreen extends ConsumerWidget {
             children: [
               const Text(
                 'WORKOUT SUMMARY',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
+
               const SizedBox(height: 16),
+
               TtgGlassCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Volume: ${totalVolume.toStringAsFixed(0)} kg'),
+                    Text(
+                      'Volumen: ${totalVolume.toStringAsFixed(0)} kg',
+                      style: const TextStyle(color: Colors.white),
+                    ),
                     const SizedBox(height: 12),
                     VolumeChart(volumes: volumes),
                   ],
                 ),
               ),
+
               const SizedBox(height: 16),
+
               TtgGlassCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('NEXT SESSION'),
+                    const Text(
+                      'NÄCHSTE SESSION',
+                      style: TextStyle(color: Colors.white),
+                    ),
                     const SizedBox(height: 8),
                     ...suggestions.map((s) {
-                      final color = s.reason.contains('increase')
-                          ? Colors.green
-                          : s.reason.contains('plateau')
-                          ? Colors.orange
-                          : Colors.white;
-
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 4),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment:
+                          MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(s.exerciseName),
-                            Text('${s.weight}kg x ${s.reps}'),
-                            Text(s.reason, style: TextStyle(color: color)),
+                            Expanded(
+                              child: Text(
+                                s.exerciseName,
+                                style: const TextStyle(
+                                    color: Colors.white),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Text(
+                              '${s.weight}kg × ${s.reps}',
+                              style: const TextStyle(
+                                  color: Colors.white),
+                            ),
+                            Text(
+                              s.reason,
+                              style: TextStyle(color: _color(s.reason)),
+                            ),
                           ],
                         ),
                       );
@@ -81,20 +121,26 @@ class WorkoutSummaryScreen extends ConsumerWidget {
                   ],
                 ),
               ),
+
               const Spacer(),
+
               TtgPrimaryButton(
-                text: 'Start Next Session',
+                text: 'Next Session starten',
                 onTap: () async {
-                  await controller.startWorkoutFromPlan(suggestedPlan);
-                  if (context.mounted) {
-                    Navigator.pushReplacementNamed(
-                        context, '/workout/active');
-                  }
+                  await controller.startWorkoutFromPlan(
+                      suggestedPlan);
+
+                  if (!context.mounted) return;
+
+                  Navigator.pushReplacementNamed(
+                      context, '/workout/active');
                 },
               ),
+
               const SizedBox(height: 12),
+
               TtgPrimaryButton(
-                text: 'Finish',
+                text: 'Beenden',
                 onTap: () {
                   Navigator.popUntil(
                     context,
