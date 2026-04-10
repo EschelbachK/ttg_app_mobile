@@ -11,4 +11,6 @@ class MotivationResult {
     required this.level,
     required this.message,
   });
+
+  bool get isHighImpact => level.isHigh;
 }

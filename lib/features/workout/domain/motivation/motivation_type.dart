@@ -3,5 +3,7 @@ enum MotivationType {
   streak,
   milestone,
   comeback,
-  neutral,
+  neutral;
+
+  bool get isPositive => this != neutral;
 }

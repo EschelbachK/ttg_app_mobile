@@ -2,5 +2,7 @@ enum MotivationLevel {
   low,
   medium,
   high,
-  extreme,
+  extreme;
+
+  bool get isHigh => this == high || this == extreme;
 }

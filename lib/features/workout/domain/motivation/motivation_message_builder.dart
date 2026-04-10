@@ -20,39 +20,39 @@ class MotivationMessageBuilder {
   static String _progress(MotivationLevel level) {
     switch (level) {
       case MotivationLevel.extreme:
-        return "🚨 Neues Level erreicht!";
+        return "🚨 Neues Level erreicht! Das ist echtes Wachstum!";
       case MotivationLevel.high:
-        return "💥 Kein Zufall! Du wirst stärker!";
+        return "💥 Stark! Du wirst sichtbar besser!";
       case MotivationLevel.medium:
-        return "Stark! Das ist Fortschritt!";
+        return "Gute Steigerung! Genau so weiter!";
       case MotivationLevel.low:
-        return "Gut! Weiter so!";
+        return "Solider Fortschritt! Dranbleiben!";
     }
   }
 
   static String _streak(MotivationLevel level) {
     switch (level) {
       case MotivationLevel.extreme:
-        return "🔥 Unaufhaltsam! Du ziehst durch!";
+        return "🔥 Absolute Konstanz! Genau das bringt dich voran!";
       case MotivationLevel.high:
-        return "⚡ Du bist im Flow! Bleib dran!";
+        return "⚡ Du bist im Rhythmus! Halte ihn!";
       case MotivationLevel.medium:
-        return "Dranbleiben! Du bist auf dem richtigen Weg!";
+        return "Gute Serie! Bleib konsequent!";
       case MotivationLevel.low:
-        return "Weiter so!";
+        return "Dranbleiben! Konstanz gewinnt!";
     }
   }
 
   static String _milestone(MotivationLevel level) {
     switch (level) {
       case MotivationLevel.extreme:
-        return "🚀 Riesiger Fortschritt! Das ist ein Meilenstein!";
+        return "🚀 Großer Meilenstein! Das zahlt sich aus!";
       case MotivationLevel.high:
-        return "Stark! Du erreichst neue Levels!";
+        return "Stark! Nächstes Level erreicht!";
       case MotivationLevel.medium:
-        return "Guter Fortschritt! Bleib dran!";
+        return "Guter Fortschritt! Weiter aufbauen!";
       case MotivationLevel.low:
-        return "Weiter!";
+        return "Weiter! Schritt für Schritt!";
     }
   }
 
@@ -60,15 +60,15 @@ class MotivationMessageBuilder {
     switch (level) {
       case MotivationLevel.extreme:
       case MotivationLevel.high:
-        return "💥 Du bist zurück! Genau jetzt zählt’s!";
+        return "💥 Starker Wiedereinstieg! Jetzt dranbleiben!";
       case MotivationLevel.medium:
-        return "Zurück im Spiel! Weiter geht’s!";
+        return "Zurück im Flow! Weiter geht’s!";
       case MotivationLevel.low:
-        return "Weiter!";
+        return "Wieder gestartet! Bleib dran!";
     }
   }
 
   static String _neutral() {
-    return "Weiter!";
+    return "Weiter! Fokus halten!";
   }
 }

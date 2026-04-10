@@ -3,7 +3,7 @@ class ProgressionResult {
   final int reps;
   final String reason;
 
-  ProgressionResult({
+  const ProgressionResult({
     required this.weight,
     required this.reps,
     required this.reason,

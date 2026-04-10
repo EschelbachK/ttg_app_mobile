@@ -28,4 +28,7 @@ class MotivationEvent {
       totalWorkouts: totalWorkouts ?? this.totalWorkouts,
     );
   }
+
+  bool get hasProgress =>
+      (repsDiff ?? 0) > 0 || (weightDiff ?? 0) > 0;
 }
