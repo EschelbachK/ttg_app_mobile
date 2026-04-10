@@ -36,7 +36,6 @@ class WorkoutController extends StateNotifier<WorkoutState> {
 
   void startRestTimer(int seconds) {
     _restTimer?.cancel();
-
     _restSeconds = seconds;
     _showRest = true;
     state = state.copyWith();
@@ -81,6 +80,42 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     } catch (_) {
       state = state.copyWith(session: _fallback());
     }
+  }
+
+  Future<void> resumeWorkoutWithLatestPlan() async {
+    final s = state.session;
+    if (s == null) return;
+
+    final dashboard = ref.read(dashboardProvider);
+
+    final updatedGroups = WorkoutMapper.fromPlan(
+      plan: dashboard.trainingPlans.first,
+      folders: dashboard.folders,
+    );
+
+    final mergedGroups = updatedGroups.map((newGroup) {
+      final existingGroup = s.groups.firstWhere(
+            (g) => g.name == newGroup.name,
+        orElse: () => newGroup,
+      );
+
+      return newGroup.copyWith(
+        exercises: newGroup.exercises.map((newEx) {
+          final existingEx = existingGroup.exercises.firstWhere(
+                (e) => e.name == newEx.name,
+            orElse: () => newEx,
+          );
+
+          return newEx.copyWith(
+            sets: existingEx.sets,
+          );
+        }).toList(),
+      );
+    }).toList();
+
+    state = state.copyWith(
+      session: s.copyWith(groups: mergedGroups),
+    );
   }
 
   WorkoutSession _fallback() {
@@ -247,7 +282,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
 
     try {
       await api.finishWorkout(s);
-      state = state.copyWith(isFinished: true);
+      state = state.copyWith(isFinished: true, session: null);
     } catch (_) {}
   }
 
