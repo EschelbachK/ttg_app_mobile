@@ -21,23 +21,18 @@ class MotivationEngine {
     final isProgress = reps > 0 || weight > 0;
     final hasStreak = event.streakDays > 0;
 
-    MotivationLevel? progressLevel;
-    MotivationLevel? streakLevel;
+    final progressLevel =
+    isProgress ? MotivationRules.prLevel(reps, weight) : null;
 
-    if (isProgress) {
-      progressLevel = MotivationRules.prLevel(reps, weight);
-    }
-
-    if (hasStreak) {
-      streakLevel = MotivationRules.streakLevel(event.streakDays);
-    }
+    final streakLevel =
+    hasStreak ? MotivationRules.streakLevel(event.streakDays) : null;
 
     if (isProgress && hasStreak) {
       final combined =
           MotivationRules.priority(progressLevel!) +
               MotivationRules.priority(streakLevel!);
 
-      final MotivationLevel level = combined >= 7
+      final level = combined >= 7
           ? MotivationLevel.extreme
           : combined >= 5
           ? MotivationLevel.high
@@ -78,10 +73,10 @@ class MotivationEngine {
       );
     }
 
-    if (isProgress) {
+    if (isProgress && progressLevel != null) {
       return MotivationResult(
         type: MotivationType.pr,
-        level: progressLevel!,
+        level: progressLevel,
         message: MotivationMessageBuilder.build(
           MotivationType.pr,
           progressLevel,
@@ -89,10 +84,10 @@ class MotivationEngine {
       );
     }
 
-    if (hasStreak) {
+    if (hasStreak && streakLevel != null) {
       return MotivationResult(
         type: MotivationType.streak,
-        level: streakLevel!,
+        level: streakLevel,
         message: MotivationMessageBuilder.build(
           MotivationType.streak,
           streakLevel,

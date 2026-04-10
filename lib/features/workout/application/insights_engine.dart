@@ -2,51 +2,46 @@ import '../domain/workout_history_entry.dart';
 import '../domain/progress_insight.dart';
 
 class InsightsEngine {
-  List<ProgressInsight> analyze(List<WorkoutHistoryEntry> history) {
-    if (history.length < 2) return [];
+  List<ProgressInsight> analyze(List<WorkoutHistoryEntry> h) {
+    if (h.length < 2) return [];
 
     final insights = <ProgressInsight>[];
 
-    final last = history.last;
-    final prev = history[history.length - 2];
+    final last = h.last;
+    final prev = h[h.length - 2];
 
-    final lastVolume = last.weight * last.reps;
-    final prevVolume = prev.weight * prev.reps;
+    final lastVolume = _volume(last);
+    final prevVolume = _volume(prev);
+    final diff = lastVolume - prevVolume;
 
-    final volumeDiff = lastVolume - prevVolume;
+    final maxWeight =
+    h.map((e) => e.weight).reduce((a, b) => a > b ? a : b);
 
-    final maxWeight = history
-        .map((e) => e.weight)
-        .reduce((a, b) => a > b ? a : b);
-
-    final isPR = last.weight >= maxWeight;
-
-    if (isPR) {
+    if (last.weight >= maxWeight) {
       insights.add(ProgressInsight('New PR achieved'));
     }
 
-    if (volumeDiff > 0) {
+    if (diff > 0) {
       insights.add(ProgressInsight('Volume increased'));
-    } else if (volumeDiff == 0) {
+    } else if (diff == 0) {
       insights.add(ProgressInsight('Plateau detected'));
     } else {
       insights.add(ProgressInsight('Performance dropped'));
     }
 
-    if (history.length >= 3) {
-      final last3 = history.sublist(history.length - 3);
+    if (h.length >= 3) {
+      final t = h.sublist(h.length - 3).map(_volume).toList();
 
-      final trend = last3
-          .map((e) => e.weight * e.reps)
-          .toList();
-
-      if (trend[2] > trend[1] && trend[1] > trend[0]) {
+      if (t[2] > t[1] && t[1] > t[0]) {
         insights.add(ProgressInsight('Consistent progress'));
-      } else if (trend[2] < trend[1] && trend[1] < trend[0]) {
+      } else if (t[2] < t[1] && t[1] < t[0]) {
         insights.add(ProgressInsight('Downward trend'));
       }
     }
 
     return insights;
   }
+
+  double _volume(WorkoutHistoryEntry e) =>
+      e.weight * e.reps;
 }

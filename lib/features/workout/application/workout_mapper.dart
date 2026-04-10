@@ -12,6 +12,8 @@ class WorkoutMapper {
     required TrainingPlan plan,
     required List<TrainingFolder> folders,
   }) {
+    final now = DateTime.now();
+
     final planFolders = folders
         .where((f) => f.trainingPlanId == plan.id)
         .toList()
@@ -26,12 +28,12 @@ class WorkoutMapper {
           order: folder.order,
           exercises: folder.exercises.map((e) {
             return ExerciseSession(
-              id: '${DateTime.now().toIso8601String()}$order',
+              id: '${now.toIso8601String()}-$order',
               name: e.name,
               order: order++,
               sets: [
                 SetLog(
-                  id: DateTime.now().millisecondsSinceEpoch.toString(),
+                  id: '${now.millisecondsSinceEpoch}-$order',
                   weight: e.sets.isNotEmpty ? e.sets.first.weight : 0,
                   reps: e.sets.isNotEmpty ? e.sets.first.reps : 0,
                 ),
@@ -50,12 +52,12 @@ class WorkoutMapper {
           final p = e.value;
 
           return ExerciseSession(
-            id: '${DateTime.now().toIso8601String()}${e.key}',
+            id: '${now.toIso8601String()}-${e.key}',
             name: p.name,
             order: e.key,
             sets: [
               SetLog(
-                id: DateTime.now().millisecondsSinceEpoch.toString(),
+                id: '${now.millisecondsSinceEpoch}-${e.key}',
                 weight: p.sets.isNotEmpty ? p.sets.first.weight : 0,
                 reps: p.sets.isNotEmpty ? p.sets.first.reps : 0,
               ),
@@ -69,12 +71,16 @@ class WorkoutMapper {
   static TrainingPlan fromSuggestions(
       List<NextSessionSuggestion> suggestions,
       ) {
+    final now = DateTime.now();
+
     return TrainingPlan(
-      id: DateTime.now().toIso8601String(),
+      id: now.toIso8601String(),
       name: 'Next Session',
-      exercises: suggestions.map((s) {
+      exercises: suggestions.asMap().entries.map((e) {
+        final s = e.value;
+
         return Exercise(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          id: '${now.millisecondsSinceEpoch}-${e.key}',
           name: s.exerciseName,
           bodyRegion: "GANZKOERPER",
           sets: [

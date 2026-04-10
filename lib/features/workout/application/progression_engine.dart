@@ -1,5 +1,6 @@
 import '../domain/progression_input.dart';
 import '../domain/progression_result.dart';
+import '../domain/workout_history_entry.dart';
 
 class ProgressionEngine {
   ProgressionResult calculate(ProgressionInput input) {
@@ -37,17 +38,25 @@ class ProgressionEngine {
     );
   }
 
-  bool _isPlateau(List history) {
-    if (history.length < 3) return false;
-    final last3 = history.sublist(history.length - 3);
-    final values = last3.map((e) => e.weight * e.reps).toList();
-    return values[2] == values[1] && values[1] == values[0];
+  bool _isPlateau(List<WorkoutHistoryEntry> h) {
+    if (h.length < 3) return false;
+
+    final v1 = _volume(h[h.length - 1]);
+    final v2 = _volume(h[h.length - 2]);
+    final v3 = _volume(h[h.length - 3]);
+
+    return v1 == v2 && v2 == v3;
   }
 
-  bool _isRegression(List history) {
-    if (history.length < 2) return false;
-    final last = history[history.length - 1];
-    final prev = history[history.length - 2];
-    return (last.weight * last.reps) < (prev.weight * prev.reps);
+  bool _isRegression(List<WorkoutHistoryEntry> h) {
+    if (h.length < 2) return false;
+
+    final last = _volume(h[h.length - 1]);
+    final prev = _volume(h[h.length - 2]);
+
+    return last < prev;
   }
+
+  double _volume(WorkoutHistoryEntry e) =>
+      e.weight * e.reps;
 }

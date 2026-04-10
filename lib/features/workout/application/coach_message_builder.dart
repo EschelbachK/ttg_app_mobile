@@ -1,51 +1,34 @@
-import '../domain/progression_input.dart';
-import '../domain/progression_result.dart';
+import 'package:flutter/material.dart';
+import '../application/workout_controller.dart';
 import '../domain/workout_session.dart';
-import '../domain/workout_history_entry.dart';
-import 'progression_engine.dart';
 
-class CoachMessageBuilder {
-  final ProgressionEngine engine = ProgressionEngine();
+class CoachMessageWidget extends StatelessWidget {
+  final ExerciseSession exercise;
+  final WorkoutController controller;
 
-  ProgressionResult? build(ExerciseSession exercise) {
-    if (exercise.sets.isEmpty) return null;
+  const CoachMessageWidget({
+    super.key,
+    required this.exercise,
+    required this.controller,
+  });
 
-    final last = exercise.sets.last;
+  @override
+  Widget build(BuildContext context) {
+    final suggestion = controller.getSuggestion(exercise);
+    if (suggestion == null) return const SizedBox();
 
-    final history = exercise.sets
-        .map((s) => WorkoutHistoryEntry(
-      weight: s.weight,
-      reps: s.reps,
-      date: DateTime.now(),
-    ))
-        .toList();
+    final color = suggestion.reason.contains('Increase')
+        ? Colors.green
+        : suggestion.reason.contains('plateau')
+        ? Colors.orange
+        : Colors.red;
 
-    return engine.calculate(
-      ProgressionInput(
-        lastWeight: last.weight,
-        lastReps: last.reps,
-        targetReps: last.reps,
-        history: history,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Text(
+        suggestion.reason,
+        style: TextStyle(color: color, fontSize: 12),
       ),
     );
-  }
-
-  String buildMessage(ProgressionResult result) {
-    final w = result.weight;
-    final r = result.reps;
-
-    if (result.reason.contains('Reduce')) {
-      return 'Reduce weight: $w kg x $r';
-    }
-
-    if (result.reason.contains('plateau')) {
-      return 'Push reps: $w kg x $r';
-    }
-
-    if (result.reason.contains('Increase weight')) {
-      return 'Go heavier: $w kg x $r';
-    }
-
-    return 'Keep going: $w kg x $r';
   }
 }
