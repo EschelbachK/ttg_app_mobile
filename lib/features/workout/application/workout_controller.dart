@@ -24,8 +24,41 @@ class WorkoutController extends StateNotifier<WorkoutState> {
 
   final Map<String, Timer> _debounceTimers = {};
 
+  Timer? _restTimer;
+  int _restSeconds = 0;
+  bool _showRest = false;
+
+  int get restSeconds => _restSeconds;
+  bool get showRest => _showRest;
+
   WorkoutController(this.api, this.motivator, this.ref)
       : super(const WorkoutState());
+
+  void startRestTimer(int seconds) {
+    _restTimer?.cancel();
+
+    _restSeconds = seconds;
+    _showRest = true;
+    state = state.copyWith();
+
+    _restTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (_restSeconds <= 1) {
+        t.cancel();
+        _restSeconds = 0;
+        _showRest = false;
+      } else {
+        _restSeconds--;
+      }
+      state = state.copyWith();
+    });
+  }
+
+  void stopRestTimer() {
+    _restTimer?.cancel();
+    _restSeconds = 0;
+    _showRest = false;
+    state = state.copyWith();
+  }
 
   Future<void> init() async => loadActiveWorkout();
 
