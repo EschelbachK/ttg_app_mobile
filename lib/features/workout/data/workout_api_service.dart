@@ -12,10 +12,12 @@ class WorkoutApiService {
     try {
       final res = await dio.get('/workout/active');
       final data = res.data;
-
       if (data == null) return null;
 
-      final exercises = (data['exercises'] as List? ?? []).asMap().entries.map((e) {
+      final exercises = (data['exercises'] as List? ?? [])
+          .asMap()
+          .entries
+          .map((e) {
         final ex = e.value;
 
         return ExerciseSession(
@@ -73,6 +75,18 @@ class WorkoutApiService {
       'reps': reps,
       'weight': weight,
       'completed': completed,
+    });
+  }
+
+  Future<void> deleteSet(String exerciseId, String setId) async {
+    await dio.delete('/sets/$setId', data: {
+      'exerciseId': exerciseId,
+    });
+  }
+
+  Future<void> finishWorkout(WorkoutSession session) async {
+    await dio.post('/workout/finish', data: {
+      'id': session.id,
     });
   }
 

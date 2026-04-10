@@ -10,33 +10,33 @@ class LocalWorkoutCache {
   Future<void> save(WorkoutSession session) async {
     final prefs = await SharedPreferences.getInstance();
 
-    final json = jsonEncode({
+    final data = {
       'id': session.id,
       'startedAt': session.startedAt.toIso8601String(),
-      'groups': session.groups
-          .map((g) => {
-        'name': g.name,
-        'order': g.order,
-        'exercises': g.exercises
-            .map((e) => {
-          'id': e.id,
-          'name': e.name,
-          'order': e.order,
-          'sets': e.sets
-              .map((s) => {
-            'id': s.id,
-            'weight': s.weight,
-            'reps': s.reps,
-            'completed': s.completed,
-          })
-              .toList(),
-        })
-            .toList(),
-      })
-          .toList(),
-    });
+      'groups': session.groups.map((g) {
+        return {
+          'name': g.name,
+          'order': g.order,
+          'exercises': g.exercises.map((e) {
+            return {
+              'id': e.id,
+              'name': e.name,
+              'order': e.order,
+              'sets': e.sets.map((s) {
+                return {
+                  'id': s.id,
+                  'weight': s.weight,
+                  'reps': s.reps,
+                  'completed': s.completed,
+                };
+              }).toList(),
+            };
+          }).toList(),
+        };
+      }).toList(),
+    };
 
-    await prefs.setString(_key, json);
+    await prefs.setString(_key, jsonEncode(data));
   }
 
   Future<WorkoutSession?> load() async {
@@ -46,27 +46,27 @@ class LocalWorkoutCache {
 
     final data = jsonDecode(raw);
 
-    final groups = (data['groups'] as List? ?? [])
-        .map((g) => WorkoutGroup(
-      name: g['name'],
-      order: g['order'],
-      exercises: (g['exercises'] as List)
-          .map((e) => ExerciseSession(
-        id: e['id'],
-        name: e['name'],
-        order: e['order'],
-        sets: (e['sets'] as List)
-            .map((s) => SetLog(
-          id: s['id'],
-          weight: (s['weight'] as num).toDouble(),
-          reps: s['reps'],
-          completed: s['completed'],
-        ))
-            .toList(),
-      ))
-          .toList(),
-    ))
-        .toList();
+    final groups = (data['groups'] as List? ?? []).map((g) {
+      return WorkoutGroup(
+        name: g['name'],
+        order: g['order'],
+        exercises: (g['exercises'] as List? ?? []).map((e) {
+          return ExerciseSession(
+            id: e['id'],
+            name: e['name'],
+            order: e['order'],
+            sets: (e['sets'] as List? ?? []).map((s) {
+              return SetLog(
+                id: s['id'],
+                weight: (s['weight'] as num).toDouble(),
+                reps: s['reps'],
+                completed: s['completed'] ?? false,
+              );
+            }).toList(),
+          );
+        }).toList(),
+      );
+    }).toList();
 
     return WorkoutSession(
       id: data['id'],
