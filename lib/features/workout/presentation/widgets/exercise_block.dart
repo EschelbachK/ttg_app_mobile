@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/workout_session.dart';
 import '../../providers/workout_provider.dart';
 import 'set_row.dart';
-import 'ttg_glass_card.dart';
 import 'add_set_button.dart';
-import 'rest_timer_widget.dart';
+
+const kPrimaryRed = Color(0xFFE10600);
 
 class ExerciseBlock extends ConsumerWidget {
   final ExerciseSession exercise;
@@ -17,45 +17,54 @@ class ExerciseBlock extends ConsumerWidget {
     final controller = ref.read(workoutProvider.notifier);
     final suggestion = controller.getSuggestion(exercise);
 
-    return TtgGlassCard(
+    final sets = exercise.sets;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.04),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.08)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            exercise.name,
-            style: const TextStyle(
-              fontSize: 18,
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(width: 16, height: 2, color: kPrimaryRed),
+              const SizedBox(width: 6),
+              Text(
+                exercise.name,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Container(width: 16, height: 2, color: kPrimaryRed),
+            ],
           ),
 
           const SizedBox(height: 12),
 
-          ...exercise.sets.asMap().entries.map((e) {
-            final set = e.value;
-            final isLast = e.key == exercise.sets.length - 1;
+          if (sets.isNotEmpty)
+            ...sets.asMap().entries.map((entry) {
+              final set = entry.value;
+              if (set == null) return const SizedBox();
 
-            return Column(
-              children: [
-                SetRow(
-                  index: e.key,
-                  exerciseId: exercise.id,
-                  setId: set.id,
-                  weight: set.weight,
-                  reps: set.reps,
-                  completed: set.completed,
-                ),
-                if (isLast && set.completed)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8),
-                    child: RestTimerWidget(seconds: 60),
-                  ),
-              ],
-            );
-          }),
+              return SetRow(
+                index: entry.key,
+                exerciseId: exercise.id,
+                setId: set.id,
+                weight: set.weight,
+                reps: set.reps,
+                completed: set.completed,
+              );
+            }),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
 
           AddSetButton(
             exerciseId: exercise.id,
