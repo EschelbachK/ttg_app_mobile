@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/workout_provider.dart';
 import 'reps_input_stepper.dart';
@@ -39,47 +40,66 @@ class SetRow extends ConsumerWidget {
 
     return SwipeToDeleteWrapper(
       onDelete: () {
-        controller.updateSet(
-          exerciseId: exerciseId,
-          setId: setId,
-          completed: false,
-          weight: 0,
-          reps: 0,
-        );
+        controller.deleteSet(exerciseId, setId);
       },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        decoration: BoxDecoration(
+          color: completed ? Colors.white.withOpacity(0.05) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: completed ? Colors.green : Colors.white10,
+          ),
+        ),
         child: Row(
           children: [
             SizedBox(
-              width: 28,
-              child: Text('#${index + 1}'),
+              width: 30,
+              child: Text(
+                '#${index + 1}',
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                ),
+              ),
             ),
+
             const SizedBox(width: 8),
+
             Expanded(
               child: WeightInputStepper(
                 value: weight,
                 onChanged: (v) => update(w: v),
               ),
             ),
+
             const SizedBox(width: 8),
+
             Expanded(
               child: RepsInputStepper(
                 value: reps,
                 onChanged: (v) => update(r: v),
               ),
             ),
+
             const SizedBox(width: 8),
+
             GestureDetector(
-              onTap: () => update(c: !completed),
+              onTap: () {
+                HapticFeedback.mediumImpact();
+                update(c: !completed);
+              },
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 28,
-                height: 28,
+                duration: const Duration(milliseconds: 180),
+                width: 30,
+                height: 30,
                 decoration: BoxDecoration(
                   color: completed ? Colors.green : Colors.transparent,
-                  border: Border.all(color: Colors.white24),
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: completed ? Colors.green : Colors.white24,
+                  ),
                 ),
                 child: completed
                     ? const Icon(Icons.check, size: 18, color: Colors.white)

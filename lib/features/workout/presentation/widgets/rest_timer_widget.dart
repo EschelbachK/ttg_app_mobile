@@ -41,18 +41,26 @@ class _RestTimerWidgetState extends State<RestTimerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final double progress =
+    final progress =
     widget.seconds == 0 ? 0.0 : remaining / widget.seconds;
 
     return Row(
       children: [
         SizedBox(
-          width: 36,
-          height: 36,
-          child: CircularProgressIndicator(value: progress),
+          width: 34,
+          height: 34,
+          child: CircularProgressIndicator(
+            value: progress,
+            strokeWidth: 3,
+            color: Colors.white,
+            backgroundColor: Colors.white12,
+          ),
         ),
         const SizedBox(width: 8),
-        Text(remaining == 0 ? 'Done' : '$remaining s'),
+        Text(
+          remaining == 0 ? 'Fertig' : '$remaining s',
+          style: const TextStyle(color: Colors.white70),
+        ),
       ],
     );
   }

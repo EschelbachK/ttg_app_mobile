@@ -21,8 +21,17 @@ class ExerciseBlock extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(exercise.name, style: const TextStyle(fontSize: 18)),
+          Text(
+            exercise.name,
+            style: const TextStyle(
+              fontSize: 18,
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+
           const SizedBox(height: 12),
+
           ...exercise.sets.asMap().entries.map((e) {
             final set = e.value;
             final isLast = e.key == exercise.sets.length - 1;
@@ -37,7 +46,7 @@ class ExerciseBlock extends ConsumerWidget {
                   reps: set.reps,
                   completed: set.completed,
                 ),
-                if (isLast && set.completed == true)
+                if (isLast && set.completed)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 8),
                     child: RestTimerWidget(seconds: 60),
@@ -45,7 +54,9 @@ class ExerciseBlock extends ConsumerWidget {
               ],
             );
           }),
+
           const SizedBox(height: 12),
+
           AddSetButton(
             exerciseId: exercise.id,
             suggestedWeight: suggestion?.weight,

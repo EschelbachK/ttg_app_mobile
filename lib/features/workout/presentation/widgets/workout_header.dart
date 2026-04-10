@@ -13,11 +13,26 @@ class WorkoutHeader extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Volume: ${volume.toStringAsFixed(0)} kg',
-              style: const TextStyle(fontSize: 18),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'WORKOUT',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white54,
+                  ),
+                ),
+                Text(
+                  '${volume.toStringAsFixed(0)} KG',
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
-            const Icon(Icons.fitness_center),
+            const Icon(Icons.fitness_center, size: 28),
           ],
         ),
       ),

@@ -19,10 +19,21 @@ class AddSetButton extends ConsumerWidget {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
         onPressed: () {
           showModalBottomSheet(
             context: context,
             isScrollControlled: true,
+            backgroundColor: Colors.black,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+            ),
             builder: (_) => _AddSetSheet(
               exerciseId: exerciseId,
               suggestedWeight: suggestedWeight,
@@ -30,7 +41,7 @@ class AddSetButton extends ConsumerWidget {
             ),
           );
         },
-        child: const Text('Add Set'),
+        child: const Text('Set hinzufügen'),
       ),
     );
   }
@@ -59,9 +70,7 @@ class _AddSetSheetState extends ConsumerState<_AddSetSheet> {
   void initState() {
     super.initState();
     weightCtrl = TextEditingController(
-      text: widget.suggestedWeight != null
-          ? widget.suggestedWeight!.toStringAsFixed(1)
-          : '',
+      text: widget.suggestedWeight?.toStringAsFixed(1) ?? '',
     );
     repsCtrl = TextEditingController(
       text: widget.suggestedReps?.toString() ?? '',
@@ -85,22 +94,38 @@ class _AddSetSheetState extends ConsumerState<_AddSetSheet> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          const Text(
+            'Neuer Satz',
+            style: TextStyle(color: Colors.white, fontSize: 16),
+          ),
+          const SizedBox(height: 12),
           TextField(
             controller: weightCtrl,
             keyboardType: TextInputType.number,
-            autofocus: true,
-            decoration: const InputDecoration(labelText: 'Weight'),
+            style: const TextStyle(color: Colors.white),
+            decoration: const InputDecoration(
+              labelText: 'Gewicht',
+              labelStyle: TextStyle(color: Colors.white70),
+            ),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: repsCtrl,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: 'Reps'),
+            style: const TextStyle(color: Colors.white),
+            decoration: const InputDecoration(
+              labelText: 'Wiederholungen',
+              labelStyle: TextStyle(color: Colors.white70),
+            ),
           ),
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: Colors.black,
+              ),
               onPressed: () async {
                 final weight = double.tryParse(weightCtrl.text);
                 final reps = int.tryParse(repsCtrl.text);
@@ -110,7 +135,7 @@ class _AddSetSheetState extends ConsumerState<_AddSetSheet> {
 
                 if (mounted) Navigator.pop(context);
               },
-              child: const Text('Save'),
+              child: const Text('Speichern'),
             ),
           ),
         ],
