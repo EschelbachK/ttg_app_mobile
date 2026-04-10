@@ -31,13 +31,14 @@ class WorkoutMapper {
               id: '${now.toIso8601String()}-$order',
               name: e.name,
               order: order++,
-              sets: [
-                SetLog(
-                  id: '${now.millisecondsSinceEpoch}-$order',
-                  weight: e.sets.isNotEmpty ? e.sets.first.weight : 0,
-                  reps: e.sets.isNotEmpty ? e.sets.first.reps : 0,
-                ),
-              ],
+              sets: e.sets.map((s) {
+                return SetLog(
+                  id: '${now.millisecondsSinceEpoch}-${order}-${s.hashCode}',
+                  weight: s.weight,
+                  reps: s.reps,
+                  completed: false,
+                );
+              }).toList(),
             );
           }).toList(),
         );
@@ -55,13 +56,14 @@ class WorkoutMapper {
             id: '${now.toIso8601String()}-${e.key}',
             name: p.name,
             order: e.key,
-            sets: [
-              SetLog(
-                id: '${now.millisecondsSinceEpoch}-${e.key}',
-                weight: p.sets.isNotEmpty ? p.sets.first.weight : 0,
-                reps: p.sets.isNotEmpty ? p.sets.first.reps : 0,
-              ),
-            ],
+            sets: p.sets.map((s) {
+              return SetLog(
+                id: '${now.millisecondsSinceEpoch}-${e.key}-${s.hashCode}',
+                weight: s.weight,
+                reps: s.reps,
+                completed: false,
+              );
+            }).toList(),
           );
         }).toList(),
       ),
