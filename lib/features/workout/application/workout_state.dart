@@ -11,6 +11,8 @@ class WorkoutState {
   final ProgressionResult? progression;
   final List<NextSessionSuggestion> suggestions;
   final MotivationState? motivation;
+  final String? restMessage;
+  final bool triggerFinishFlow;
 
   const WorkoutState({
     this.session,
@@ -20,6 +22,8 @@ class WorkoutState {
     this.progression,
     this.suggestions = const [],
     this.motivation,
+    this.restMessage,
+    this.triggerFinishFlow = false,
   });
 
   WorkoutState copyWith({
@@ -30,6 +34,8 @@ class WorkoutState {
     ProgressionResult? progression,
     List<NextSessionSuggestion>? suggestions,
     MotivationState? motivation,
+    String? restMessage,
+    bool? triggerFinishFlow,
   }) {
     return WorkoutState(
       session: session ?? this.session,
@@ -39,6 +45,8 @@ class WorkoutState {
       progression: progression ?? this.progression,
       suggestions: suggestions ?? this.suggestions,
       motivation: motivation ?? this.motivation,
+      restMessage: restMessage ?? this.restMessage,
+      triggerFinishFlow: triggerFinishFlow ?? this.triggerFinishFlow,
     );
   }
 
