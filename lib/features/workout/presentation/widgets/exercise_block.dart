@@ -64,7 +64,7 @@ class ExerciseBlock extends ConsumerWidget {
               );
             }),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 2),
 
           AddSetButton(
             exerciseId: exercise.id,
