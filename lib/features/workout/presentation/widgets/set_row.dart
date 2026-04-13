@@ -95,7 +95,9 @@ class SetRow extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: isCompleted ? kPrimaryRed : Colors.transparent,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.white24),
+                border: Border.all(
+                  color: isCompleted ? kPrimaryRed : Colors.white24,
+                ),
               ),
               child: Icon(
                 Icons.check,
