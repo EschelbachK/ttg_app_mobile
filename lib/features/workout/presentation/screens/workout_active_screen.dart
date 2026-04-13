@@ -5,8 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/ui/ttg_background.dart';
 import '../../../../core/ui/ttg_leave_workout_dialog.dart';
 import '../../providers/workout_provider.dart';
+import '../../providers/motivation_provider.dart';
 import '../widgets/collapsible_exercise_block.dart';
 import '../widgets/workout_start_overlay.dart';
+import '../widgets/workout_finish_overlay.dart';
 
 const kPrimaryRed = Color(0xFFE10600);
 
@@ -22,6 +24,7 @@ class _WorkoutActiveScreenState
     extends ConsumerState<WorkoutActiveScreen> {
   late bool _showStartOverlay;
   bool _autoFinished = false;
+  bool _showFinishOverlay = false;
 
   @override
   void initState() {
@@ -38,8 +41,8 @@ class _WorkoutActiveScreenState
 
     if (result == "finish") {
       await controller.finishWorkout();
-      if (!context.mounted) return;
-      context.go('/workout/summary');
+      if (!mounted) return;
+      setState(() => _showFinishOverlay = true);
       return;
     }
 
@@ -52,6 +55,7 @@ class _WorkoutActiveScreenState
   Widget build(BuildContext context) {
     final state = ref.watch(workoutProvider);
     final controller = ref.read(workoutProvider.notifier);
+    final motivation = ref.watch(motivationProvider);
     final session = state.session;
 
     if (session == null) {
@@ -76,8 +80,8 @@ class _WorkoutActiveScreenState
       _autoFinished = true;
       Future.microtask(() async {
         await controller.finishWorkout();
-        if (!context.mounted) return;
-        context.go('/workout/summary');
+        if (!mounted) return;
+        setState(() => _showFinishOverlay = true);
       });
     }
 
@@ -144,6 +148,15 @@ class _WorkoutActiveScreenState
                 seconds: controller.restSeconds,
                 onSkip: controller.stopRestTimer,
               ),
+            if (_showFinishOverlay)
+              WorkoutFinishOverlay(
+                message:
+                motivation.state.last?.message ?? '',
+                onDone: () {
+                  if (!mounted) return;
+                  context.go('/workout/summary');
+                },
+              ),
           ],
         ),
         floatingActionButton: controller.showRest
@@ -152,8 +165,8 @@ class _WorkoutActiveScreenState
           backgroundColor: kPrimaryRed,
           onPressed: () async {
             await controller.finishWorkout();
-            if (!context.mounted) return;
-            context.go('/workout/summary');
+            if (!mounted) return;
+            setState(() => _showFinishOverlay = true);
           },
           child:
           const Icon(Icons.check, color: Colors.white),
