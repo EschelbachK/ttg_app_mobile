@@ -8,10 +8,12 @@ import '../domain/progression_input.dart';
 import '../domain/progression_result.dart';
 import '../domain/workout_history_entry.dart';
 import '../domain/set_log.dart';
+import '../domain/motivation/motivation_event.dart';
 import '../providers/motivation_provider.dart';
 import 'workout_state.dart';
 import 'progression_engine.dart';
 import 'workout_mapper.dart';
+import 'workout_summary_mapper.dart';
 import '../../dashboard/state/dashboard_provider.dart';
 
 class WorkoutController extends StateNotifier<WorkoutState> {
@@ -219,6 +221,24 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     try {
       await api.finishWorkout(s);
     } catch (_) {}
+
+    final history = WorkoutSummaryMapper.toHistory(s);
+
+    if (history.isNotEmpty) {
+      final last = history.last;
+      final prev = history.length > 1 ? history[history.length - 2] : null;
+
+      final event = MotivationEvent(
+        repsDiff: prev != null ? last.reps - prev.reps : 0,
+        weightDiff: prev != null ? last.weight - prev.weight : 0,
+        streakDays: motivator.engine.streak.streakCount,
+        isComeback: motivator.engine.streak.streakCount == 1,
+        totalWorkouts: history.length,
+      );
+
+      motivator.evaluate(event);
+      motivator.updateStreakFromSession(s);
+    }
 
     state = state.copyWith(
       isFinished: true,
