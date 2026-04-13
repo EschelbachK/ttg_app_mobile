@@ -16,295 +16,321 @@ class WorkoutActiveScreen extends ConsumerStatefulWidget {
   const WorkoutActiveScreen({super.key});
 
   @override
-  ConsumerState<WorkoutActiveScreen> createState() =>
-      _WorkoutActiveScreenState();
+  ConsumerState<WorkoutActiveScreen> createState() => _State();
 }
 
-class _WorkoutActiveScreenState
-    extends ConsumerState<WorkoutActiveScreen> {
+class _State extends ConsumerState<WorkoutActiveScreen> {
   late bool _showStartOverlay;
-  bool _autoFinished = false;
   bool _showFinishOverlay = false;
 
   @override
   void initState() {
     super.initState();
-    final state = ref.read(workoutProvider);
-    _showStartOverlay =
-        state.session != null && !state.isPaused;
+    final s = ref.read(workoutProvider);
+    _showStartOverlay = s.session != null && !s.isPaused;
   }
 
-  Future<void> _handleExit(BuildContext context) async {
-    final controller = ref.read(workoutProvider.notifier);
-    final result = await showTTGLeaveWorkoutDialog(context: context);
-    if (result == null) return;
+  Future<void> _exit(BuildContext c) async {
+    final ctrl = ref.read(workoutProvider.notifier);
+    final r = await showTTGLeaveWorkoutDialog(context: c);
+    if (r == null) return;
 
-    if (result == "finish") {
-      await controller.finishWorkout();
+    if (r == "finish") {
+      await ctrl.finishWorkout();
       if (!mounted) return;
       setState(() => _showFinishOverlay = true);
       return;
     }
 
-    controller.pauseWorkout();
-    if (!context.mounted) return;
-    context.go('/workout/start');
+    ctrl.pauseWorkout();
+    if (!c.mounted) return;
+    c.go('/workout/start');
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(workoutProvider);
-    final controller = ref.read(workoutProvider.notifier);
-    final motivation = ref.watch(motivationProvider);
-    final session = state.session;
+    final ctrl = ref.read(workoutProvider.notifier);
+    final s = state.session;
 
-    if (session == null) {
+    if (state.triggerFinishFlow && !_showFinishOverlay) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() => _showFinishOverlay = true);
+
+          ref.read(workoutProvider.notifier).state =
+              state.copyWith(triggerFinishFlow: false);
+        }
+      });
+    }
+
+    if (s == null) {
       return const Scaffold(
         backgroundColor: Colors.transparent,
         body: TtgBackground(
           child: Center(
-            child: Text('Kein Workout',
-                style: TextStyle(color: Colors.white)),
+            child: Text('Kein Workout', style: TextStyle(color: Colors.white)),
           ),
         ),
       );
     }
 
-    final allCompleted = session.groups.every(
-          (g) => g.exercises.every(
-            (e) => e.sets.every((s) => s.completed),
-      ),
-    );
-
-    if (allCompleted && !_autoFinished && !state.isFinished) {
-      _autoFinished = true;
-      Future.microtask(() async {
-        await controller.finishWorkout();
-        if (!mounted) return;
-        setState(() => _showFinishOverlay = true);
-      });
-    }
-
-    final totalVolume = session.groups
+    final volume = s.groups
         .expand((g) => g.exercises)
-        .fold<double>(
-      0,
-          (sum, e) =>
-      sum + e.sets.fold<double>(0, (s, set) => s + set.weight * set.reps),
-    );
+        .fold<double>(0, (sum, e) => sum + e.sets.fold<double>(0, (s, x) => s + x.weight * x.reps));
 
-    return WillPopScope(
-      onWillPop: () async {
-        await _handleExit(context);
-        return false;
-      },
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Stack(
-          children: [
-            TtgBackground(
-              child: SafeArea(
-                child: Column(
-                  children: [
-                    _TopBar(
-                      volume: totalVolume,
-                      onBack: () => _handleExit(context),
-                    ),
-                    Expanded(
-                      child: ListView(
-                        padding:
-                        const EdgeInsets.symmetric(horizontal: 16),
-                        children: [
-                          for (final group in session.groups) ...[
-                            const SizedBox(height: 20),
-                            _PremiumGroupHeader(title: group.name),
-                            const SizedBox(height: 14),
-                            ...group.exercises.map(
-                                  (e) => Padding(
-                                padding:
-                                const EdgeInsets.only(bottom: 16),
-                                child: CollapsibleExerciseBlock(
-                                    exercise: e),
-                              ),
-                            ),
-                          ],
-                          const SizedBox(height: 120),
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          TtgBackground(
+            child: Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 90),
+                  child: SafeArea(
+                    top: false,
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      children: [
+                        for (final g in s.groups) ...[
+                          const SizedBox(height: 20),
+                          _PremiumGroupHeader(title: g.name),
+                          const SizedBox(height: 14),
+                          ...g.exercises.map((e) => Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: CollapsibleExerciseBlock(exercise: e),
+                          )),
                         ],
-                      ),
+                        const SizedBox(height: 120),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
+                SafeArea(
+                  bottom: false,
+                  child: _TopBar(
+                    volume: volume,
+                    onBack: () => _exit(context),
+                  ),
+                ),
+              ],
             ),
-            if (_showStartOverlay)
-              WorkoutStartOverlay(
-                onFinish: () {
-                  if (!mounted) return;
-                  setState(() => _showStartOverlay = false);
-                },
-              ),
-            if (controller.showRest)
-              _RestOverlay(
-                seconds: controller.restSeconds,
-                onSkip: controller.stopRestTimer,
-              ),
-            if (_showFinishOverlay)
-              WorkoutFinishOverlay(
-                message:
-                motivation.state.last?.message ?? '',
-                onDone: () {
-                  if (!mounted) return;
-                  context.go('/workout/summary');
-                },
-              ),
-          ],
-        ),
-        floatingActionButton: controller.showRest
-            ? null
-            : FloatingActionButton(
-          backgroundColor: kPrimaryRed,
-          onPressed: () async {
-            await controller.finishWorkout();
-            if (!mounted) return;
-            setState(() => _showFinishOverlay = true);
-          },
-          child:
-          const Icon(Icons.check, color: Colors.white),
-        ),
+          ),
+
+          if (_showStartOverlay)
+            WorkoutStartOverlay(
+              onFinish: () => setState(() => _showStartOverlay = false),
+            ),
+
+          if (ctrl.restSeconds > 0)
+            _RestOverlay(
+              key: ValueKey('${ctrl.restSeconds}_${state.restMessage}'),
+              seconds: ctrl.restSeconds,
+              onSkip: ctrl.stopRestTimer,
+              message: state.restMessage,
+            ),
+
+          if (_showFinishOverlay)
+            WorkoutFinishOverlay(
+              message: '', // 🔥 FIX → kein groups param
+              onDone: () {
+                if (mounted) context.go('/workout/summary');
+              },
+            ),
+        ],
       ),
     );
   }
 }
 
-class _RestOverlay extends StatefulWidget {
+// ================= REST =================
+
+// NUR _RestOverlay ERSETZEN
+
+class _RestOverlay extends StatelessWidget {
   final int seconds;
   final VoidCallback onSkip;
+  final String? message;
 
   const _RestOverlay({
+    super.key,
     required this.seconds,
     required this.onSkip,
+    this.message,
   });
 
   @override
-  State<_RestOverlay> createState() => _RestOverlayState();
-}
-
-class _RestOverlayState extends State<_RestOverlay>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _pulse =
-  AnimationController(
-    vsync: this,
-    duration: const Duration(seconds: 2),
-  )..repeat(reverse: true);
-
-  @override
-  void dispose() {
-    _pulse.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final progress = widget.seconds / 60;
+    final progress = (seconds / 60).clamp(0.0, 1.0);
+
+    String done = "", next = "";
+
+    if (message != null && message!.isNotEmpty) {
+      final parts = message!.split("Nächste:");
+      done = parts.first
+          .replaceAll(RegExp(r'[🔥➡️➜➝]'), '')
+          .replaceAll("abgeschlossen", "")
+          .trim();
+
+      if (parts.length > 1) {
+        next = parts.last
+            .replaceAll(RegExp(r'[➡️➜➝]'), '')
+            .trim();
+      }
+    }
+
+    Widget line(String t) => Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          width: 24,
+          height: 2,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.transparent, kPrimaryRed],
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          t.toUpperCase(),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+            fontSize: 15,
+            letterSpacing: 1.3,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Container(
+          width: 24,
+          height: 2,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [kPrimaryRed, Colors.transparent],
+            ),
+          ),
+        ),
+      ],
+    );
 
     return Positioned.fill(
       child: GestureDetector(
-        onTap: widget.onSkip,
+        onTap: onSkip,
         child: Container(
           color: Colors.black.withOpacity(0.55),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
-            child: Center(
-              child: AnimatedBuilder(
-                animation: _pulse,
-                builder: (_, __) {
-                  final scale = 1 + (_pulse.value * 0.04);
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    SizedBox(
+                      width: 220,
+                      height: 220,
+                      child: CircularProgressIndicator(
+                        value: progress,
+                        strokeWidth: 10,
+                        color: kPrimaryRed,
+                        backgroundColor: Colors.white10,
+                      ),
+                    ),
+                    Text(
+                      '$seconds',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 52,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
 
-                  return Transform.scale(
-                    scale: scale,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Stack(
-                          alignment: Alignment.center,
+                const SizedBox(height: 28),
+
+                Text(
+                  'TIPPEN ZUM ÜBERSPRINGEN',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.35),
+                    letterSpacing: 3,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+
+                const SizedBox(height: 40),
+
+                if (message != null && message!.isNotEmpty)
+                  Column(
+                    children: [
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 28),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: Colors.white.withOpacity(0.04),
+                          border: Border.all(color: Colors.white.withOpacity(0.08)),
+                        ),
+                        child: Column(
                           children: [
-                            Container(
-                              width: 260,
-                              height: 260,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color:
-                                    kPrimaryRed.withOpacity(0.4),
-                                    blurRadius: 80,
-                                    spreadRadius: 10,
-                                  ),
-                                ],
+                            const Text(
+                              "ABGESCHLOSSEN",
+                              style: TextStyle(
+                                color: Colors.white38,
+                                fontSize: 10,
+                                letterSpacing: 2,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                            SizedBox(
-                              width: 220,
-                              height: 220,
-                              child:
-                              TweenAnimationBuilder<double>(
-                                tween:
-                                Tween(begin: 0, end: progress),
-                                duration: const Duration(
-                                    milliseconds: 500),
-                                builder: (_, value, __) {
-                                  return CircularProgressIndicator(
-                                    value: value,
-                                    strokeWidth: 10,
-                                    color: kPrimaryRed,
-                                    backgroundColor:
-                                    Colors.white10,
-                                  );
-                                },
-                              ),
-                            ),
-                            Container(
-                              width: 160,
-                              height: 160,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color:
-                                Colors.black.withOpacity(0.6),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black
-                                        .withOpacity(0.8),
-                                    blurRadius: 30,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Text(
-                              '${widget.seconds}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 52,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
+                            const SizedBox(height: 10),
+                            line(done),
                           ],
                         ),
-                        const SizedBox(height: 28),
-                        Text(
-                          'TIPPEN ZUM ÜBERSPRINGEN',
-                          style: TextStyle(
-                            color:
-                            Colors.white.withOpacity(0.35),
-                            letterSpacing: 3,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      Icon(
+                        Icons.keyboard_arrow_down,
+                        color: kPrimaryRed,
+                        size: 26,
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 28),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: Colors.white.withOpacity(0.04),
+                          border: Border.all(
+                            color: kPrimaryRed.withOpacity(0.6),
+                            width: 1.2,
                           ),
                         ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+                        child: Column(
+                          children: [
+                            const Text(
+                              "JETZT",
+                              style: TextStyle(
+                                color: Colors.white38,
+                                fontSize: 10,
+                                letterSpacing: 2,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            line(next),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
             ),
           ),
         ),
@@ -313,14 +339,13 @@ class _RestOverlayState extends State<_RestOverlay>
   }
 }
 
+// ================= TOPBAR =================
+
 class _TopBar extends StatelessWidget {
   final double volume;
   final VoidCallback onBack;
 
-  const _TopBar({
-    required this.volume,
-    required this.onBack,
-  });
+  const _TopBar({required this.volume, required this.onBack});
 
   @override
   Widget build(BuildContext context) {
@@ -336,23 +361,31 @@ class _TopBar extends StatelessWidget {
                 color: Colors.white.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.arrow_back,
-                  color: Colors.white, size: 18),
+              child: const Icon(Icons.arrow_back, color: Colors.white, size: 18),
             ),
           ),
           const SizedBox(width: 12),
-          Text(
-            '${volume.toStringAsFixed(0)} KG',
-            style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w800),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('WORKOUT', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                const SizedBox(width: 8),
+                Container(width: 6, height: 2, color: kPrimaryRed),
+                const SizedBox(width: 8),
+                Text('${volume.toStringAsFixed(0)} KG',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+              ],
+            ),
           ),
+          const SizedBox(width: 40),
         ],
       ),
     );
   }
 }
+
+// ================= HEADER =================
 
 class _PremiumGroupHeader extends StatelessWidget {
   final String title;
@@ -363,43 +396,16 @@ class _PremiumGroupHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          height: 1.5,
-          margin: const EdgeInsets.symmetric(horizontal: 20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.transparent,
-                kPrimaryRed.withOpacity(0.9),
-                Colors.transparent,
-              ],
-            ),
-          ),
-        ),
+        Container(height: 1.5, margin: const EdgeInsets.symmetric(horizontal: 20),
+            decoration: BoxDecoration(
+                gradient: LinearGradient(colors: [Colors.transparent, kPrimaryRed, Colors.transparent]))),
         const SizedBox(height: 12),
-        Text(
-          title.toUpperCase(),
-          style: const TextStyle(
-            color: kPrimaryRed,
-            fontSize: 13,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 3,
-          ),
-        ),
+        Text(title.toUpperCase(),
+            style: const TextStyle(color: kPrimaryRed, fontWeight: FontWeight.w800, letterSpacing: 3)),
         const SizedBox(height: 12),
-        Container(
-          height: 1.5,
-          margin: const EdgeInsets.symmetric(horizontal: 20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.transparent,
-                kPrimaryRed.withOpacity(0.9),
-                Colors.transparent,
-              ],
-            ),
-          ),
-        ),
+        Container(height: 1.5, margin: const EdgeInsets.symmetric(horizontal: 20),
+            decoration: BoxDecoration(
+                gradient: LinearGradient(colors: [Colors.transparent, kPrimaryRed, Colors.transparent]))),
       ],
     );
   }
