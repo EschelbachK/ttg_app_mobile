@@ -56,7 +56,6 @@ class SetRow extends ConsumerWidget {
               style: const TextStyle(color: Colors.white38, fontSize: 12),
             ),
           ),
-
           Expanded(
             child: Row(
               children: [
@@ -79,15 +78,10 @@ class SetRow extends ConsumerWidget {
               ],
             ),
           ),
-
           GestureDetector(
             onTap: () {
               HapticFeedback.mediumImpact();
-              final newCompleted = !isCompleted;
-              update(c: newCompleted);
-              if (newCompleted) {
-                ref.read(workoutProvider.notifier).startRestTimer(60);
-              }
+              update(c: !isCompleted);
             },
             child: Container(
               width: 30,
