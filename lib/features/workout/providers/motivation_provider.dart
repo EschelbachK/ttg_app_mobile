@@ -1,8 +1,7 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter/foundation.dart';
-
 import '../application/motivation_engine.dart';
 import '../application/motivation_state.dart';
 import '../domain/motivation/motivation_event.dart';
@@ -40,7 +39,7 @@ class MotivationNotifier extends ChangeNotifier {
 
     notifyListeners();
 
-    _timer = Timer(const Duration(seconds: 4), () {
+    _timer = Timer(const Duration(seconds: 6), () {
       state = state.copyWith(visible: false);
       notifyListeners();
     });
