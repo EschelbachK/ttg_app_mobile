@@ -8,11 +8,20 @@ class StreakWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      '🔥 ${motivator.streak.streakCount} Tage',
-      style: const TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.w600,
+    final count = motivator.streak.streakCount;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white10,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        '🔥 $count Tage',
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }
