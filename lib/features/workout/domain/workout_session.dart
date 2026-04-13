@@ -3,20 +3,24 @@ import 'workout_group.dart';
 
 class WorkoutSession {
   final String id;
+  final String? planId;
   final DateTime startedAt;
   final List<WorkoutGroup> groups;
 
   const WorkoutSession({
     required this.id,
+    this.planId,
     required this.startedAt,
     required this.groups,
   });
 
   WorkoutSession copyWith({
+    String? planId,
     List<WorkoutGroup>? groups,
   }) =>
       WorkoutSession(
         id: id,
+        planId: planId ?? this.planId,
         startedAt: startedAt,
         groups: groups ?? this.groups,
       );
