@@ -18,9 +18,10 @@ class WorkoutRedirectScreen extends ConsumerWidget {
       );
     }
 
-    final hasWorkout = state.session != null && !state.isFinished;
+    final isActiveWorkout =
+        state.session != null && !state.isFinished && !state.isPaused;
 
-    return hasWorkout
+    return isActiveWorkout
         ? const WorkoutActiveScreen()
         : const WorkoutStartScreen();
   }
