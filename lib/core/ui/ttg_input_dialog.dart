@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:ttg_app_mobile/core/ui/ttg_dialog_actions.dart';
 import '../theme/app_theme.dart';
 
 Future<void> showTTGInputDialog({
@@ -28,68 +29,45 @@ Future<void> showTTGInputDialog({
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600)),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(title,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600)),
+                ),
                 const SizedBox(height: 16),
                 TextField(
                   controller: controller,
                   autofocus: true,
                   style: const TextStyle(color: Colors.white),
                   cursorColor: AppTheme.primaryRed,
-                  onSubmitted: (v) {
-                    final text = v.trim();
-                    if (text.isEmpty) return;
-                    onSubmit(text);
-                    Navigator.pop(c);
-                  },
                   decoration: InputDecoration(
                     hintText: "Eingeben...",
-                    hintStyle:
-                    const TextStyle(color: Colors.white38),
+                    hintStyle: const TextStyle(color: Colors.white38),
                     enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(
-                          color: Colors.white.withOpacity(0.3)),
+                      borderSide:
+                      BorderSide(color: Colors.white.withOpacity(0.3)),
                     ),
                     focusedBorder: const UnderlineInputBorder(
-                      borderSide: BorderSide(
-                          color: AppTheme.primaryRed, width: 2),
+                      borderSide:
+                      BorderSide(color: AppTheme.primaryRed, width: 2),
                     ),
                   ),
                 ),
                 const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(c),
-                      child: const Text("Abbrechen",
-                          style:
-                          TextStyle(color: Colors.white70)),
-                    ),
-                    const SizedBox(width: 10),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryRed,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius:
-                          BorderRadius.circular(12),
-                        ),
-                      ),
-                      onPressed: () {
-                        final text = controller.text.trim();
-                        if (text.isEmpty) return;
-                        onSubmit(text);
-                        Navigator.pop(c);
-                      },
-                      child: Text(buttonText),
-                    ),
-                  ],
+                TTGDialogActions(
+                  cancelText: "Abbrechen",
+                  confirmText: buttonText,
+                  onCancel: () => Navigator.pop(c),
+                  onConfirm: () {
+                    final text = controller.text.trim();
+                    if (text.isEmpty) return;
+                    onSubmit(text);
+                    Navigator.pop(c);
+                  },
                 ),
               ],
             ),
