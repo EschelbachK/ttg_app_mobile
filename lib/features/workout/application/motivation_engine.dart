@@ -1,11 +1,11 @@
-import '../domain/motivation/motivation_message_builder.dart';
-import '../domain/motivation/motivation_rules.dart';
 import '../domain/workout_session.dart';
 import '../domain/streak_tracker.dart';
 import '../domain/motivation/motivation_event.dart';
 import '../domain/motivation/motivation_result.dart';
 import '../domain/motivation/motivation_type.dart';
 import '../domain/motivation/motivation_level.dart';
+import '../domain/motivation/motivation_message_builder.dart';
+import '../domain/motivation/motivation_rules.dart';
 
 class MotivationEngine {
   final StreakTracker streak = StreakTracker();
@@ -15,19 +15,21 @@ class MotivationEngine {
   }
 
   MotivationResult evaluate(MotivationEvent event) {
-    final reps = event.repsDiff ?? 0;
-    final weight = event.weightDiff ?? 0;
-
-    final isProgress = reps > 0 || weight > 0;
+    final hasProgress = event.hasProgress;
     final hasStreak = event.streakDays > 0;
 
-    final progressLevel =
-    isProgress ? MotivationRules.prLevel(reps, weight) : null;
+    final progressLevel = hasProgress
+        ? MotivationRules.prLevel(
+      event.repsDiff ?? 0,
+      event.weightDiff ?? 0,
+    )
+        : null;
 
-    final streakLevel =
-    hasStreak ? MotivationRules.streakLevel(event.streakDays) : null;
+    final streakLevel = hasStreak
+        ? MotivationRules.streakLevel(event.streakDays)
+        : null;
 
-    if (isProgress && hasStreak) {
+    if (hasProgress && hasStreak) {
       final combined =
           MotivationRules.priority(progressLevel!) +
               MotivationRules.priority(streakLevel!);
@@ -41,57 +43,25 @@ class MotivationEngine {
       return MotivationResult(
         type: MotivationType.pr,
         level: level,
-        message: _comboMessage(level),
+        message: "🔥 Progress + Streak kombiniert!",
       );
     }
 
-    if (event.isComeback) {
-      return MotivationResult(
-        type: MotivationType.comeback,
-        level: MotivationLevel.high,
-        message: MotivationMessageBuilder.build(
-          MotivationType.comeback,
-          MotivationLevel.high,
-        ),
-      );
-    }
-
-    if (event.totalWorkouts > 0 && event.totalWorkouts % 10 == 0) {
-      final level = event.totalWorkouts >= 50
-          ? MotivationLevel.extreme
-          : event.totalWorkouts >= 25
-          ? MotivationLevel.high
-          : MotivationLevel.medium;
-
-      return MotivationResult(
-        type: MotivationType.milestone,
-        level: level,
-        message: MotivationMessageBuilder.build(
-          MotivationType.milestone,
-          level,
-        ),
-      );
-    }
-
-    if (isProgress && progressLevel != null) {
+    if (hasProgress) {
       return MotivationResult(
         type: MotivationType.pr,
-        level: progressLevel,
+        level: progressLevel!,
         message: MotivationMessageBuilder.build(
-          MotivationType.pr,
-          progressLevel,
-        ),
+            MotivationType.pr, progressLevel),
       );
     }
 
-    if (hasStreak && streakLevel != null) {
+    if (hasStreak) {
       return MotivationResult(
         type: MotivationType.streak,
-        level: streakLevel,
+        level: streakLevel!,
         message: MotivationMessageBuilder.build(
-          MotivationType.streak,
-          streakLevel,
-        ),
+            MotivationType.streak, streakLevel),
       );
     }
 
@@ -99,22 +69,7 @@ class MotivationEngine {
       type: MotivationType.neutral,
       level: MotivationLevel.low,
       message: MotivationMessageBuilder.build(
-        MotivationType.neutral,
-        MotivationLevel.low,
-      ),
+          MotivationType.neutral, MotivationLevel.low),
     );
-  }
-
-  String _comboMessage(MotivationLevel level) {
-    switch (level) {
-      case MotivationLevel.extreme:
-        return "🚨 Serie läuft! Und du erreichst neue Levels!";
-      case MotivationLevel.high:
-        return "⚡ Serie läuft! Heute richtig stark!";
-      case MotivationLevel.medium:
-        return "Gute Serie! Bleib dran!";
-      case MotivationLevel.low:
-        return "Weiter!";
-    }
   }
 }
