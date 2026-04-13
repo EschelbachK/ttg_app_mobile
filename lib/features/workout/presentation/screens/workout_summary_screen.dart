@@ -74,7 +74,6 @@ class _WorkoutSummaryScreenState
             child: Column(
               children: [
                 const SizedBox(height: 30),
-
                 const Text(
                   'WORKOUT ÜBERSICHT',
                   style: TextStyle(
@@ -84,9 +83,7 @@ class _WorkoutSummaryScreenState
                     letterSpacing: 1.5,
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
                 if (message != null)
                   ScaleTransition(
                     scale: Tween(begin: 0.9, end: 1.0)
@@ -96,19 +93,15 @@ class _WorkoutSummaryScreenState
                     )),
                     child: _MotivationCard(message: message),
                   ),
-
                 const SizedBox(height: 14),
                 StreakWidget(motivator: motivation.engine),
                 const SizedBox(height: 28),
-
                 Expanded(
                   child: ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     children: [
                       _kpiRow(volume, avgWeight, reps, improving),
-
                       const SizedBox(height: 32),
-
                       const Center(
                         child: Text(
                           'FORTSCHRITT',
@@ -120,9 +113,7 @@ class _WorkoutSummaryScreenState
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 16),
-
                       AnimatedBuilder(
                         animation: _glow,
                         builder: (_, __) {
@@ -151,12 +142,10 @@ class _WorkoutSummaryScreenState
                           );
                         },
                       ),
-
                       const SizedBox(height: 40),
                     ],
                   ),
                 ),
-
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: AnimatedBuilder(
@@ -181,7 +170,10 @@ class _WorkoutSummaryScreenState
                           color: Colors.transparent,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(20),
-                            onTap: () => context.go('/workout'),
+                            onTap: () {
+                              ref.read(workoutProvider.notifier).reset();
+                              context.go('/workout');
+                            },
                             child: const Center(
                               child: Text(
                                 'Schließen',
