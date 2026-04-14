@@ -13,6 +13,7 @@ class WorkoutState {
   final MotivationState? motivation;
   final String? restMessage;
   final bool triggerFinishFlow;
+  final String? activeExerciseId;
 
   const WorkoutState({
     this.session,
@@ -24,6 +25,7 @@ class WorkoutState {
     this.motivation,
     this.restMessage,
     this.triggerFinishFlow = false,
+    this.activeExerciseId,
   });
 
   WorkoutState copyWith({
@@ -37,6 +39,7 @@ class WorkoutState {
     String? restMessage,
     bool clearRestMessage = false,
     bool? triggerFinishFlow,
+    String? activeExerciseId,
   }) {
     return WorkoutState(
       session: session ?? this.session,
@@ -48,6 +51,7 @@ class WorkoutState {
       motivation: motivation ?? this.motivation,
       restMessage: clearRestMessage ? null : (restMessage ?? this.restMessage),
       triggerFinishFlow: triggerFinishFlow ?? this.triggerFinishFlow,
+      activeExerciseId: activeExerciseId ?? this.activeExerciseId,
     );
   }
 

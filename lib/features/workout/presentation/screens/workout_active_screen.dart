@@ -23,7 +23,6 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
   late bool _showStartOverlay;
   bool _showFinishOverlay = false;
 
-  // 🔥 FIX: Message nur einmal anzeigen
   String? _activeRestMessage;
 
   @override
@@ -91,8 +90,8 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
       sum + e.sets.fold<double>(0, (s, x) => s + x.weight * x.reps),
     );
 
-    // 🔥 FIX: Message nur einmal übernehmen
-    if (state.restMessage != null && _activeRestMessage == null) {
+    // ✅ FIX: immer aktuelle Message übernehmen
+    if (state.restMessage != null) {
       _activeRestMessage = state.restMessage;
     }
 
@@ -116,14 +115,11 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
                       children: [
                         for (final g in s.groups) ...[
                           const SizedBox(height: 20),
-
                           _PremiumGroupHeader(
                             key: ValueKey('header_${g.name}'),
                             title: g.name,
                           ),
-
                           const SizedBox(height: 14),
-
                           ...g.exercises.map(
                                 (e) => Padding(
                               key: ValueKey('padding_${e.id}'),
@@ -133,9 +129,8 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
                                 exercise: e,
                               ),
                             ),
-                          ).toList(),
+                          ),
                         ],
-
                         const SizedBox(height: 120),
                       ],
                     ),
@@ -144,7 +139,6 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
                 SafeArea(
                   bottom: false,
                   child: _TopBar(
-                    volume: volume,
                     onBack: () => _exit(context),
                   ),
                 ),
@@ -159,7 +153,7 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
 
           if (ctrl.restSeconds > 0)
             _RestOverlay(
-              key: ValueKey('${ctrl.restSeconds}_$_activeRestMessage'),
+              key: ValueKey(ctrl.restSeconds),
               seconds: ctrl.restSeconds,
               onSkip: ctrl.stopRestTimer,
               message: _activeRestMessage,
@@ -177,8 +171,6 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
     );
   }
 }
-
-// ================= REST =================
 
 class _RestOverlay extends StatelessWidget {
   final int seconds;
@@ -359,13 +351,10 @@ class _RestOverlay extends StatelessWidget {
   }
 }
 
-// ================= TOPBAR =================
-
 class _TopBar extends StatelessWidget {
-  final double volume;
   final VoidCallback onBack;
 
-  const _TopBar({required this.volume, required this.onBack});
+  const _TopBar({required this.onBack});
 
   @override
   Widget build(BuildContext context) {
@@ -384,28 +373,28 @@ class _TopBar extends StatelessWidget {
               child: const Icon(Icons.arrow_back, color: Colors.white, size: 18),
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('WORKOUT', style: TextStyle(color: Colors.white54, fontSize: 12)),
-                const SizedBox(width: 8),
-                Container(width: 6, height: 2, color: kPrimaryRed),
-                const SizedBox(width: 8),
-                Text('${volume.toStringAsFixed(0)} KG',
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-              ],
+
+          const Spacer(),
+
+          const Text(
+            'WORKOUT',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.5,
             ),
           ),
+
+          const Spacer(),
+
+          // Dummy spacer damit es wirklich zentriert bleibt
           const SizedBox(width: 40),
         ],
       ),
     );
   }
 }
-
-// ================= HEADER =================
 
 class _PremiumGroupHeader extends StatelessWidget {
   final String title;
@@ -419,16 +408,34 @@ class _PremiumGroupHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(height: 1.5, margin: const EdgeInsets.symmetric(horizontal: 20),
-            decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [Colors.transparent, kPrimaryRed, Colors.transparent]))),
+        Container(
+          height: 1.5,
+          margin: const EdgeInsets.symmetric(horizontal: 20),
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.transparent, kPrimaryRed, Colors.transparent],
+            ),
+          ),
+        ),
         const SizedBox(height: 12),
-        Text(title.toUpperCase(),
-            style: const TextStyle(color: kPrimaryRed, fontWeight: FontWeight.w800, letterSpacing: 3)),
+        Text(
+          title.toUpperCase(),
+          style: const TextStyle(
+            color: kPrimaryRed,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 3,
+          ),
+        ),
         const SizedBox(height: 12),
-        Container(height: 1.5, margin: const EdgeInsets.symmetric(horizontal: 20),
-            decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [Colors.transparent, kPrimaryRed, Colors.transparent]))),
+        Container(
+          height: 1.5,
+          margin: const EdgeInsets.symmetric(horizontal: 20),
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.transparent, kPrimaryRed, Colors.transparent],
+            ),
+          ),
+        ),
       ],
     );
   }

@@ -70,128 +70,135 @@ class _WorkoutSummaryScreenState
       body: TtgBackground(
         child: FadeTransition(
           opacity: _fade,
-          child: SafeArea(
-            child: Column(
-              children: [
-                const SizedBox(height: 30),
-                const Text(
-                  'WORKOUT STATISTIK',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 30,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                if (message != null)
-                  ScaleTransition(
-                    scale: Tween(begin: 0.9, end: 1.0)
-                        .animate(CurvedAnimation(
-                      parent: _fade,
-                      curve: Curves.easeOut,
-                    )),
-                    child: _MotivationCard(message: message),
-                  ),
-                const SizedBox(height: 14),
-                StreakWidget(motivator: motivation.engine),
-                const SizedBox(height: 28),
-                Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    children: [
-                      _kpiRow(volume, avgWeight, reps, improving),
-                      const SizedBox(height: 32),
-                      const Center(
-                        child: Text(
-                          'FORTSCHRITT',
-                          style: TextStyle(
-                            color: Colors.white54,
-                            letterSpacing: 2,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
+          child: Stack(
+            children: [
+              SafeArea(
+                top: false,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 90),
+
+                    if (message != null)
+                      ScaleTransition(
+                        scale: Tween(begin: 0.9, end: 1.0)
+                            .animate(CurvedAnimation(
+                          parent: _fade,
+                          curve: Curves.easeOut,
+                        )),
+                        child: _MotivationCard(message: message),
                       ),
-                      const SizedBox(height: 16),
-                      AnimatedBuilder(
+
+                    const SizedBox(height: 14),
+                    StreakWidget(motivator: motivation.engine),
+                    const SizedBox(height: 28),
+
+                    Expanded(
+                      child: ListView(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        children: [
+                          _kpiRow(volume, avgWeight, reps, improving),
+                          const SizedBox(height: 32),
+                          const Center(
+                            child: Text(
+                              'FORTSCHRITT',
+                              style: TextStyle(
+                                color: Colors.white54,
+                                letterSpacing: 2,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          AnimatedBuilder(
+                            animation: _glow,
+                            builder: (_, __) {
+                              return Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(22),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: kPrimaryRed.withOpacity(
+                                          0.15 + _glow.value * 0.2),
+                                      blurRadius: 40,
+                                    )
+                                  ],
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.white.withOpacity(0.05),
+                                      Colors.white.withOpacity(0.02),
+                                    ],
+                                  ),
+                                ),
+                                child: SizedBox(
+                                  height: 300,
+                                  child: ProgressChart(history: history),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 40),
+                        ],
+                      ),
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: AnimatedBuilder(
                         animation: _glow,
                         builder: (_, __) {
                           return Container(
-                            padding: const EdgeInsets.all(14),
+                            height: 60,
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(22),
+                              borderRadius: BorderRadius.circular(20),
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFFF1A1A), Color(0xFFB30000)],
+                              ),
                               boxShadow: [
                                 BoxShadow(
                                   color: kPrimaryRed.withOpacity(
-                                      0.15 + _glow.value * 0.2),
-                                  blurRadius: 40,
+                                      0.4 + _glow.value * 0.4),
+                                  blurRadius: 30,
                                 )
                               ],
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.white.withOpacity(0.05),
-                                  Colors.white.withOpacity(0.02),
-                                ],
-                              ),
                             ),
-                            child: SizedBox(
-                              height: 300,
-                              child: ProgressChart(history: history),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(20),
+                                onTap: () {
+                                  ref.read(workoutProvider.notifier).reset();
+                                  context.go('/workout');
+                                },
+                                child: const Center(
+                                  child: Text(
+                                    'Schließen',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
                           );
                         },
                       ),
-                      const SizedBox(height: 40),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: AnimatedBuilder(
-                    animation: _glow,
-                    builder: (_, __) {
-                      return Container(
-                        height: 60,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFFF1A1A), Color(0xFFB30000)],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: kPrimaryRed.withOpacity(
-                                  0.4 + _glow.value * 0.4),
-                              blurRadius: 30,
-                            )
-                          ],
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(20),
-                            onTap: () {
-                              ref.read(workoutProvider.notifier).reset();
-                              context.go('/workout');
-                            },
-                            child: const Center(
-                              child: Text(
-                                'Schließen',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 16,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+              ),
+
+              /// 🔥 NEW TOP BAR
+              SafeArea(
+                bottom: false,
+                child: _SummaryTopBar(
+                  onBack: () => context.go('/workout'),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -284,6 +291,47 @@ class _WorkoutSummaryScreenState
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SummaryTopBar extends StatelessWidget {
+  final VoidCallback onBack;
+
+  const _SummaryTopBar({required this.onBack});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: onBack,
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.arrow_back,
+                  color: Colors.white, size: 18),
+            ),
+          ),
+          const Spacer(),
+          const Text(
+            'WORKOUT STATISTIK',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.5,
+            ),
+          ),
+          const Spacer(),
+          const SizedBox(width: 40),
         ],
       ),
     );

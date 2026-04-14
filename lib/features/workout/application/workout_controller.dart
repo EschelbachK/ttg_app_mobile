@@ -1,5 +1,3 @@
-// DEIN CODE 1:1 BEIBEHALTEN (nur RestMessage Fix integriert)
-
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ttg_app_mobile/features/dashboard/models/training_plan.dart';
@@ -65,7 +63,6 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     _restSeconds = seconds;
     _showRest = true;
 
-    // ✅ FIX: Message korrekt setzen
     state = state.copyWith(
       restMessage: message,
       clearRestMessage: false,
@@ -77,8 +74,6 @@ class WorkoutController extends StateNotifier<WorkoutState> {
         t.cancel();
         _restSeconds = 0;
         _showRest = false;
-
-        // ✅ FIX: Message wirklich löschen
         state = state.copyWith(clearRestMessage: true);
       }
       _emit();
@@ -89,8 +84,6 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     _restTimer?.cancel();
     _restSeconds = 0;
     _showRest = false;
-
-    // ✅ FIX: Message wirklich löschen
     state = state.copyWith(clearRestMessage: true);
     _emit();
   }
@@ -284,6 +277,9 @@ class WorkoutController extends StateNotifier<WorkoutState> {
       }
 
       final next = updated.groups[groupIndex + 1];
+      final nextExercise = next.exercises.first;
+
+      state = state.copyWith(activeExerciseId: nextExercise.id);
 
       startRestTimer(
         60,
@@ -294,6 +290,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     }
 
     if (completed == true) {
+      state = state.copyWith(activeExerciseId: exerciseId);
       startRestTimer(60);
     }
   }

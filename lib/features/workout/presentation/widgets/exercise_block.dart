@@ -52,7 +52,6 @@ class ExerciseBlock extends ConsumerWidget {
           if (sets.isNotEmpty)
             ...sets.asMap().entries.map((entry) {
               final set = entry.value;
-              if (set == null) return const SizedBox();
 
               return SetRow(
                 index: entry.key,
