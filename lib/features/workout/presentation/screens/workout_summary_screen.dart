@@ -75,7 +75,7 @@ class _WorkoutSummaryScreenState
               children: [
                 const SizedBox(height: 30),
                 const Text(
-                  'WORKOUT ÜBERSICHT',
+                  'WORKOUT STATISTIK',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 30,
