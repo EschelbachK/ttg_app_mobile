@@ -2,25 +2,27 @@ import 'package:dio/dio.dart';
 
 class DashboardApi {
   final Dio dio;
+
   DashboardApi(this.dio);
 
   List<dynamic> _extractList(dynamic data) {
     if (data is List) return data;
 
     if (data is Map) {
-      final content = data['content'];
-      if (content is List) return content;
-
-      if (data.values.any((v) => v is List)) {
-        return data.values.firstWhere((v) => v is List);
-      }
+      if (data['content'] is List) return data['content'];
+      final list = data.values.firstWhere(
+            (v) => v is List,
+        orElse: () => [],
+      );
+      return list is List ? list : [];
     }
 
     return [];
   }
 
-  Future<List<dynamic>> _getList(String path,
-      {Map<String, dynamic>? query}) async {
+  Future<List<dynamic>> _getList(String path, {
+    Map<String, dynamic>? query,
+  }) async {
     final res = await dio.get(path, queryParameters: query);
     return _extractList(res.data);
   }
@@ -111,5 +113,14 @@ class DashboardApi {
           'bodyRegion': bodyRegion,
           'sets': sets,
         },
+      );
+
+  Future<void> deleteExercise({
+    required String planId,
+    required String folderId,
+    required String exerciseId,
+  }) =>
+      dio.delete(
+        '/training-plans/$planId/folders/$folderId/exercises/$exerciseId',
       );
 }
