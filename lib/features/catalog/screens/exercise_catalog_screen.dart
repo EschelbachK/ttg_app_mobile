@@ -1,7 +1,9 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/theme/app_theme.dart';
+import '../../../core/ui/ttg_glow_border.dart';
 import '../state/exercise_catalog_provider.dart';
-import '../models/exercise_catalog_item.dart';
 
 class ExerciseCatalogScreen extends ConsumerWidget {
   const ExerciseCatalogScreen({super.key});
@@ -14,41 +16,135 @@ class ExerciseCatalogScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(exerciseCatalogProvider);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text("Exercises")),
-      body: async.when(
-        data: (items) => items.isEmpty
-            ? const Center(child: Text("No exercises found"))
-            : ListView.builder(
-          itemCount: items.length,
-          itemBuilder: (_, i) {
-            final e = items[i];
-            final img = _img(e.imageUrl);
-
-            return Card(
-              margin:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: ListTile(
-                leading: img.isNotEmpty
-                    ? Image.network(img,
-                    width: 40, height: 40, fit: BoxFit.cover)
-                    : const Icon(Icons.fitness_center),
-                title: Text(e.name,
-                    style: const TextStyle(fontWeight: FontWeight.w600)),
-                subtitle:
-                Text("${e.bodyRegion} • ${e.equipment}"),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Selected: ${e.name}")),
-                ),
-              ),
-            );
-          },
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: Image.asset(
+            "assets/images/dashboard_bg.png",
+            fit: BoxFit.cover,
+          ),
         ),
-        loading: () =>
-        const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text(e.toString())),
-      ),
+        Positioned.fill(
+          child: Container(color: Colors.black.withOpacity(.6)),
+        ),
+        Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: const Text("Übungen",
+                style: TextStyle(color: Colors.white)),
+          ),
+          body: async.when(
+            data: (items) => items.isEmpty
+                ? const Center(
+              child: Text("Keine Übungen",
+                  style: TextStyle(color: Colors.white54)),
+            )
+                : ListView.builder(
+              padding: const EdgeInsets.only(bottom: 100),
+              itemCount: items.length,
+              itemBuilder: (_, i) {
+                final e = items[i];
+                final img = _img(e.imageUrl);
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 20, vertical: 10),
+                  child: TTGGlowBorder(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(
+                            sigmaX: 12, sigmaY: 12),
+                        child: Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(.05),
+                            borderRadius:
+                            BorderRadius.circular(20),
+                            border: Border.all(
+                                color: Colors.white
+                                    .withOpacity(.08)),
+                          ),
+                          child: Row(
+                            children: [
+                              // IMAGE
+                              ClipRRect(
+                                borderRadius:
+                                BorderRadius.circular(12),
+                                child: img.isNotEmpty
+                                    ? Image.network(
+                                  img,
+                                  width: 50,
+                                  height: 50,
+                                  fit: BoxFit.cover,
+                                )
+                                    : Container(
+                                  width: 50,
+                                  height: 50,
+                                  color: Colors.black,
+                                  child: const Icon(
+                                      Icons
+                                          .fitness_center,
+                                      color: AppTheme
+                                          .primaryRed),
+                                ),
+                              ),
+
+                              const SizedBox(width: 14),
+
+                              // TEXT
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      e.name,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight:
+                                        FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      "${e.bodyRegion} • ${e.equipment}",
+                                      style: const TextStyle(
+                                          color:
+                                          Colors.white54,
+                                          fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              const Icon(
+                                Icons.chevron_right,
+                                color: Colors.white38,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            loading: () => const Center(
+                child: CircularProgressIndicator(
+                    color: AppTheme.primaryRed)),
+            error: (e, _) => Center(
+              child: Text(
+                e.toString(),
+                style: const TextStyle(color: Colors.red),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
