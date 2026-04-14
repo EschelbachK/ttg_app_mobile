@@ -5,7 +5,7 @@ import '../../providers/workout_provider.dart';
 
 const kPrimaryRed = Color(0xFFE10600);
 
-class SetRow extends ConsumerWidget {
+class SetRow extends ConsumerStatefulWidget {
   final int index;
   final String exerciseId;
   final String setId;
@@ -24,18 +24,36 @@ class SetRow extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SetRow> createState() => _SetRowState();
+}
+
+class _SetRowState extends ConsumerState<SetRow> {
+  bool _locked = false;
+
+  void _unlock() {
+    Future.delayed(const Duration(milliseconds: 200), () {
+      if (mounted) _locked = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final controller = ref.read(workoutProvider.notifier);
-    final isCompleted = completed == true;
+    final isCompleted = widget.completed == true;
 
     void update({double? w, int? r, bool? c}) {
+      if (_locked) return;
+      _locked = true;
+
       controller.updateSet(
-        exerciseId: exerciseId,
-        setId: setId,
-        weight: w ?? weight,
-        reps: r ?? reps,
-        completed: c ?? completed,
+        exerciseId: widget.exerciseId,
+        setId: widget.setId,
+        weight: w ?? widget.weight,
+        reps: r ?? widget.reps,
+        completed: c ?? widget.completed,
       );
+
+      _unlock();
     }
 
     return Container(
@@ -52,7 +70,7 @@ class SetRow extends ConsumerWidget {
           SizedBox(
             width: 24,
             child: Text(
-              '#${index + 1}',
+              '#${widget.index + 1}',
               style: const TextStyle(color: Colors.white38, fontSize: 12),
             ),
           ),
@@ -61,18 +79,18 @@ class SetRow extends ConsumerWidget {
               children: [
                 Expanded(
                   child: _Stepper(
-                    value: weight.toStringAsFixed(1),
+                    value: widget.weight.toStringAsFixed(1),
                     suffix: 'KG',
-                    onMinus: () => update(w: weight - 2.5),
-                    onPlus: () => update(w: weight + 2.5),
+                    onMinus: () => update(w: widget.weight - 2.5),
+                    onPlus: () => update(w: widget.weight + 2.5),
                   ),
                 ),
                 Expanded(
                   child: _Stepper(
-                    value: reps.toString(),
+                    value: widget.reps.toString(),
                     suffix: 'WDH',
-                    onMinus: () => update(r: reps - 1),
-                    onPlus: () => update(r: reps + 1),
+                    onMinus: () => update(r: widget.reps - 1),
+                    onPlus: () => update(r: widget.reps + 1),
                   ),
                 ),
               ],
@@ -80,6 +98,7 @@ class SetRow extends ConsumerWidget {
           ),
           GestureDetector(
             onTap: () {
+              if (_locked) return;
               HapticFeedback.mediumImpact();
               update(c: !isCompleted);
             },
@@ -121,40 +140,7 @@ class _Stepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _btn(Icons.remove, onMinus),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6),
-          child: Row(
-            children: [
-              Text(
-                value,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                suffix,
-                style: const TextStyle(
-                  color: kPrimaryRed,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-        _btn(Icons.add, onPlus),
-      ],
-    );
-  }
-
-  Widget _btn(IconData icon, VoidCallback onTap) {
-    return GestureDetector(
+    Widget btn(IconData icon, VoidCallback onTap) => GestureDetector(
       onTap: onTap,
       child: Container(
         width: 28,
@@ -165,6 +151,30 @@ class _Stepper extends StatelessWidget {
         ),
         child: Icon(icon, size: 14, color: Colors.white),
       ),
+    );
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        btn(Icons.remove, onMinus),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          child: Row(
+            children: [
+              Text(value,
+                  style: const TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.w600)),
+              const SizedBox(width: 4),
+              Text(suffix,
+                  style: const TextStyle(
+                      color: kPrimaryRed,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700)),
+            ],
+          ),
+        ),
+        btn(Icons.add, onPlus),
+      ],
     );
   }
 }
