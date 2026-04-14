@@ -15,6 +15,7 @@ import 'progression_engine.dart';
 import 'workout_mapper.dart';
 import 'workout_summary_mapper.dart';
 import '../../dashboard/state/dashboard_provider.dart';
+import 'rest_timer.dart';
 
 class WorkoutController extends StateNotifier<WorkoutState> {
   final WorkoutApiService api;
@@ -22,12 +23,10 @@ class WorkoutController extends StateNotifier<WorkoutState> {
   final MotivationNotifier motivator;
   final Ref ref;
 
-  Timer? _restTimer;
-  int _restSeconds = 0;
-  bool _showRest = false;
+  final RestTimer _rest = RestTimer();
 
-  int get restSeconds => _restSeconds;
-  bool get showRest => _showRest;
+  int get restSeconds => _rest.seconds;
+  bool get showRest => _rest.visible;
 
   WorkoutController(this.api, this.motivator, this.ref)
       : super(const WorkoutState());
@@ -35,9 +34,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
   void _emit() => state = state.copyWith();
 
   void reset() {
-    _restTimer?.cancel();
-    _restSeconds = 0;
-    _showRest = false;
+    _rest.stop(() {});
     state = const WorkoutState();
   }
 
@@ -59,33 +56,27 @@ class WorkoutController extends StateNotifier<WorkoutState> {
   }
 
   void startRestTimer(int seconds, {String? message}) {
-    _restTimer?.cancel();
-    _restSeconds = seconds;
-    _showRest = true;
-
     state = state.copyWith(
       restMessage: message,
       clearRestMessage: false,
     );
-    _emit();
 
-    _restTimer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (_restSeconds-- <= 0) {
-        t.cancel();
-        _restSeconds = 0;
-        _showRest = false;
+    _rest.start(
+      seconds: seconds,
+      onTick: _emit,
+      onDone: () {
         state = state.copyWith(clearRestMessage: true);
-      }
-      _emit();
-    });
+      },
+    );
+
+    _emit();
   }
 
   void stopRestTimer() {
-    _restTimer?.cancel();
-    _restSeconds = 0;
-    _showRest = false;
-    state = state.copyWith(clearRestMessage: true);
-    _emit();
+    _rest.stop(() {
+      state = state.copyWith(clearRestMessage: true);
+      _emit();
+    });
   }
 
   Future<void> startWorkout() async {
@@ -284,7 +275,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
       startRestTimer(
         60,
         message:
-        '🔥 ${groupAfter.name} abgeschlossen\n➡️ Nächste: ${next.name}',
+        '🔥 ${groupBefore.name} abgeschlossen\n➡️ Nächste: ${next.name}',
       );
       return;
     }
