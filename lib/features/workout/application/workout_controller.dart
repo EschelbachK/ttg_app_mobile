@@ -24,10 +24,9 @@ class WorkoutController extends StateNotifier<WorkoutState> {
 
   Timer? _restTimer;
   int _restSeconds = 0;
-  bool _showRest = false;
 
   int get restSeconds => _restSeconds;
-  bool get showRest => _showRest;
+  bool get showRest => _restSeconds > 0;
 
   WorkoutController(this.api, this.motivator, this.ref)
       : super(const WorkoutState());
@@ -37,7 +36,6 @@ class WorkoutController extends StateNotifier<WorkoutState> {
   void reset() {
     _restTimer?.cancel();
     _restSeconds = 0;
-    _showRest = false;
     state = const WorkoutState();
   }
 
@@ -61,10 +59,10 @@ class WorkoutController extends StateNotifier<WorkoutState> {
   void startRestTimer(int seconds, {String? message}) {
     _restTimer?.cancel();
     _restSeconds = seconds;
-    _showRest = true;
 
     state = state.copyWith(
       restMessage: message,
+      clearRestMessage: message == null,
     );
     _emit();
 
@@ -72,7 +70,6 @@ class WorkoutController extends StateNotifier<WorkoutState> {
       if (_restSeconds-- <= 0) {
         t.cancel();
         _restSeconds = 0;
-        _showRest = false;
         state = state.copyWith(restMessage: null);
       }
       _emit();
@@ -82,7 +79,6 @@ class WorkoutController extends StateNotifier<WorkoutState> {
   void stopRestTimer() {
     _restTimer?.cancel();
     _restSeconds = 0;
-    _showRest = false;
     state = state.copyWith(restMessage: null);
     _emit();
   }
@@ -175,7 +171,8 @@ class WorkoutController extends StateNotifier<WorkoutState> {
 
     final groups = s.groups.map((g) => g.copyWith(
       exercises: g.exercises.map((e) =>
-      e.id == exerciseId ? e.copyWith(sets: [...e.sets, set]) : e).toList(),
+      e.id == exerciseId ? e.copyWith(sets: [...e.sets, set]) : e)
+          .toList(),
     )).toList();
 
     state = state.copyWith(session: s.copyWith(groups: groups));
@@ -266,30 +263,36 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     final groupIndex = updated.groups.indexOf(groupAfter);
     final isLastGroup = groupIndex == updated.groups.length - 1;
 
+    // ✅ FIX: nur echter Übergang von >0 → 0
     final justFinishedGroup =
         remainingBefore > 0 && remainingAfter == 0;
 
+    // ✅ GRUPPE FERTIG → Timer + Message
     if (justFinishedGroup) {
-      if (isLastGroup) {
-        state = state.copyWith(triggerFinishFlow: true);
-        return;
-      }
-
-      final next = updated.groups[groupIndex + 1];
-      final nextExercise = next.exercises.first;
-
-      state = state.copyWith(activeExerciseId: nextExercise.id);
+      state = state.copyWith(
+        activeExerciseId: exerciseId,
+      );
 
       startRestTimer(
         60,
-        message:
-        '🔥 ${groupAfter.name} abgeschlossen\n➡️ Nächste: ${next.name}',
+        message: isLastGroup
+            ? '🔥 ${groupAfter.name} abgeschlossen\n🏁 Workout fertig'
+            : '🔥 ${groupAfter.name} abgeschlossen\n➡️ Nächste: ${updated.groups[groupIndex + 1].name}',
       );
+
+      if (isLastGroup) {
+        state = state.copyWith(triggerFinishFlow: true);
+      }
+
       return;
     }
 
-    if (completed == true) {
-      state = state.copyWith(activeExerciseId: exerciseId);
+    // ✅ NORMALE SETS → Timer ohne Message
+    if (completed == true && !justFinishedGroup) {
+      state = state.copyWith(
+        activeExerciseId: exerciseId,
+        restMessage: null,
+      );
       startRestTimer(60);
     }
   }

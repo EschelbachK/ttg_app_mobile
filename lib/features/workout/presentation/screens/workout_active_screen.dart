@@ -5,11 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/ui/ttg_background.dart';
 import '../../../../core/ui/ttg_leave_workout_dialog.dart';
 import '../../providers/workout_provider.dart';
-import '../../providers/motivation_provider.dart';
 import '../widgets/collapsible_exercise_block.dart';
 import '../widgets/workout_start_overlay.dart';
 import '../widgets/workout_finish_overlay.dart';
-import '../screens/workout_active_wrapper.dart' hide WorkoutActiveScreen;
 
 const kPrimaryRed = Color(0xFFE10600);
 
@@ -23,8 +21,6 @@ class WorkoutActiveScreen extends ConsumerStatefulWidget {
 class _State extends ConsumerState<WorkoutActiveScreen> {
   late bool _showStartOverlay;
   bool _showFinishOverlay = false;
-
-  String? _activeRestMessage;
 
   @override
   void initState() {
@@ -91,13 +87,9 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
       sum + e.sets.fold<double>(0, (s, x) => s + x.weight * x.reps),
     );
 
-    if (state.restMessage != null) {
-      _activeRestMessage = state.restMessage;
-    }
-
-    if (ctrl.restSeconds == 0) {
-      _activeRestMessage = null;
-    }
+    // ✅ FINAL FIX: kein Cache
+    final activeRestMessage =
+    ctrl.restSeconds > 0 ? state.restMessage : null;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -148,7 +140,8 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
 
           if (_showStartOverlay)
             WorkoutStartOverlay(
-              onFinish: () => setState(() => _showStartOverlay = false),
+              onFinish: () =>
+                  setState(() => _showStartOverlay = false),
             ),
 
           if (ctrl.restSeconds > 0)
@@ -156,7 +149,7 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
               key: ValueKey(ctrl.restSeconds),
               seconds: ctrl.restSeconds,
               onSkip: ctrl.stopRestTimer,
-              message: _activeRestMessage,
+              message: activeRestMessage,
             ),
 
           if (_showFinishOverlay)
@@ -283,6 +276,8 @@ class _RestOverlay extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 40),
+
+                // ✅ MESSAGE BLOCK IST WIEDER DA
                 if (message != null && message!.isNotEmpty)
                   Column(
                     children: [
@@ -373,9 +368,7 @@ class _TopBar extends StatelessWidget {
               child: const Icon(Icons.arrow_back, color: Colors.white, size: 18),
             ),
           ),
-
           const Spacer(),
-
           const Text(
             'WORKOUT',
             style: TextStyle(
@@ -385,9 +378,7 @@ class _TopBar extends StatelessWidget {
               letterSpacing: 1.5,
             ),
           ),
-
           const Spacer(),
-
           const SizedBox(width: 40),
         ],
       ),
