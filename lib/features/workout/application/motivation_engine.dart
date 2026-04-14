@@ -1,11 +1,11 @@
-import '../domain/workout_session.dart';
-import '../domain/streak_tracker.dart';
 import '../domain/motivation/motivation_event.dart';
-import '../domain/motivation/motivation_result.dart';
-import '../domain/motivation/motivation_type.dart';
 import '../domain/motivation/motivation_level.dart';
 import '../domain/motivation/motivation_message_builder.dart';
+import '../domain/motivation/motivation_result.dart';
 import '../domain/motivation/motivation_rules.dart';
+import '../domain/motivation/motivation_type.dart';
+import '../domain/streak_tracker.dart';
+import '../domain/workout_session.dart';
 
 class MotivationEngine {
   final StreakTracker streak = StreakTracker();
@@ -52,7 +52,9 @@ class MotivationEngine {
         type: MotivationType.pr,
         level: progressLevel!,
         message: MotivationMessageBuilder.build(
-            MotivationType.pr, progressLevel),
+          MotivationType.pr,
+          progressLevel,
+        ),
       );
     }
 
@@ -61,7 +63,9 @@ class MotivationEngine {
         type: MotivationType.streak,
         level: streakLevel!,
         message: MotivationMessageBuilder.build(
-            MotivationType.streak, streakLevel),
+          MotivationType.streak,
+          streakLevel,
+        ),
       );
     }
 
@@ -69,7 +73,9 @@ class MotivationEngine {
       type: MotivationType.neutral,
       level: MotivationLevel.low,
       message: MotivationMessageBuilder.build(
-          MotivationType.neutral, MotivationLevel.low),
+        MotivationType.neutral,
+        MotivationLevel.low,
+      ),
     );
   }
 }
