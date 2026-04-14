@@ -1,8 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
-import '../../../../core/ui/ttg_confirm_dialog.dart';
 import '../../../../core/ui/ttg_glow_border.dart';
+import '../../../../core/ui/ttg_number_picker_dialog.dart';
 import '../../models/exercise.dart';
 import '../../models/exercise_set.dart';
 
@@ -65,7 +65,7 @@ class _ExerciseTileState extends State<ExerciseTile> {
                           ),
                           const SizedBox(width: 8),
                           GestureDetector(
-                            onTap: _confirmDelete,
+                            onTap: () => widget.onDelete?.call(),
                             child: const Icon(Icons.close,
                                 color: Colors.white38),
                           ),
@@ -74,8 +74,6 @@ class _ExerciseTileState extends State<ExerciseTile> {
                     ),
                   ),
                   if (open) ...[
-                    _imagePreview(),
-                    const SizedBox(height: 12),
                     _headerRow(),
                     const SizedBox(height: 8),
                     _setList(e),
@@ -89,18 +87,6 @@ class _ExerciseTileState extends State<ExerciseTile> {
       ),
     );
   }
-
-  Widget _imagePreview() => Container(
-    height: 150,
-    margin: const EdgeInsets.symmetric(horizontal: 16),
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(16),
-      color: Colors.black.withOpacity(0.25),
-    ),
-    alignment: Alignment.center,
-    child: const Text("Übungsbild",
-        style: TextStyle(color: Colors.white38)),
-  );
 
   Widget _headerRow() => const Padding(
     padding: EdgeInsets.symmetric(horizontal: 16),
@@ -117,8 +103,8 @@ class _ExerciseTileState extends State<ExerciseTile> {
                     size: 18, color: Colors.white38))),
         Expanded(
             child: Center(
-                child: Icon(Icons.repeat,
-                    size: 18, color: Colors.white38))),
+                child:
+                Icon(Icons.repeat, size: 18, color: Colors.white38))),
       ],
     ),
   );
@@ -158,8 +144,8 @@ class _ExerciseTileState extends State<ExerciseTile> {
         children: [
           ReorderableDragStartListener(
             index: index,
-            child: const Icon(Icons.drag_indicator,
-                color: Colors.white38),
+            child:
+            const Icon(Icons.drag_indicator, color: Colors.white38),
           ),
           Expanded(
             child: Center(
@@ -170,11 +156,16 @@ class _ExerciseTileState extends State<ExerciseTile> {
           Expanded(
             child: Center(
               child: GestureDetector(
-                onTap: () => _editValue(
-                  "Gewicht",
-                  set.weight.toInt(),
-                      (v) => e.sets[index] =
-                      ExerciseSet(weight: v.toDouble(), reps: set.reps),
+                onTap: () => showTTGNumberPickerDialog(
+                  context: context,
+                  title: "Gewicht",
+                  initialValue: set.weight.toInt(),
+                  onSubmit: (v) {
+                    setState(() {
+                      e.sets[index] =
+                          ExerciseSet(weight: v.toDouble(), reps: set.reps);
+                    });
+                  },
                 ),
                 child: Text("${set.weight} kg",
                     style: const TextStyle(color: Colors.white)),
@@ -184,60 +175,21 @@ class _ExerciseTileState extends State<ExerciseTile> {
           Expanded(
             child: Center(
               child: GestureDetector(
-                onTap: () => _editValue(
-                  "Wdh",
-                  set.reps,
-                      (v) => e.sets[index] =
-                      ExerciseSet(weight: set.weight, reps: v),
+                onTap: () => showTTGNumberPickerDialog(
+                  context: context,
+                  title: "Wdh",
+                  initialValue: set.reps,
+                  onSubmit: (v) {
+                    setState(() {
+                      e.sets[index] =
+                          ExerciseSet(weight: set.weight, reps: v);
+                    });
+                  },
                 ),
                 child: Text("${set.reps}",
                     style: const TextStyle(color: Colors.white)),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmDelete() async {
-    if (widget.onDelete == null) return;
-
-    final confirmed = await showTTGConfirmDialog(
-      context: context,
-      title: "Übung löschen",
-      subtitle: "Wirklich löschen?",
-    );
-
-    if (confirmed) widget.onDelete!();
-  }
-
-  void _editValue(String title, int initial, Function(int) onSave) {
-    final c = TextEditingController(text: "$initial");
-
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        backgroundColor: const Color(0xFF1B1F23),
-        title: Text(title,
-            style: const TextStyle(color: Colors.white)),
-        content: TextField(
-          controller: c,
-          keyboardType: TextInputType.number,
-          style: const TextStyle(color: Colors.white),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Abbrechen"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final v = int.tryParse(c.text) ?? initial;
-              setState(() => onSave(v));
-              Navigator.pop(context);
-            },
-            child: const Text("OK"),
           ),
         ],
       ),
