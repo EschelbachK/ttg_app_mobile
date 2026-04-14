@@ -2,20 +2,19 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../application/motivation_engine.dart';
 import '../application/motivation_state.dart';
 import '../domain/motivation/motivation_event.dart';
 import '../domain/motivation/motivation_level.dart';
 import '../domain/workout_session.dart';
 
-final motivationProvider =
-ChangeNotifierProvider<MotivationNotifier>((ref) {
+final motivationProvider = ChangeNotifierProvider<MotivationNotifier>((ref) {
   return MotivationNotifier();
 });
 
 class MotivationNotifier extends ChangeNotifier {
   final MotivationEngine engine = MotivationEngine();
-
   MotivationState state = const MotivationState();
 
   Timer? _timer;

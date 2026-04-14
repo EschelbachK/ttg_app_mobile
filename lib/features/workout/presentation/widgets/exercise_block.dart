@@ -4,7 +4,6 @@ import '../../domain/workout_session.dart';
 import '../../providers/workout_provider.dart';
 import 'set_row.dart';
 import 'add_set_button.dart';
-import 'exercise_header.dart';
 
 const kPrimaryRed = Color(0xFFE10600);
 
@@ -30,7 +29,23 @@ class ExerciseBlock extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ExerciseHeader(title: exercise.name),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(width: 16, height: 2, color: kPrimaryRed),
+              const SizedBox(width: 6),
+              Text(
+                exercise.name,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Container(width: 16, height: 2, color: kPrimaryRed),
+            ],
+          ),
 
           const SizedBox(height: 12),
 

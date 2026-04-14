@@ -9,7 +9,7 @@ import '../../providers/motivation_provider.dart';
 import '../widgets/collapsible_exercise_block.dart';
 import '../widgets/workout_start_overlay.dart';
 import '../widgets/workout_finish_overlay.dart';
-import '../widgets/workout_group_list.dart';
+import '../screens/workout_active_wrapper.dart' hide WorkoutActiveScreen;
 
 const kPrimaryRed = Color(0xFFE10600);
 
@@ -110,7 +110,30 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
                   padding: const EdgeInsets.only(top: 90),
                   child: SafeArea(
                     top: false,
-                    child: WorkoutGroupList(groups: s.groups),
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      children: [
+                        for (final g in s.groups) ...[
+                          const SizedBox(height: 20),
+                          _PremiumGroupHeader(
+                            key: ValueKey('header_${g.name}'),
+                            title: g.name,
+                          ),
+                          const SizedBox(height: 14),
+                          ...g.exercises.map(
+                                (e) => Padding(
+                              key: ValueKey('padding_${e.id}'),
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: CollapsibleExerciseBlock(
+                                key: ValueKey('exercise_${e.id}'),
+                                exercise: e,
+                              ),
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 120),
+                      ],
+                    ),
                   ),
                 ),
                 SafeArea(
@@ -350,7 +373,9 @@ class _TopBar extends StatelessWidget {
               child: const Icon(Icons.arrow_back, color: Colors.white, size: 18),
             ),
           ),
+
           const Spacer(),
+
           const Text(
             'WORKOUT',
             style: TextStyle(
@@ -360,7 +385,9 @@ class _TopBar extends StatelessWidget {
               letterSpacing: 1.5,
             ),
           ),
+
           const Spacer(),
+
           const SizedBox(width: 40),
         ],
       ),

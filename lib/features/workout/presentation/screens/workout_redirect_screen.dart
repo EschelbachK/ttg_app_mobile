@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ttg_app_mobile/features/workout/presentation/screens/workout_active_wrapper.dart' hide WorkoutActiveScreen;
 import '../../providers/workout_provider.dart';
 import 'workout_active_screen.dart';
 import 'workout_start_screen.dart';

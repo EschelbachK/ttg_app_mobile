@@ -1,6 +1,6 @@
-import 'package:ttg_app_mobile/features/workout/domain/workout_session.dart';
-import 'package:ttg_app_mobile/features/workout/domain/progression_result.dart';
-import 'package:ttg_app_mobile/features/workout/domain/next_session_suggestion.dart';
+import '../domain/workout_session.dart';
+import '../domain/progression_result.dart';
+import '../domain/next_session_suggestion.dart';
 import 'motivation_state.dart';
 
 class WorkoutState {
@@ -8,10 +8,14 @@ class WorkoutState {
   final bool isLoading;
   final bool isFinished;
   final bool isPaused;
+
   final ProgressionResult? progression;
   final List<NextSessionSuggestion> suggestions;
   final MotivationState? motivation;
+
+  final int restSeconds;
   final String? restMessage;
+
   final bool triggerFinishFlow;
   final String? activeExerciseId;
 
@@ -23,6 +27,7 @@ class WorkoutState {
     this.progression,
     this.suggestions = const [],
     this.motivation,
+    this.restSeconds = 0,
     this.restMessage,
     this.triggerFinishFlow = false,
     this.activeExerciseId,
@@ -36,10 +41,11 @@ class WorkoutState {
     ProgressionResult? progression,
     List<NextSessionSuggestion>? suggestions,
     MotivationState? motivation,
-    Object? restMessage = _sentinel,
+    int? restSeconds,
+    String? restMessage,
     bool clearRestMessage = false,
     bool? triggerFinishFlow,
-    Object? activeExerciseId = _sentinel,
+    String? activeExerciseId,
   }) {
     return WorkoutState(
       session: session ?? this.session,
@@ -49,20 +55,15 @@ class WorkoutState {
       progression: progression ?? this.progression,
       suggestions: suggestions ?? this.suggestions,
       motivation: motivation ?? this.motivation,
+      restSeconds: restSeconds ?? this.restSeconds,
       restMessage: clearRestMessage
           ? null
-          : restMessage == _sentinel
-          ? this.restMessage
-          : restMessage as String?,
+          : (restMessage ?? this.restMessage),
       triggerFinishFlow: triggerFinishFlow ?? this.triggerFinishFlow,
-      activeExerciseId: activeExerciseId == _sentinel
-          ? this.activeExerciseId
-          : activeExerciseId as String?,
+      activeExerciseId: activeExerciseId ?? this.activeExerciseId,
     );
   }
 
   bool get hasActiveWorkout =>
       session != null && !isFinished && !isPaused;
 }
-
-const _sentinel = Object();
