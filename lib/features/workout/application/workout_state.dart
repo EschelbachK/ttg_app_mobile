@@ -35,6 +35,7 @@ class WorkoutState {
     List<NextSessionSuggestion>? suggestions,
     MotivationState? motivation,
     String? restMessage,
+    bool clearRestMessage = false,
     bool? triggerFinishFlow,
   }) {
     return WorkoutState(
@@ -45,7 +46,7 @@ class WorkoutState {
       progression: progression ?? this.progression,
       suggestions: suggestions ?? this.suggestions,
       motivation: motivation ?? this.motivation,
-      restMessage: restMessage ?? this.restMessage,
+      restMessage: clearRestMessage ? null : (restMessage ?? this.restMessage),
       triggerFinishFlow: triggerFinishFlow ?? this.triggerFinishFlow,
     );
   }
