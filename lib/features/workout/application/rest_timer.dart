@@ -1,38 +1,35 @@
 import 'dart:async';
+import 'dart:ui';
 
 class RestTimer {
   Timer? _timer;
-  int _seconds = 0;
-  bool _visible = false;
-
-  int get seconds => _seconds;
-  bool get visible => _visible;
 
   void start({
     required int seconds,
-    required void Function() onTick,
-    required void Function() onDone,
+    required void Function(int secondsLeft) onTick,
+    required VoidCallback onDone,
   }) {
     _timer?.cancel();
-    _seconds = seconds;
-    _visible = true;
+
+    int remaining = seconds;
 
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (_seconds-- <= 0) {
+      remaining--;
+
+      if (remaining <= 0) {
         t.cancel();
-        _seconds = 0;
-        _visible = false;
+        onTick(0);
         onDone();
+        return;
       }
-      onTick();
+
+      onTick(remaining);
     });
   }
 
-  void stop(void Function() onStop) {
+  void stop() {
     _timer?.cancel();
-    _seconds = 0;
-    _visible = false;
-    onStop();
+    _timer = null;
   }
 
   void dispose() {
