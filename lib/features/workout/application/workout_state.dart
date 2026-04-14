@@ -36,10 +36,10 @@ class WorkoutState {
     ProgressionResult? progression,
     List<NextSessionSuggestion>? suggestions,
     MotivationState? motivation,
-    String? restMessage,
+    Object? restMessage = _sentinel,
     bool clearRestMessage = false,
     bool? triggerFinishFlow,
-    String? activeExerciseId,
+    Object? activeExerciseId = _sentinel,
   }) {
     return WorkoutState(
       session: session ?? this.session,
@@ -49,12 +49,20 @@ class WorkoutState {
       progression: progression ?? this.progression,
       suggestions: suggestions ?? this.suggestions,
       motivation: motivation ?? this.motivation,
-      restMessage: clearRestMessage ? null : (restMessage ?? this.restMessage),
+      restMessage: clearRestMessage
+          ? null
+          : restMessage == _sentinel
+          ? this.restMessage
+          : restMessage as String?,
       triggerFinishFlow: triggerFinishFlow ?? this.triggerFinishFlow,
-      activeExerciseId: activeExerciseId ?? this.activeExerciseId,
+      activeExerciseId: activeExerciseId == _sentinel
+          ? this.activeExerciseId
+          : activeExerciseId as String?,
     );
   }
 
   bool get hasActiveWorkout =>
       session != null && !isFinished && !isPaused;
 }
+
+const _sentinel = Object();
