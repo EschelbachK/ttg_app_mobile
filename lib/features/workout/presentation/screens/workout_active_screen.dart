@@ -23,6 +23,9 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
   late bool _showStartOverlay;
   bool _showFinishOverlay = false;
 
+  // 🔥 FIX: Message nur einmal anzeigen
+  String? _activeRestMessage;
+
   @override
   void initState() {
     super.initState();
@@ -57,7 +60,6 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           setState(() => _showFinishOverlay = true);
-
           ref.read(workoutProvider.notifier).state =
               state.copyWith(triggerFinishFlow: false);
         }
@@ -75,9 +77,28 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
       );
     }
 
+    final completedMuscleNames = s.groups.where((g) {
+      return g.exercises.every(
+            (e) => e.sets.every((set) => set.completed == true),
+      );
+    }).map((g) => g.name).toList();
+
     final volume = s.groups
         .expand((g) => g.exercises)
-        .fold<double>(0, (sum, e) => sum + e.sets.fold<double>(0, (s, x) => s + x.weight * x.reps));
+        .fold<double>(
+      0,
+          (sum, e) =>
+      sum + e.sets.fold<double>(0, (s, x) => s + x.weight * x.reps),
+    );
+
+    // 🔥 FIX: Message nur einmal übernehmen
+    if (state.restMessage != null && _activeRestMessage == null) {
+      _activeRestMessage = state.restMessage;
+    }
+
+    if (ctrl.restSeconds == 0) {
+      _activeRestMessage = null;
+    }
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -95,13 +116,26 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
                       children: [
                         for (final g in s.groups) ...[
                           const SizedBox(height: 20),
-                          _PremiumGroupHeader(title: g.name),
+
+                          _PremiumGroupHeader(
+                            key: ValueKey('header_${g.name}'),
+                            title: g.name,
+                          ),
+
                           const SizedBox(height: 14),
-                          ...g.exercises.map((e) => Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: CollapsibleExerciseBlock(exercise: e),
-                          )),
+
+                          ...g.exercises.map(
+                                (e) => Padding(
+                              key: ValueKey('padding_${e.id}'),
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: CollapsibleExerciseBlock(
+                                key: ValueKey('exercise_${e.id}'),
+                                exercise: e,
+                              ),
+                            ),
+                          ).toList(),
                         ],
+
                         const SizedBox(height: 120),
                       ],
                     ),
@@ -125,15 +159,15 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
 
           if (ctrl.restSeconds > 0)
             _RestOverlay(
-              key: ValueKey('${ctrl.restSeconds}_${state.restMessage}'),
+              key: ValueKey('${ctrl.restSeconds}_$_activeRestMessage'),
               seconds: ctrl.restSeconds,
               onSkip: ctrl.stopRestTimer,
-              message: state.restMessage,
+              message: _activeRestMessage,
             ),
 
           if (_showFinishOverlay)
             WorkoutFinishOverlay(
-              message: '', // 🔥 FIX → kein groups param
+              completedMuscles: completedMuscleNames,
               onDone: () {
                 if (mounted) context.go('/workout/summary');
               },
@@ -145,8 +179,6 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
 }
 
 // ================= REST =================
-
-// NUR _RestOverlay ERSETZEN
 
 class _RestOverlay extends StatelessWidget {
   final int seconds;
@@ -248,9 +280,7 @@ class _RestOverlay extends StatelessWidget {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 28),
-
                 Text(
                   'TIPPEN ZUM ÜBERSPRINGEN',
                   style: TextStyle(
@@ -260,9 +290,7 @@ class _RestOverlay extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-
                 const SizedBox(height: 40),
-
                 if (message != null && message!.isNotEmpty)
                   Column(
                     children: [
@@ -290,17 +318,9 @@ class _RestOverlay extends StatelessWidget {
                           ],
                         ),
                       ),
-
                       const SizedBox(height: 12),
-
-                      Icon(
-                        Icons.keyboard_arrow_down,
-                        color: kPrimaryRed,
-                        size: 26,
-                      ),
-
+                      Icon(Icons.keyboard_arrow_down, color: kPrimaryRed, size: 26),
                       const SizedBox(height: 12),
-
                       Container(
                         margin: const EdgeInsets.symmetric(horizontal: 28),
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -390,7 +410,10 @@ class _TopBar extends StatelessWidget {
 class _PremiumGroupHeader extends StatelessWidget {
   final String title;
 
-  const _PremiumGroupHeader({required this.title});
+  const _PremiumGroupHeader({
+    super.key,
+    required this.title,
+  });
 
   @override
   Widget build(BuildContext context) {
