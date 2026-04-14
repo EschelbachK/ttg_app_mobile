@@ -7,7 +7,7 @@ import '../../../core/ui/ttg_glow_border.dart';
 import '../models/training_plan.dart';
 import '../state/dashboard_provider.dart';
 import '../widgets/exercise/exercise_selection_card.dart';
-import '../widgets/exercise/exercise_tile.dart';
+import 'package:ttg_app_mobile/features/dashboard/widgets/exercise/exercise_tile.dart';
 
 class MuscleGroupScreen extends ConsumerStatefulWidget {
   final String folderId;
@@ -184,13 +184,13 @@ class _MuscleGroupScreenState
                         await showTTGConfirmDialog(
                           context: context,
                           title: "Übung löschen",
-                          subtitle: "Wirklich löschen?",
+                          subtitle:
+                          "Wirklich löschen?",
                         );
                         if (!ok) return;
 
-                        ref
-                            .read(dashboardProvider.notifier)
-                            .removeExercise(
+                        ref.read(dashboardProvider.notifier).removeExercise(
+                          planId: widget.plan.id,
                           folderId: folder.id,
                           exerciseId: e.id,
                         );
