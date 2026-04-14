@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/workout_provider.dart';
+import 'set_stepper.dart';
 
 const kPrimaryRed = Color(0xFFE10600);
 
@@ -32,7 +33,17 @@ class _SetRowState extends ConsumerState<SetRow> {
 
   void _unlock() {
     Future.delayed(const Duration(milliseconds: 200), () {
-      if (mounted) _locked = false;
+      if (mounted) {
+        setState(() {
+          _locked = false;
+        });
+      }
+    });
+  }
+
+  void _lock() {
+    setState(() {
+      _locked = true;
     });
   }
 
@@ -43,7 +54,7 @@ class _SetRowState extends ConsumerState<SetRow> {
 
     void update({double? w, int? r, bool? c}) {
       if (_locked) return;
-      _locked = true;
+      _lock();
 
       controller.updateSet(
         exerciseId: widget.exerciseId,
@@ -78,7 +89,7 @@ class _SetRowState extends ConsumerState<SetRow> {
             child: Row(
               children: [
                 Expanded(
-                  child: _Stepper(
+                  child: SetStepper(
                     value: widget.weight.toStringAsFixed(1),
                     suffix: 'KG',
                     onMinus: () => update(w: widget.weight - 2.5),
@@ -86,7 +97,7 @@ class _SetRowState extends ConsumerState<SetRow> {
                   ),
                 ),
                 Expanded(
-                  child: _Stepper(
+                  child: SetStepper(
                     value: widget.reps.toString(),
                     suffix: 'WDH',
                     onMinus: () => update(r: widget.reps - 1),
@@ -121,60 +132,6 @@ class _SetRowState extends ConsumerState<SetRow> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _Stepper extends StatelessWidget {
-  final String value;
-  final String suffix;
-  final VoidCallback onMinus;
-  final VoidCallback onPlus;
-
-  const _Stepper({
-    required this.value,
-    required this.suffix,
-    required this.onMinus,
-    required this.onPlus,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    Widget btn(IconData icon, VoidCallback onTap) => GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 28,
-        height: 28,
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(icon, size: 14, color: Colors.white),
-      ),
-    );
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        btn(Icons.remove, onMinus),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6),
-          child: Row(
-            children: [
-              Text(value,
-                  style: const TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.w600)),
-              const SizedBox(width: 4),
-              Text(suffix,
-                  style: const TextStyle(
-                      color: kPrimaryRed,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700)),
-            ],
-          ),
-        ),
-        btn(Icons.add, onPlus),
-      ],
     );
   }
 }
