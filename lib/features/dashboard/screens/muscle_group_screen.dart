@@ -1,12 +1,13 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/ui/ttg_glow_border.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/ui/ttg_confirm_dialog.dart';
+import '../../../core/ui/ttg_glow_border.dart';
+import '../models/training_plan.dart';
 import '../state/dashboard_provider.dart';
 import '../widgets/exercise/exercise_selection_card.dart';
 import '../widgets/exercise/exercise_tile.dart';
-import '../models/training_plan.dart';
 
 class MuscleGroupScreen extends ConsumerStatefulWidget {
   final String folderId;
@@ -31,18 +32,22 @@ class _MuscleGroupScreenState
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(dashboardProvider);
-    final folder =
-    state.folders.firstWhere((f) => f.id == widget.folderId);
+    final folder = ref
+        .watch(dashboardProvider)
+        .folders
+        .firstWhere((f) => f.id == widget.folderId);
+
     final exercises = folder.exercises;
 
     return Stack(
       children: [
         Positioned.fill(
-            child: Image.asset("assets/images/dashboard_bg.png",
-                fit: BoxFit.cover)),
+          child: Image.asset("assets/images/dashboard_bg.png",
+              fit: BoxFit.cover),
+        ),
         Positioned.fill(
-            child: Container(color: Colors.black.withOpacity(.55))),
+          child: Container(color: Colors.black.withOpacity(.55)),
+        ),
         Scaffold(
           backgroundColor: Colors.transparent,
           appBar: AppBar(
@@ -72,12 +77,11 @@ class _MuscleGroupScreenState
                         ImageFilter.blur(sigmaX: 12, sigmaY: 12),
                         child: Container(
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.35),
+                            color: Colors.black.withOpacity(.35),
                             borderRadius:
                             BorderRadius.circular(22),
                             border: Border.all(
-                                color: Colors.white
-                                    .withOpacity(0.12)),
+                                color: Colors.white.withOpacity(.12)),
                           ),
                           child: Column(
                             children: [
@@ -98,12 +102,12 @@ class _MuscleGroupScreenState
                                           color: AppTheme.primaryRed
                                               .withOpacity(.15),
                                           borderRadius:
-                                          BorderRadius.circular(
-                                              8),
+                                          BorderRadius.circular(8),
                                         ),
                                         child: const Icon(Icons.add,
                                             size: 16,
-                                            color: AppTheme.primaryRed),
+                                            color:
+                                            AppTheme.primaryRed),
                                       ),
                                       const SizedBox(width: 12),
                                       const Expanded(
@@ -115,7 +119,6 @@ class _MuscleGroupScreenState
                                             fontSize: 15,
                                             fontWeight:
                                             FontWeight.w600,
-                                            letterSpacing: 0.3,
                                           ),
                                         ),
                                       ),
@@ -139,8 +142,8 @@ class _MuscleGroupScreenState
                                 child: open
                                     ? Padding(
                                   padding:
-                                  const EdgeInsets.fromLTRB(
-                                      0, 0, 0, 12),
+                                  const EdgeInsets.only(
+                                      bottom: 12),
                                   child:
                                   ExerciseSelectionCard(
                                     folderId: folder.id,
@@ -171,9 +174,29 @@ class _MuscleGroupScreenState
                   padding:
                   const EdgeInsets.only(bottom: 100),
                   itemCount: exercises.length,
-                  itemBuilder: (_, i) =>
-                      ExerciseTile(
-                          exercise: exercises[i]),
+                  itemBuilder: (_, i) {
+                    final e = exercises[i];
+
+                    return ExerciseTile(
+                      exercise: e,
+                      onDelete: () async {
+                        final ok =
+                        await showTTGConfirmDialog(
+                          context: context,
+                          title: "Übung löschen",
+                          subtitle: "Wirklich löschen?",
+                        );
+                        if (!ok) return;
+
+                        ref
+                            .read(dashboardProvider.notifier)
+                            .removeExercise(
+                          folderId: folder.id,
+                          exerciseId: e.id,
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
             ],
