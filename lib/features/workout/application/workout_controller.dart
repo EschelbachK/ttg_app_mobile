@@ -1,6 +1,6 @@
-import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ttg_app_mobile/features/dashboard/models/training_plan.dart';
+import 'package:ttg_app_mobile/features/workout/application/rest_timer.dart';
 import '../data/workout_api_service.dart';
 import '../domain/workout_session.dart';
 import '../domain/workout_group.dart';
@@ -15,7 +15,7 @@ import 'progression_engine.dart';
 import 'workout_mapper.dart';
 import 'workout_summary_mapper.dart';
 import '../../dashboard/state/dashboard_provider.dart';
-import 'rest_timer.dart';
+import 'workout_flow/workout_flow_handler.dart';
 
 class WorkoutController extends StateNotifier<WorkoutState> {
   final WorkoutApiService api;
@@ -24,6 +24,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
   final Ref ref;
 
   final RestTimer _rest = RestTimer();
+  final WorkoutFlowHandler _flow = WorkoutFlowHandler();
 
   int _restSeconds = 0;
   bool _showRest = false;
@@ -262,12 +263,26 @@ class WorkoutController extends StateNotifier<WorkoutState> {
 
     state = state.copyWith(session: updated);
 
-    _evaluateSetCompletion(
+    state = _flow.evaluateSetCompletion(
+      state: state,
       before: s,
       after: updated,
       exerciseId: exerciseId,
-      completed: completed,
+      onSetFocus: (id) {
+        state = state.copyWith(activeExerciseId: id);
+      },
+      startRestTimer: (seconds, message) {
+        startRestTimer(seconds, message: message);
+      },
+      triggerFinishFlow: () {
+        state = state.copyWith(triggerFinishFlow: true);
+      },
     );
+
+    if (completed == true) {
+      state = state.copyWith(activeExerciseId: exerciseId);
+      startRestTimer(60);
+    }
   }
 
   WorkoutSession _applySetUpdate(
@@ -298,70 +313,6 @@ class WorkoutController extends StateNotifier<WorkoutState> {
           }).toList(),
         );
       }).toList(),
-    );
-  }
-
-  void _evaluateSetCompletion({
-    required WorkoutSession before,
-    required WorkoutSession after,
-    required String exerciseId,
-    bool? completed,
-  }) {
-    final groupBefore = before.groups.firstWhere(
-          (g) => g.exercises.any((e) => e.id == exerciseId),
-    );
-
-    final groupAfter = after.groups.firstWhere(
-          (g) => g.exercises.any((e) => e.id == exerciseId),
-    );
-
-    final beforeRemaining = groupBefore.exercises
-        .expand((e) => e.sets)
-        .where((s) => s.completed != true)
-        .length;
-
-    final afterRemaining = groupAfter.exercises
-        .expand((e) => e.sets)
-        .where((s) => s.completed != true)
-        .length;
-
-    final groupIndex = after.groups.indexOf(groupAfter);
-    final isLastGroup = groupIndex == after.groups.length - 1;
-
-    final justFinishedGroup =
-        beforeRemaining > 0 && afterRemaining == 0;
-
-    if (justFinishedGroup) {
-      _handleGroupFinished(after, groupIndex, isLastGroup, groupBefore);
-      return;
-    }
-
-    if (completed == true) {
-      state = state.copyWith(activeExerciseId: exerciseId);
-      startRestTimer(60);
-    }
-  }
-
-  void _handleGroupFinished(
-      WorkoutSession session,
-      int groupIndex,
-      bool isLastGroup,
-      WorkoutGroup groupBefore,
-      ) {
-    if (isLastGroup) {
-      state = state.copyWith(triggerFinishFlow: true);
-      return;
-    }
-
-    final next = session.groups[groupIndex + 1];
-    final nextExercise = next.exercises.first;
-
-    state = state.copyWith(activeExerciseId: nextExercise.id);
-
-    startRestTimer(
-      60,
-      message:
-      '🔥 ${groupBefore.name} abgeschlossen\n➡️ Nächste: ${next.name}',
     );
   }
 
