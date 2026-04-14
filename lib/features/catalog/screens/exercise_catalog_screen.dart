@@ -1,6 +1,8 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/theme/app_theme.dart';
 import '../../../core/ui/ttg_glow_border.dart';
 import '../state/exercise_catalog_provider.dart';
@@ -14,6 +16,13 @@ class ExerciseCatalogScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+      ),
+    );
+
     final async = ref.watch(exerciseCatalogProvider);
 
     return Stack(
@@ -32,14 +41,18 @@ class ExerciseCatalogScreen extends ConsumerWidget {
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
-            title: const Text("Übungen",
-                style: TextStyle(color: Colors.white)),
+            title: const Text(
+              "Übungen",
+              style: TextStyle(color: Colors.white),
+            ),
           ),
           body: async.when(
             data: (items) => items.isEmpty
                 ? const Center(
-              child: Text("Keine Übungen",
-                  style: TextStyle(color: Colors.white54)),
+              child: Text(
+                "Keine Übungen",
+                style: TextStyle(color: Colors.white54),
+              ),
             )
                 : ListView.builder(
               padding: const EdgeInsets.only(bottom: 100),
@@ -64,12 +77,12 @@ class ExerciseCatalogScreen extends ConsumerWidget {
                             borderRadius:
                             BorderRadius.circular(20),
                             border: Border.all(
-                                color: Colors.white
-                                    .withOpacity(.08)),
+                              color:
+                              Colors.white.withOpacity(.08),
+                            ),
                           ),
                           child: Row(
                             children: [
-                              // IMAGE
                               ClipRRect(
                                 borderRadius:
                                 BorderRadius.circular(12),
@@ -85,16 +98,13 @@ class ExerciseCatalogScreen extends ConsumerWidget {
                                   height: 50,
                                   color: Colors.black,
                                   child: const Icon(
-                                      Icons
-                                          .fitness_center,
-                                      color: AppTheme
-                                          .primaryRed),
+                                    Icons.fitness_center,
+                                    color: AppTheme
+                                        .primaryRed,
+                                  ),
                                 ),
                               ),
-
                               const SizedBox(width: 14),
-
-                              // TEXT
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment:
@@ -102,7 +112,8 @@ class ExerciseCatalogScreen extends ConsumerWidget {
                                   children: [
                                     Text(
                                       e.name,
-                                      style: const TextStyle(
+                                      style:
+                                      const TextStyle(
                                         color: Colors.white,
                                         fontWeight:
                                         FontWeight.w600,
@@ -111,15 +122,16 @@ class ExerciseCatalogScreen extends ConsumerWidget {
                                     const SizedBox(height: 4),
                                     Text(
                                       "${e.bodyRegion} • ${e.equipment}",
-                                      style: const TextStyle(
-                                          color:
-                                          Colors.white54,
-                                          fontSize: 12),
+                                      style:
+                                      const TextStyle(
+                                        color:
+                                        Colors.white54,
+                                        fontSize: 12,
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
-
                               const Icon(
                                 Icons.chevron_right,
                                 color: Colors.white38,
@@ -134,8 +146,10 @@ class ExerciseCatalogScreen extends ConsumerWidget {
               },
             ),
             loading: () => const Center(
-                child: CircularProgressIndicator(
-                    color: AppTheme.primaryRed)),
+              child: CircularProgressIndicator(
+                color: AppTheme.primaryRed,
+              ),
+            ),
             error: (e, _) => Center(
               child: Text(
                 e.toString(),

@@ -3,9 +3,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
-
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/constants/body_regions.dart';
+import '../../../../core/ui/ttg_value_picker_dialog.dart';
 import '../../models/exercise.dart';
 import '../../models/exercise_set.dart';
 import '../../state/dashboard_provider.dart';
@@ -56,26 +56,38 @@ class _State extends ConsumerState<ExerciseSelectionCard> {
             children: [
               Expanded(
                 child: _field(
-                  "GEWICHT",
+                  "GEWICHT (KG)",
                   weight.toStringAsFixed(1),
-                      () => _double("Gewicht", weight, 500,
-                          (v) => setState(() => weight = v)),
+                      () => _double(
+                    "Gewicht",
+                    weight,
+                    500,
+                        (v) => setState(() => weight = v),
+                  ),
                 ),
               ),
               Expanded(
                 child: _field(
                   "WDH",
                   "$reps",
-                      () => _int("Wiederholungen", reps, 50,
-                          (v) => setState(() => reps = v)),
+                      () => _int(
+                    "Wiederholungen",
+                    reps,
+                    50,
+                        (v) => setState(() => reps = v),
+                  ),
                 ),
               ),
               Expanded(
                 child: _field(
                   "SÄTZE",
                   "$sets",
-                      () => _int("Sätze", sets, 20,
-                          (v) => setState(() => sets = v)),
+                      () => _int(
+                    "Sätze",
+                    sets,
+                    20,
+                        (v) => setState(() => sets = v),
+                  ),
                 ),
               ),
             ],
@@ -101,7 +113,6 @@ class _State extends ConsumerState<ExerciseSelectionCard> {
     );
   }
 
-  /// 🔥 FULLSCREEN + ALLE BEREICHE
   Future<void> _pickCategory() async {
     final result = await showModalBottomSheet<String>(
       context: context,
@@ -228,39 +239,23 @@ class _State extends ConsumerState<ExerciseSelectionCard> {
       );
 
   void _int(String title, int current, int max, Function(int) onSave) {
-    showModalBottomSheet(
+    showTTGValuePicker(
       context: context,
-      isScrollControlled: true,
-      builder: (_) => FractionallySizedBox(
-        heightFactor: 0.9,
-        child: TTGSelectionSheet<int>(
-          items: List.generate(max, (i) => i + 1),
-          title: (v) => v.toString(),
-          onSelect: (v) {
-            onSave(v);
-            Navigator.pop(context);
-          },
-        ),
-      ),
+      title: title,
+      initial: current.toDouble(),
+      allowDecimal: false,
+      onSubmit: (v) => onSave(v.toInt()),
     );
   }
 
   void _double(
       String title, double current, double max, Function(double) onSave) {
-    showModalBottomSheet(
+    showTTGValuePicker(
       context: context,
-      isScrollControlled: true,
-      builder: (_) => FractionallySizedBox(
-        heightFactor: 0.9,
-        child: TTGSelectionSheet<double>(
-          items: List.generate(200, (i) => i * 0.5),
-          title: (v) => v.toStringAsFixed(1),
-          onSelect: (v) {
-            onSave(v);
-            Navigator.pop(context);
-          },
-        ),
-      ),
+      title: title,
+      initial: current,
+      allowDecimal: true,
+      onSubmit: onSave,
     );
   }
 }
