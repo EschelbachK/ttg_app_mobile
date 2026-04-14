@@ -90,28 +90,27 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         .map<TrainingFolder>((e) => TrainingFolder.fromJson(e))
         .toList();
 
-    final foldersNested = await Future.wait([
-      ...plans,
-      ...archivedPlans
-    ].map((p) async {
-      final folderData = await api.getFolders(p.id);
-      return Future.wait(folderData.map((e) async {
-        final f = TrainingFolder.fromJson(e);
-        final ex =
-        await api.getExercises(planId: p.id, folderId: f.id);
-        return f.copyWith(
-          trainingPlanId: p.id,
-          exercises: ex
-              .map<Exercise>((x) => Exercise.fromJson(x))
-              .toList(),
-        );
-      }));
-    }));
+    final foldersNested = await Future.wait(
+      [...plans, ...archivedPlans].map((p) async {
+        final folderData = await api.getFolders(p.id);
+        return Future.wait(folderData.map((e) async {
+          final f = TrainingFolder.fromJson(e);
+          final ex = await api.getExercises(
+              planId: p.id, folderId: f.id);
+          return f.copyWith(
+            trainingPlanId: p.id,
+            exercises: ex
+                .map<Exercise>((x) => Exercise.fromJson(x))
+                .toList(),
+          );
+        }));
+      }),
+    );
 
     final allFolders = foldersNested
         .expand((e) => e)
-        .where((f) =>
-    !archivedFolders.any((a) => a.id == f.id))
+        .where(
+            (f) => !archivedFolders.any((a) => a.id == f.id))
         .toList();
 
     state = state.copyWith(
@@ -287,40 +286,22 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       String planId,
       Exercise exercise,
       ) async =>
-      _refresh(() => api.createExercise(
-        planId: planId,
-        folderId: folderId,
-        name: exercise.name,
-        bodyRegion: _mapBodyRegion(exercise.bodyRegion),
-        sets: exercise.sets
-            .map((s) => {
-          'weight': s.weight,
-          'repetitions': s.reps,
-        })
-            .toList(),
-      ));
+      _createExercise(folderId, planId, exercise);
 
-  void removeExercise({
+  Future<void> removeExercise({
+    required String planId,
     required String folderId,
     required String exerciseId,
-  }) {
-    final i = state.folders.indexWhere((f) => f.id == folderId);
-    if (i == -1) return;
-
-    final f = state.folders[i];
-
-    final updated = [...state.folders];
-    updated[i] = f.copyWith(
-      exercises:
-      f.exercises.where((e) => e.id != exerciseId).toList(),
-    );
-
-    state = state.copyWith(folders: updated);
-  }
+  }) async =>
+      _refresh(() => api.deleteExercise(
+        planId: planId,
+        folderId: folderId,
+        exerciseId: exerciseId,
+      ));
 
   String _mapBodyRegion(String category) {
     switch (category) {
-      case "Brustmuskulatur":
+      case "Brust":
         return "BRUST";
       case "Rücken":
         return "RUECKEN";
@@ -332,7 +313,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         return "BIZEPS";
       case "Trizeps":
         return "TRIZEPS";
-      case "Bauchmuskulatur":
+      case "Bauch":
         return "BAUCH";
       case "Nacken":
         return "NACKEN";
@@ -340,7 +321,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         return "UNTERARME";
       case "Cardio":
         return "CARDIO";
-      case "Ganzkörpertraining":
+      case "Ganzkörper":
         return "GANZKOERPER";
       default:
         return "GANZKOERPER";
