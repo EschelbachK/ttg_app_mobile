@@ -16,6 +16,8 @@ import 'workout_mapper.dart';
 import 'workout_summary_mapper.dart';
 import '../../dashboard/state/dashboard_provider.dart';
 import 'workout_flow/workout_flow_handler.dart';
+import 'factories/workout_session_factory.dart';
+import 'updaters/workout_session_updater.dart';
 
 class WorkoutController extends StateNotifier<WorkoutState> {
   final WorkoutApiService api;
@@ -293,53 +295,17 @@ class WorkoutController extends StateNotifier<WorkoutState> {
       int? reps,
       bool? completed,
       ) {
-    return s.copyWith(
-      groups: s.groups.map((g) {
-        return g.copyWith(
-          exercises: g.exercises.map((e) {
-            if (e.id != exerciseId) return e;
-
-            return e.copyWith(
-              sets: e.sets.map((x) {
-                if (x.id != setId) return x;
-
-                return x.copyWith(
-                  weight: weight ?? x.weight,
-                  reps: reps ?? x.reps,
-                  completed: completed ?? x.completed,
-                );
-              }).toList(),
-            );
-          }).toList(),
-        );
-      }).toList(),
+    return WorkoutSessionUpdater.updateSet(
+      session: s,
+      exerciseId: exerciseId,
+      setId: setId,
+      weight: weight,
+      reps: reps,
+      completed: completed,
     );
   }
 
   WorkoutSession _fallback() {
-    return WorkoutSession(
-      id: DateTime.now().toIso8601String(),
-      startedAt: DateTime.now(),
-      groups: [
-        WorkoutGroup(
-          name: 'Default',
-          order: 0,
-          exercises: [
-            ExerciseSession(
-              id: DateTime.now().toIso8601String(),
-              name: 'Exercise',
-              order: 0,
-              sets: [
-                SetLog(
-                  id: DateTime.now().millisecondsSinceEpoch.toString(),
-                  weight: 0,
-                  reps: 0,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
-    );
+    return WorkoutSessionFactory.createFallback();
   }
 }
