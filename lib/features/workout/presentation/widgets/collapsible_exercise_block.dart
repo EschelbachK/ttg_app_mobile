@@ -4,6 +4,7 @@ import '../../domain/workout_session.dart';
 import '../../providers/workout_provider.dart';
 import 'set_row.dart';
 import 'add_set_button.dart';
+import 'collapsible_exercise_header.dart';
 
 const kPrimaryRed = Color(0xFFE10600);
 
@@ -58,61 +59,11 @@ class _CollapsibleExerciseBlockState
       ),
       child: Column(
         children: [
-          GestureDetector(
-            onTap: () {
-              setState(() => _expanded = !_expanded);
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(14),
-              child: Row(
-                children: [
-                  Icon(
-                    _expanded
-                        ? Icons.keyboard_arrow_up
-                        : Icons.keyboard_arrow_down,
-                    color: Colors.white54,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(width: 12, height: 2, color: kPrimaryRed),
-                        const SizedBox(width: 6),
-                        Text(
-                          exercise.name,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Container(width: 12, height: 2, color: kPrimaryRed),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  if (allDone)
-                    Row(
-                      children: const [
-                        Icon(Icons.check, color: kPrimaryRed, size: 16),
-                        SizedBox(width: 4),
-                        Text(
-                          "Erledigt!",
-                          style: TextStyle(
-                            color: kPrimaryRed,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    )
-                  else
-                    const SizedBox(width: 60),
-                ],
-              ),
-            ),
+          CollapsibleExerciseHeader(
+            title: exercise.name,
+            expanded: _expanded,
+            allDone: allDone,
+            onTap: () => setState(() => _expanded = !_expanded),
           ),
           if (_expanded)
             Padding(
