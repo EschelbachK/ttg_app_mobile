@@ -200,8 +200,9 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       return folder;
     }).toList();
 
-    final sorted = [...updated]..sort((a, b) => a.order.compareTo(b.order));
-    state = state.copyWith(folders: sorted);
+    state = state.copyWith(
+        folders: [...updated]
+          ..sort((a, b) => a.order.compareTo(b.order)));
 
     try {
       await api.updateFolderOrder(f.id, target.order);
@@ -231,8 +232,9 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       return folder;
     }).toList();
 
-    final sorted = [...updated]..sort((a, b) => a.order.compareTo(b.order));
-    state = state.copyWith(folders: sorted);
+    state = state.copyWith(
+        folders: [...updated]
+          ..sort((a, b) => a.order.compareTo(b.order)));
 
     try {
       await api.updateFolderOrder(f.id, target.order);
@@ -272,6 +274,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         })
             .toList(),
       ));
+
   Future<void> importExercise(
       String folderId,
       String planId,
@@ -296,6 +299,24 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         })
             .toList(),
       ));
+
+  void removeExercise({
+    required String folderId,
+    required String exerciseId,
+  }) {
+    final i = state.folders.indexWhere((f) => f.id == folderId);
+    if (i == -1) return;
+
+    final f = state.folders[i];
+
+    final updated = [...state.folders];
+    updated[i] = f.copyWith(
+      exercises:
+      f.exercises.where((e) => e.id != exerciseId).toList(),
+    );
+
+    state = state.copyWith(folders: updated);
+  }
 
   String _mapBodyRegion(String category) {
     switch (category) {
