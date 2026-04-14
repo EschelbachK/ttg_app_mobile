@@ -1,127 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/constants/body_regions.dart';
 import '../../../catalog/state/exercise_catalog_provider.dart';
 import '../../../catalog/models/exercise_catalog_item.dart';
+import '../../../../core/ui/ttg_exercise_selection_sheet.dart';
 
 class ExerciseSelectSheet extends ConsumerWidget {
-
   final String category;
 
-  const ExerciseSelectSheet({
-    super.key,
-    required this.category,
-  });
-
-  String mapCategoryToBodyRegion(String category) {
-
-    switch (category.toLowerCase()) {
-
-      case "brustmuskulatur":
-        return "BRUST";
-
-      case "rücken":
-        return "RUECKEN";
-
-      case "beine":
-        return "BEINE";
-
-      case "schulter":
-      case "schultern":
-        return "SCHULTERN";
-
-      case "bizeps":
-        return "BIZEPS";
-
-      case "trizeps":
-        return "TRIZEPS";
-
-      case "bauchmuskulatur":
-        return "BAUCH";
-
-      case "nacken":
-        return "NACKEN";
-
-      case "unterarme":
-        return "UNTERARME";
-
-      case "cardio":
-        return "CARDIO";
-
-      case "ganzkörpertraining":
-        return "GANZKOERPER";
-
-      default:
-        return category.toUpperCase();
-    }
-  }
+  const ExerciseSelectSheet({super.key, required this.category});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final exercises = ref.watch(exerciseCatalogProvider);
 
-    final exercisesAsync = ref.watch(exerciseCatalogProvider);
+    return exercises.when(
+      data: (list) {
+        List<ExerciseCatalogItem> filtered;
 
-    final mappedCategory = mapCategoryToBodyRegion(category);
+        if (category == "Alle Bereiche") {
+          filtered = list;
+        } else {
+          final mapped = mapCategoryToBodyRegion(category);
+          filtered =
+              list.where((e) => e.bodyRegion == mapped).toList();
+        }
 
-    return Container(
-
-      height: 500,
-
-      decoration: const BoxDecoration(
-        color: Color(0xFF1B1F23),
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(16),
-        ),
+        return TTGExerciseSelectionSheet<ExerciseCatalogItem>(
+          items: filtered,
+          title: (e) => e.name,
+          subtitle: (e) => e.equipment,
+          onSelect: (e) => Navigator.pop(context, e.name),
+        );
+      },
+      loading: () => const SizedBox(
+        height: 500,
+        child: Center(child: CircularProgressIndicator()),
       ),
-
-      child: exercisesAsync.when(
-
-        data: (List<ExerciseCatalogItem> exercises) {
-
-          final filtered = exercises
-              .where((e) => e.bodyRegion == mappedCategory)
-              .toList();
-
-          return ListView.builder(
-
-            itemCount: filtered.length,
-
-            itemBuilder: (context, index) {
-
-              final exercise = filtered[index];
-
-              return ListTile(
-
-                title: Text(
-                  exercise.name,
-                  style: const TextStyle(color: Colors.white),
-                ),
-
-                subtitle: Text(
-                  exercise.equipment,
-                  style: const TextStyle(color: Colors.white54),
-                ),
-
-                trailing: const Icon(
-                  Icons.chevron_right,
-                  color: Colors.white38,
-                ),
-
-                onTap: () {
-
-                  Navigator.pop(context, exercise.name);
-
-                },
-              );
-            },
-          );
-        },
-
-        loading: () => const Center(
-          child: CircularProgressIndicator(),
-        ),
-
-        error: (e, _) => Center(
+      error: (e, _) => SizedBox(
+        height: 500,
+        child: Center(
           child: Text(
             "Fehler: $e",
             style: const TextStyle(color: Colors.white),

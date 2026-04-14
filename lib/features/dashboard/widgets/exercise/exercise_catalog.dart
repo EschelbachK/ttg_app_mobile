@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../screens/exercise_category_screen.dart';
 
 class ExerciseCatalog extends StatefulWidget {
-
   final String folderId;
   final String planId;
 
@@ -17,34 +17,32 @@ class ExerciseCatalog extends StatefulWidget {
 }
 
 class _ExerciseCatalogState extends State<ExerciseCatalog> {
-
   String search = "";
 
   final categories = [
-
-    "Bauchmuskulatur",
+    "Bauch",
     "Beine",
     "Bizeps",
-    "Brustmuskulatur",
+    "Brust",
     "Cardio",
-    "Ganzkörpertraining",
+    "Ganzkörper",
     "Rücken",
     "Schulter",
     "Trizeps"
-
   ];
+
+  IconData getCategoryIcon(String category) {
+    return PhosphorIcons.barbell(PhosphorIconsStyle.fill);
+  }
 
   @override
   Widget build(BuildContext context) {
-
     final filtered = categories
         .where((c) => c.toLowerCase().contains(search.toLowerCase()))
         .toList();
 
     return Scaffold(
-
       backgroundColor: const Color(0xFF0B0D10),
-
       appBar: AppBar(
         backgroundColor: const Color(0xFF0B0D10),
         elevation: 0,
@@ -53,106 +51,142 @@ class _ExerciseCatalogState extends State<ExerciseCatalog> {
           style: TextStyle(color: Colors.white),
         ),
       ),
-
       body: Column(
         children: [
-
-          /// SEARCH
+          /// 🔍 SEARCH
           Padding(
             padding: const EdgeInsets.all(16),
-
             child: TextField(
-
               style: const TextStyle(color: Colors.white),
-
               decoration: InputDecoration(
-
-                hintText: "Liste durchsuchen...",
+                hintText: "Kategorie suchen...",
                 hintStyle: const TextStyle(color: Colors.white38),
-
                 filled: true,
                 fillColor: const Color(0xFF1B1F23),
-
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide.none,
                 ),
               ),
-
-              onChanged: (v) {
-                setState(() {
-                  search = v;
-                });
-              },
+              onChanged: (v) => setState(() => search = v),
             ),
           ),
 
-          /// CATEGORY LIST
+          /// 🔥 GRID
           Expanded(
-
-            child: ListView.builder(
-
+            child: GridView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: filtered.length,
-
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 14,
+                crossAxisSpacing: 14,
+                childAspectRatio: 1.25, // kompakter
+              ),
               itemBuilder: (context, index) {
-
                 final category = filtered[index];
 
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 6,
-                  ),
-
-                  child: InkWell(
-
-                    borderRadius: BorderRadius.circular(12),
-
-                    hoverColor: const Color(0x22FF3B30),
-
-                    onTap: () {
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ExerciseCategoryScreen(
-                            category: category,
-                            folderId: widget.folderId,
-                            planId: widget.planId,
-                          ),
-                        ),
-                      );
-                    },
-
-                    child: Container(
-
-                      padding: const EdgeInsets.all(16),
-
-                      decoration: BoxDecoration(
-
-                        color: const Color(0xFF1B1F23),
-
-                        borderRadius: BorderRadius.circular(12),
-
-                        border: Border.all(
-                          color: const Color(0x22FFFFFF),
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ExerciseCategoryScreen(
+                          category: category,
+                          folderId: widget.folderId,
+                          planId: widget.planId,
                         ),
                       ),
-
-                      child: Text(
-                        category,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
+                    );
+                  },
+                  child: _PremiumCard(
+                    title: category,
+                    icon: getCategoryIcon(category),
                   ),
                 );
               },
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// 🔥 COMPACT PREMIUM CARD
+class _PremiumCard extends StatefulWidget {
+  final String title;
+  final IconData icon;
+
+  const _PremiumCard({
+    required this.title,
+    required this.icon,
+  });
+
+  @override
+  State<_PremiumCard> createState() => _PremiumCardState();
+}
+
+class _PremiumCardState extends State<_PremiumCard> {
+  bool pressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => setState(() => pressed = true),
+      onTapUp: (_) => setState(() => pressed = false),
+      onTapCancel: () => setState(() => pressed = false),
+      child: AnimatedScale(
+        duration: const Duration(milliseconds: 120),
+        scale: pressed ? 0.96 : 1,
+        child: Container(
+          /// 🔥 COMPACT PADDING
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withOpacity(0.06),
+                Colors.white.withOpacity(0.02),
+              ],
+            ),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.06),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              /// 🔥 ICON kleiner
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0x22FF3B30),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  widget.icon,
+                  color: const Color(0xFFFF3B30),
+                  size: 18,
+                ),
+              ),
+
+              const Spacer(),
+
+              /// 🔥 TEXT kompakter
+              Text(
+                widget.title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
