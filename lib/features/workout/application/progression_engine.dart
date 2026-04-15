@@ -57,6 +57,5 @@ class ProgressionEngine {
     return last < prev;
   }
 
-  double _volume(WorkoutHistoryEntry e) =>
-      e.weight * e.reps;
+  double _volume(WorkoutHistoryEntry e) => e.weight * e.reps;
 }

@@ -1,11 +1,12 @@
 import 'package:ttg_app_mobile/features/dashboard/models/training_plan.dart';
 import 'package:ttg_app_mobile/features/dashboard/models/training_folder.dart';
 import 'package:ttg_app_mobile/features/dashboard/models/exercise.dart';
-import 'package:ttg_app_mobile/features/workout/domain/workout_session.dart';
-import 'package:ttg_app_mobile/features/workout/domain/set_log.dart';
-import 'package:ttg_app_mobile/features/workout/domain/next_session_suggestion.dart';
-import '../../dashboard/models/exercise_set.dart';
+import 'package:ttg_app_mobile/features/dashboard/models/exercise_set.dart';
+
 import '../domain/workout_group.dart';
+import '../domain/workout_session.dart';
+import '../domain/set_log.dart';
+import '../domain/next_session_suggestion.dart';
 
 class WorkoutMapper {
   static List<WorkoutGroup> fromPlan({
@@ -70,9 +71,7 @@ class WorkoutMapper {
     ];
   }
 
-  static TrainingPlan fromSuggestions(
-      List<NextSessionSuggestion> suggestions,
-      ) {
+  static TrainingPlan fromSuggestions(List<NextSessionSuggestion> suggestions) {
     final now = DateTime.now();
 
     return TrainingPlan(
