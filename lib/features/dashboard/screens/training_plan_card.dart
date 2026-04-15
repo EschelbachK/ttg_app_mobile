@@ -4,20 +4,21 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/ui/ttg_confirm_dialog.dart';
 import '../../../core/ui/ttg_list_tile.dart';
 import '../../../core/ui/ttg_input_dialog.dart';
+import '../../../core/ui/ttg_popup_menu.dart';
 import '../models/training_plan.dart';
 import '../state/dashboard_provider.dart';
 import '../widgets/training_muscle_folder_tile.dart';
 
 class TrainingPlanCard extends ConsumerStatefulWidget {
   final TrainingPlan plan;
-  final bool initiallyExpanded;
-  final Function(bool)? onExpansionChanged;
+  final String? expandedPlanId;
+  final Function(String?) onExpand;
 
   const TrainingPlanCard({
     super.key,
     required this.plan,
-    this.initiallyExpanded = false,
-    this.onExpansionChanged,
+    required this.expandedPlanId,
+    required this.onExpand,
   });
 
   @override
@@ -25,18 +26,16 @@ class TrainingPlanCard extends ConsumerStatefulWidget {
 }
 
 class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
-  late bool open;
   static const w = 36.0;
 
-  @override
-  void initState() {
-    super.initState();
-    open = widget.initiallyExpanded;
-  }
+  bool get open => widget.expandedPlanId == widget.plan.id;
 
   void toggle() {
-    setState(() => open = !open);
-    widget.onExpansionChanged?.call(open);
+    if (open) {
+      widget.onExpand(null);
+    } else {
+      widget.onExpand(widget.plan.id);
+    }
   }
 
   void _confirmDelete() async {
@@ -72,13 +71,14 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
         child: Column(
           children: [
             GestureDetector(
+              behavior: HitTestBehavior.translucent,
               onTap: toggle,
               child: TTGListTile(
                 title: widget.plan.name,
-                leading:
-                const Icon(Icons.folder, color: AppTheme.primaryRed),
+                leading: const Icon(Icons.folder, color: AppTheme.primaryRed),
                 actions: [
                   const Spacer(),
+
                   SizedBox(
                     width: w,
                     child: IconButton(
@@ -96,7 +96,8 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                                 style: TextStyle(color: Colors.white)),
                             content: TextField(
                                 controller: controller,
-                                style: const TextStyle(color: Colors.white)),
+                                style:
+                                const TextStyle(color: Colors.white)),
                             actions: [
                               TextButton(
                                   onPressed: () => Navigator.pop(c),
@@ -117,6 +118,7 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                       },
                     ),
                   ),
+
                   SizedBox(
                     width: w,
                     child: IconButton(
@@ -128,11 +130,10 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                       onPressed: toggle,
                     ),
                   ),
+
                   SizedBox(
                     width: w,
-                    child: PopupMenuButton<String>(
-                      icon: const Icon(Icons.more_vert,
-                          color: Colors.white54),
+                    child: TTGPopupMenu(
                       onSelected: (v) {
                         final n =
                         ref.read(dashboardProvider.notifier);
@@ -142,17 +143,25 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                         if (v == 'archive') n.archivePlan(widget.plan.id);
                         if (v == 'delete') _confirmDelete();
                       },
-                      itemBuilder: (_) => [
-                        const PopupMenuItem(
+                      items: const [
+                        PopupMenuItem(
                           value: 'archive',
                           child: Text('Archivieren'),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'delete',
                           child: Text('Löschen'),
                         ),
-                        const PopupMenuDivider(),
-                        const PopupMenuItem(
+                        PopupMenuItem(
+                          enabled: false,
+                          padding: EdgeInsets.zero,
+                          height: 1,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                            child: _TTGMenuDivider(),
+                          ),
+                        ),
+                        PopupMenuItem(
                           value: 'up',
                           child: Row(
                             children: [
@@ -163,7 +172,7 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                             ],
                           ),
                         ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'down',
                           child: Row(
                             children: [
@@ -180,10 +189,12 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                 ],
               ),
             ),
+
             if (open)
               Column(
                 children: [
                   const SizedBox(height: 8),
+
                   ...groups.map((g) => TrainingFolderPlanTile(
                     folder: g,
                     plan: widget.plan,
@@ -203,19 +214,22 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                         .read(dashboardProvider.notifier)
                         .duplicateFolder(g.id),
                   )),
+
                   const SizedBox(height: 6),
+
                   GestureDetector(
                     onTap: () {
                       showTTGInputDialog(
                         context: context,
                         title: "Muskelgruppe hinzufügen",
                         buttonText: "Hinzufügen",
-                        onSubmit: (value) {
-                          if (value.trim().isNotEmpty) {
-                            ref
-                                .read(dashboardProvider.notifier)
-                                .addFolder(widget.plan.id, value.trim());
-                          }
+                        onSubmit: (value) async {
+                          if (value.trim().isEmpty) return;
+
+                          await ref
+                              .read(dashboardProvider.notifier)
+                              .addFolder(
+                              widget.plan.id, value.trim());
                         },
                       );
                     },
@@ -235,6 +249,34 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _TTGMenuDivider extends StatelessWidget {
+  const _TTGMenuDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Container(
+          height: 1,
+          color: Colors.white.withOpacity(0.15),
+        ),
+        Container(
+          height: 1,
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primaryRed,
+                blurRadius: 10,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
