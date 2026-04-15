@@ -14,7 +14,7 @@ class TTGPopupMenu extends StatelessWidget {
     this.icon = const Icon(
       Icons.more_vert,
       color: Colors.white54,
-      size: 18,
+      size: 22,
     ),
   });
 
@@ -41,17 +41,11 @@ class TTGPopupMenu extends StatelessWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-
-                    // Glas Look
                     color: Colors.black.withOpacity(0.55),
-
-                    // ✅ GLEICH WIE TRAINING PLAN CARD
                     border: Border.all(
                       color: Colors.white.withOpacity(0.2),
                       width: 1,
                     ),
-
-                    // Subtle Shadow (kein rot)
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.6),

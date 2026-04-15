@@ -19,11 +19,11 @@ class ExerciseSet {
   factory ExerciseSet.fromJson(Map<String, dynamic> json) =>
       ExerciseSet(
         weight: (json['weight'] as num?)?.toDouble() ?? 0,
-        reps: (json['reps'] as num?)?.toInt() ?? 0,
+        reps: (json['repetitions'] as num?)?.toInt() ?? 0,
       );
 
   Map<String, dynamic> toJson() => {
     'weight': weight,
-    'reps': reps,
+    'repetitions': reps,
   };
 }

@@ -35,42 +35,73 @@ class TrainingFolderPlanTile extends StatelessWidget {
         extra: plan,
       ),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(12),
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(14),
-          color: Colors.white.withOpacity(0.05),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          borderRadius: BorderRadius.circular(16),
+          color: Colors.white.withOpacity(0.04),
+          border: Border.all(color: Colors.white.withOpacity(0.08)),
         ),
-        child: TTGListTile(
-          title: folder.name,
-          leading: const Icon(
-            Icons.fitness_center,
-            color: AppTheme.primaryRed,
-          ),
-          actions: [
+        child: Row(
+          children: [
+
+            Container(
+              width: 10,
+              height: 10,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppTheme.primaryRed,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryRed.withOpacity(0.9),
+                    blurRadius: 12,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(width: 10),
+
+            Expanded(
+              child: Text(
+                folder.name,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.3,
+                  fontSize: 16, //
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+
             IconButton(
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
               icon: const Icon(
                 Icons.arrow_upward,
-                size: 16,
+                size: 20,
                 color: AppTheme.primaryRed,
               ),
               onPressed: onMoveUp,
             ),
+
             const SizedBox(width: 6),
+
             IconButton(
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
               icon: const Icon(
                 Icons.arrow_downward,
-                size: 16,
+                size: 20,
                 color: AppTheme.primaryRed,
               ),
               onPressed: onMoveDown,
             ),
+
             const SizedBox(width: 6),
+
             TTGPopupMenu(
               onSelected: (v) {
                 if (v == 'copy') onDuplicate();

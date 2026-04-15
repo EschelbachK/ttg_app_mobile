@@ -10,19 +10,22 @@ class DashboardApi {
 
     if (data is Map) {
       if (data['content'] is List) return data['content'];
+
       final list = data.values.firstWhere(
             (v) => v is List,
         orElse: () => [],
       );
+
       return list is List ? list : [];
     }
 
     return [];
   }
 
-  Future<List<dynamic>> _getList(String path, {
-    Map<String, dynamic>? query,
-  }) async {
+  Future<List<dynamic>> _getList(
+      String path, {
+        Map<String, dynamic>? query,
+      }) async {
     final res = await dio.get(path, queryParameters: query);
     return _extractList(res.data);
   }
@@ -48,11 +51,10 @@ class DashboardApi {
   Future<void> restoreTrainingPlan(String id) =>
       dio.patch('/training-plans/$id', data: {'archived': false});
 
-  // 🔥 NEU: Plan Order updaten
   Future<void> updateTrainingPlanOrder(String planId, int order) =>
       dio.patch(
         '/training-plans/$planId/order',
-        queryParameters: {'order': order},
+        data: {'order': order},
       );
 
   Future<List<dynamic>> getFolders(String planId) =>
@@ -68,7 +70,10 @@ class DashboardApi {
   }) =>
       dio.post(
         '/training-plans/$trainingPlanId/folders',
-        data: {'name': name, 'order': order},
+        data: {
+          'name': name,
+          'order': order,
+        },
       );
 
   Future<void> updateFolder({
@@ -83,7 +88,7 @@ class DashboardApi {
   Future<void> updateFolderOrder(String folderId, int order) =>
       dio.patch(
         '/training-folders/$folderId/order',
-        queryParameters: {'order': order},
+        data: {'order': order},
       );
 
   Future<void> deleteFolder(String folderId) =>
@@ -102,9 +107,7 @@ class DashboardApi {
     required String planId,
     required String folderId,
   }) =>
-      _getList(
-        '/training-plans/$planId/folders/$folderId/exercises',
-      );
+      _getList('/training-plans/$planId/folders/$folderId/exercises');
 
   Future<void> createExercise({
     required String planId,
