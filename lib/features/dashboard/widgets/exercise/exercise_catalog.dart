@@ -38,8 +38,11 @@ class _ExerciseCatalogState extends State<ExerciseCatalog> {
   @override
   Widget build(BuildContext context) {
     final filtered = categories
-        .where((c) => c.toLowerCase().contains(search.toLowerCase()))
-        .toList();
+        .where((c) =>
+        c.toLowerCase().contains(search.toLowerCase()))
+        .toList()
+      ..sort((a, b) =>
+          a.toLowerCase().compareTo(b.toLowerCase()));
 
     return Scaffold(
       backgroundColor: const Color(0xFF0B0D10),
@@ -53,35 +56,37 @@ class _ExerciseCatalogState extends State<ExerciseCatalog> {
       ),
       body: Column(
         children: [
-          /// 🔍 SEARCH
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: "Kategorie suchen...",
-                hintStyle: const TextStyle(color: Colors.white38),
+                hintStyle:
+                const TextStyle(color: Colors.white38),
                 filled: true,
                 fillColor: const Color(0xFF1B1F23),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius:
+                  BorderRadius.circular(14),
                   borderSide: BorderSide.none,
                 ),
               ),
-              onChanged: (v) => setState(() => search = v),
+              onChanged: (v) =>
+                  setState(() => search = v),
             ),
           ),
-
-          /// 🔥 GRID
           Expanded(
             child: GridView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 16),
               itemCount: filtered.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate:
+              const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 mainAxisSpacing: 14,
                 crossAxisSpacing: 14,
-                childAspectRatio: 1.25, // kompakter
+                childAspectRatio: 1.25,
               ),
               itemBuilder: (context, index) {
                 final category = filtered[index];
@@ -91,11 +96,12 @@ class _ExerciseCatalogState extends State<ExerciseCatalog> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => ExerciseCategoryScreen(
-                          category: category,
-                          folderId: widget.folderId,
-                          planId: widget.planId,
-                        ),
+                        builder: (_) =>
+                            ExerciseCategoryScreen(
+                              category: category,
+                              folderId: widget.folderId,
+                              planId: widget.planId,
+                            ),
                       ),
                     );
                   },
@@ -113,7 +119,6 @@ class _ExerciseCatalogState extends State<ExerciseCatalog> {
   }
 }
 
-/// 🔥 COMPACT PREMIUM CARD
 class _PremiumCard extends StatefulWidget {
   final String title;
   final IconData icon;
@@ -124,7 +129,8 @@ class _PremiumCard extends StatefulWidget {
   });
 
   @override
-  State<_PremiumCard> createState() => _PremiumCardState();
+  State<_PremiumCard> createState() =>
+      _PremiumCardState();
 }
 
 class _PremiumCardState extends State<_PremiumCard> {
@@ -135,13 +141,14 @@ class _PremiumCardState extends State<_PremiumCard> {
     return GestureDetector(
       onTapDown: (_) => setState(() => pressed = true),
       onTapUp: (_) => setState(() => pressed = false),
-      onTapCancel: () => setState(() => pressed = false),
+      onTapCancel: () =>
+          setState(() => pressed = false),
       child: AnimatedScale(
         duration: const Duration(milliseconds: 120),
         scale: pressed ? 0.96 : 1,
         child: Container(
-          /// 🔥 COMPACT PADDING
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          padding: const EdgeInsets.symmetric(
+              horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             gradient: LinearGradient(
@@ -157,14 +164,15 @@ class _PremiumCardState extends State<_PremiumCard> {
             ),
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
             children: [
-              /// 🔥 ICON kleiner
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: const Color(0x22FF3B30),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius:
+                  BorderRadius.circular(10),
                 ),
                 child: Icon(
                   widget.icon,
@@ -172,10 +180,7 @@ class _PremiumCardState extends State<_PremiumCard> {
                   size: 18,
                 ),
               ),
-
               const Spacer(),
-
-              /// 🔥 TEXT kompakter
               Text(
                 widget.title,
                 style: const TextStyle(

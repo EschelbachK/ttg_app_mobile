@@ -138,7 +138,7 @@ class _State extends ConsumerState<ExerciseSelectionCard> {
   Future<void> _pickExercise() async {
     if (category == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Bitte zuerst Kategorie wählen")),
+        const SnackBar(content: Text("Bitte zuerst eine Kategorie auswählen!")),
       );
       return;
     }
@@ -182,9 +182,72 @@ class _State extends ConsumerState<ExerciseSelectionCard> {
       e,
     );
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Übung hinzugefügt")),
+    final overlay = Overlay.of(context);
+
+    final entry = OverlayEntry(
+      builder: (context) => Positioned(
+        bottom: 100,
+        left: 20,
+        right: 20,
+        child: TweenAnimationBuilder(
+          duration: const Duration(milliseconds: 300),
+          tween: Tween(begin: 0.0, end: 1.0),
+          builder: (context, value, child) {
+            return Opacity(
+              opacity: value,
+              child: Transform.translate(
+                offset: Offset(0, 20 * (1 - value)),
+                child: child,
+              ),
+            );
+          },
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(.4),
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(.12),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppTheme.primaryRed.withOpacity(.4),
+                      blurRadius: 20,
+                    )
+                  ],
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.check,
+                        color: AppTheme.primaryRed, size: 18),
+                    SizedBox(width: 8),
+                    Text(
+                      "Übung hinzugefügt",
+                      style: TextStyle(
+                        color: AppTheme.primaryRed,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
+
+    overlay.insert(entry);
+
+    Future.delayed(const Duration(seconds: 2), () {
+      entry.remove();
+    });
 
     setState(() {
       category = null;

@@ -47,104 +47,114 @@ class ExerciseCatalogScreen extends ConsumerWidget {
             ),
           ),
           body: async.when(
-            data: (items) => items.isEmpty
-                ? const Center(
-              child: Text(
-                "Keine Übungen",
-                style: TextStyle(color: Colors.white54),
-              ),
-            )
-                : ListView.builder(
-              padding: const EdgeInsets.only(bottom: 100),
-              itemCount: items.length,
-              itemBuilder: (_, i) {
-                final e = items[i];
-                final img = _img(e.imageUrl);
+            data: (items) {
+              final sorted = [...items]
+                ..sort((a, b) =>
+                    a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 10),
-                  child: TTGGlowBorder(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(
-                            sigmaX: 12, sigmaY: 12),
-                        child: Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(.05),
-                            borderRadius:
-                            BorderRadius.circular(20),
-                            border: Border.all(
-                              color:
-                              Colors.white.withOpacity(.08),
+              return sorted.isEmpty
+                  ? const Center(
+                child: Text(
+                  "Keine Übungen",
+                  style: TextStyle(color: Colors.white54),
+                ),
+              )
+                  : ListView.builder(
+                padding: const EdgeInsets.only(bottom: 100),
+                itemCount: sorted.length,
+                itemBuilder: (_, i) {
+                  final e = sorted[i];
+                  final img = _img(e.imageUrl);
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 10),
+                    child: TTGGlowBorder(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(
+                              sigmaX: 12, sigmaY: 12),
+                          child: Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(.05),
+                              borderRadius:
+                              BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white
+                                    .withOpacity(.08),
+                              ),
                             ),
-                          ),
-                          child: Row(
-                            children: [
-                              ClipRRect(
-                                borderRadius:
-                                BorderRadius.circular(12),
-                                child: img.isNotEmpty
-                                    ? Image.network(
-                                  img,
-                                  width: 50,
-                                  height: 50,
-                                  fit: BoxFit.cover,
-                                )
-                                    : Container(
-                                  width: 50,
-                                  height: 50,
-                                  color: Colors.black,
-                                  child: const Icon(
-                                    Icons.fitness_center,
-                                    color: AppTheme
-                                        .primaryRed,
+                            child: Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius:
+                                  BorderRadius.circular(12),
+                                  child: img.isNotEmpty
+                                      ? Image.network(
+                                    img,
+                                    width: 50,
+                                    height: 50,
+                                    fit: BoxFit.cover,
+                                  )
+                                      : Container(
+                                    width: 50,
+                                    height: 50,
+                                    color: Colors.black,
+                                    child: const Icon(
+                                      Icons
+                                          .fitness_center,
+                                      color: AppTheme
+                                          .primaryRed,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment:
-                                  CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      e.name,
-                                      style:
-                                      const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight:
-                                        FontWeight.w600,
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment
+                                        .start,
+                                    children: [
+                                      Text(
+                                        e.name,
+                                        style:
+                                        const TextStyle(
+                                          color:
+                                          Colors.white,
+                                          fontWeight:
+                                          FontWeight
+                                              .w600,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      "${e.bodyRegion} • ${e.equipment}",
-                                      style:
-                                      const TextStyle(
-                                        color:
-                                        Colors.white54,
-                                        fontSize: 12,
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        "${e.bodyRegion} • ${e.equipment}",
+                                        style:
+                                        const TextStyle(
+                                          color:
+                                          Colors.white54,
+                                          fontSize: 12,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              const Icon(
-                                Icons.chevron_right,
-                                color: Colors.white38,
-                              ),
-                            ],
+                                const Icon(
+                                  Icons.chevron_right,
+                                  color: Colors.white38,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+              );
+            },
             loading: () => const Center(
               child: CircularProgressIndicator(
                 color: AppTheme.primaryRed,

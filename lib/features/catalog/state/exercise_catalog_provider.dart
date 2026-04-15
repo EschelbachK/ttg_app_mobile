@@ -7,5 +7,11 @@ final catalogApiProvider = Provider((ref) => CatalogApi());
 final exerciseCatalogProvider =
 FutureProvider<List<ExerciseCatalogItem>>((ref) async {
   final data = await ref.read(catalogApiProvider).fetchExercises();
-  return data.map((e) => ExerciseCatalogItem.fromJson(e)).toList();
+
+  final items =
+  data.map((e) => ExerciseCatalogItem.fromJson(e)).toList()
+    ..sort((a, b) =>
+        a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+
+  return items;
 });

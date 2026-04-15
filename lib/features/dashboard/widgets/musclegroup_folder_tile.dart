@@ -14,6 +14,7 @@ class TrainingFolderPlanTile extends StatelessWidget {
   final VoidCallback onMoveDown;
   final VoidCallback onArchive;
   final VoidCallback onDuplicate;
+  final VoidCallback onRename;
 
   const TrainingFolderPlanTile({
     super.key,
@@ -24,6 +25,7 @@ class TrainingFolderPlanTile extends StatelessWidget {
     required this.onMoveDown,
     required this.onArchive,
     required this.onDuplicate,
+    required this.onRename,
   });
 
   @override
@@ -44,7 +46,6 @@ class TrainingFolderPlanTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-
             Container(
               width: 10,
               height: 10,
@@ -60,9 +61,7 @@ class TrainingFolderPlanTile extends StatelessWidget {
                 ],
               ),
             ),
-
             const SizedBox(width: 10),
-
             Expanded(
               child: Text(
                 folder.name,
@@ -70,62 +69,141 @@ class TrainingFolderPlanTile extends StatelessWidget {
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.3,
-                  fontSize: 16, //
+                  fontSize: 16,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-
-            IconButton(
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              icon: const Icon(
-                Icons.arrow_upward,
-                size: 20,
-                color: AppTheme.primaryRed,
-              ),
-              onPressed: onMoveUp,
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                GestureDetector(
+                  onTap: onMoveUp,
+                  child: const Icon(
+                    Icons.arrow_upward,
+                    size: 18,
+                    color: AppTheme.primaryRed,
+                  ),
+                ),
+                const SizedBox(width: 15),
+                GestureDetector(
+                  onTap: onMoveDown,
+                  child: const Icon(
+                    Icons.arrow_downward,
+                    size: 18,
+                    color: AppTheme.primaryRed,
+                  ),
+                ),
+              ],
             ),
-
-            const SizedBox(width: 6),
-
-            IconButton(
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              icon: const Icon(
-                Icons.arrow_downward,
-                size: 20,
-                color: AppTheme.primaryRed,
-              ),
-              onPressed: onMoveDown,
-            ),
-
-            const SizedBox(width: 6),
-
+            const SizedBox(width: 4),
             TTGPopupMenu(
               onSelected: (v) {
+                if (v == 'rename') onRename();
                 if (v == 'copy') onDuplicate();
                 if (v == 'archive') onArchive();
                 if (v == 'delete') onDelete();
               },
               items: const [
                 PopupMenuItem(
+                  value: 'rename',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit, size: 18, color: AppTheme.primaryRed),
+                      SizedBox(width: 10),
+                      Text(
+                        'Umbenennen',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
                   value: 'copy',
-                  child: Text('Kopieren'),
+                  child: Row(
+                    children: [
+                      Icon(Icons.copy, size: 18, color: AppTheme.primaryRed),
+                      SizedBox(width: 10),
+                      Text(
+                        'Kopieren',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  enabled: false,
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  height: 14,
+                  child: _TTGGlowDivider(),
                 ),
                 PopupMenuItem(
                   value: 'archive',
-                  child: Text('Archivieren'),
+                  child: Row(
+                    children: [
+                      Icon(Icons.archive_outlined,
+                          size: 18, color: AppTheme.primaryRed),
+                      SizedBox(width: 10),
+                      Text(
+                        'Archivieren',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
                 ),
                 PopupMenuItem(
                   value: 'delete',
-                  child: Text('Löschen'),
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete_outline,
+                          size: 18, color: AppTheme.primaryRed),
+                      SizedBox(width: 10),
+                      Text(
+                        'Löschen',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _TTGGlowDivider extends StatelessWidget {
+  const _TTGGlowDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Container(
+          height: 1,
+          color: Colors.redAccent.withOpacity(0.6),
+        ),
+        Container(
+          height: 2,
+          decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primaryRed.withOpacity(1),
+                blurRadius: 20,
+                spreadRadius: 3,
+              ),
+              BoxShadow(
+                color: AppTheme.primaryRed.withOpacity(0.8),
+                blurRadius: 40,
+                spreadRadius: 6,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

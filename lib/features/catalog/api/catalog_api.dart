@@ -14,7 +14,15 @@ class CatalogApi {
       throw Exception("Request failed: ${res.statusCode}");
     }
 
-    return jsonDecode(res.body) as List;
+    final list = jsonDecode(res.body) as List;
+
+    list.sort((a, b) {
+      final aName = (a["name"] ?? "").toString().toLowerCase();
+      final bName = (b["name"] ?? "").toString().toLowerCase();
+      return aName.compareTo(bName);
+    });
+
+    return list;
   }
 
   Future<List<dynamic>> fetchExercises() => _get("/all");

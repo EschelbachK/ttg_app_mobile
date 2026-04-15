@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/ui/ttg_confirm_dialog.dart';
-import '../../../core/ui/ttg_list_tile.dart';
 import '../../../core/ui/ttg_input_dialog.dart';
 import '../../../core/ui/ttg_popup_menu.dart';
 import '../models/training_plan.dart';
@@ -73,118 +72,141 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
             GestureDetector(
               behavior: HitTestBehavior.translucent,
               onTap: toggle,
-              child: TTGListTile(
-                title: widget.plan.name,
-                leading: const Icon(Icons.folder, color: AppTheme.primaryRed),
-                actions: [
-                  const Spacer(),
+              child: Row(
+                children: [
+                  const Icon(Icons.folder, color: AppTheme.primaryRed),
+                  const SizedBox(width: 10),
 
-                  SizedBox(
-                    width: w,
-                    child: IconButton(
-                      icon: const Icon(Icons.edit,
-                          size: 18, color: Colors.white54),
-                      onPressed: () async {
-                        final controller =
-                        TextEditingController(text: widget.plan.name);
-
-                        final result = await showDialog<String>(
-                          context: context,
-                          builder: (c) => AlertDialog(
-                            backgroundColor: Colors.black,
-                            title: const Text("Umbenennen",
-                                style: TextStyle(color: Colors.white)),
-                            content: TextField(
-                                controller: controller,
-                                style:
-                                const TextStyle(color: Colors.white)),
-                            actions: [
-                              TextButton(
-                                  onPressed: () => Navigator.pop(c),
-                                  child: const Text("Abbrechen")),
-                              TextButton(
-                                  onPressed: () =>
-                                      Navigator.pop(c, controller.text),
-                                  child: const Text("Speichern")),
-                            ],
-                          ),
-                        );
-
-                        if (result != null && result.trim().isNotEmpty) {
-                          ref
-                              .read(dashboardProvider.notifier)
-                              .renamePlan(widget.plan.id, result.trim());
-                        }
-                      },
-                    ),
-                  ),
-
-                  SizedBox(
-                    width: w,
-                    child: IconButton(
-                      icon: AnimatedRotation(
-                        turns: open ? .5 : 0,
-                        duration: const Duration(milliseconds: 180),
-                        child: const Icon(Icons.keyboard_arrow_down),
+                  Expanded(
+                    child: Text(
+                      widget.plan.name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
                       ),
-                      onPressed: toggle,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
 
-                  SizedBox(
-                    width: w,
-                    child: TTGPopupMenu(
-                      onSelected: (v) {
-                        final n =
-                        ref.read(dashboardProvider.notifier);
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: w,
+                        child: IconButton(
+                          icon: const Icon(Icons.edit,
+                              size: 18, color: Colors.white54),
+                          onPressed: () {
+                            showTTGInputDialog(
+                              context: context,
+                              title: "Plan umbenennen",
+                              buttonText: "Speichern",
+                              initialValue: widget.plan.name,
+                              onSubmit: (value) {
+                                ref
+                                    .read(dashboardProvider.notifier)
+                                    .renamePlan(widget.plan.id, value);
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                      SizedBox(
+                        width: w,
+                        child: IconButton(
+                          icon: AnimatedRotation(
+                            turns: open ? .5 : 0,
+                            duration: const Duration(milliseconds: 180),
+                            child: const Icon(
+                              Icons.keyboard_arrow_down,
+                              color: Colors.white54,
+                            ),
+                          ),
+                          onPressed: toggle,
+                        ),
+                      ),
+                      SizedBox(
+                        width: w,
+                        child: TTGPopupMenu(
+                          onSelected: (v) {
+                            final n =
+                            ref.read(dashboardProvider.notifier);
 
-                        if (v == 'up') n.movePlanUp(widget.plan.id);
-                        if (v == 'down') n.movePlanDown(widget.plan.id);
-                        if (v == 'archive') n.archivePlan(widget.plan.id);
-                        if (v == 'delete') _confirmDelete();
-                      },
-                      items: const [
-                        PopupMenuItem(
-                          value: 'archive',
-                          child: Text('Archivieren'),
+                            if (v == 'archive')
+                              n.archivePlan(widget.plan.id);
+                            if (v == 'delete') _confirmDelete();
+                            if (v == 'up')
+                              n.movePlanUp(widget.plan.id);
+                            if (v == 'down')
+                              n.movePlanDown(widget.plan.id);
+                          },
+                          items: const [
+                            PopupMenuItem(
+                              value: 'archive',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.archive_outlined,
+                                      size: 18,
+                                      color: AppTheme.primaryRed),
+                                  SizedBox(width: 10),
+                                  Text('Archivieren',
+                                      style: TextStyle(
+                                          color: Colors.white)),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem(
+                              value: 'delete',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.delete_outline,
+                                      size: 18,
+                                      color: AppTheme.primaryRed),
+                                  SizedBox(width: 10),
+                                  Text('Löschen',
+                                      style: TextStyle(
+                                          color: Colors.white)),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem(
+                              enabled: false,
+                              padding:
+                              EdgeInsets.symmetric(horizontal: 12),
+                              height: 14,
+                              child: _TTGMenuDivider(),
+                            ),
+                            PopupMenuItem(
+                              value: 'up',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.arrow_upward,
+                                      color: AppTheme.primaryRed),
+                                  SizedBox(width: 8),
+                                  Text('Nach oben',
+                                      style: TextStyle(
+                                          color: Colors.white)),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem(
+                              value: 'down',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.arrow_downward,
+                                      color: AppTheme.primaryRed),
+                                  SizedBox(width: 8),
+                                  Text('Nach unten',
+                                      style: TextStyle(
+                                          color: Colors.white)),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                        PopupMenuItem(
-                          value: 'delete',
-                          child: Text('Löschen'),
-                        ),
-                        PopupMenuItem(
-                          enabled: false,
-                          padding: EdgeInsets.zero,
-                          height: 1,
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 12),
-                            child: _TTGMenuDivider(),
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: 'up',
-                          child: Row(
-                            children: [
-                              Icon(Icons.arrow_upward,
-                                  color: AppTheme.primaryRed),
-                              SizedBox(width: 8),
-                              Text('Nach oben'),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: 'down',
-                          child: Row(
-                            children: [
-                              Icon(Icons.arrow_downward,
-                                  color: AppTheme.primaryRed),
-                              SizedBox(width: 8),
-                              Text('Nach unten'),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -213,6 +235,19 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                     onDuplicate: () => ref
                         .read(dashboardProvider.notifier)
                         .duplicateFolder(g.id),
+                    onRename: () {
+                      showTTGInputDialog(
+                        context: context,
+                        title: "Muskelgruppe umbenennen",
+                        buttonText: "Speichern",
+                        initialValue: g.name,
+                        onSubmit: (value) {
+                          ref
+                              .read(dashboardProvider.notifier)
+                              .renameFolder(g.id, value);
+                        },
+                      );
+                    },
                   )),
 
                   const SizedBox(height: 6),
@@ -259,19 +294,25 @@ class _TTGMenuDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Stack(
+      alignment: Alignment.center,
       children: [
         Container(
           height: 1,
-          color: Colors.white.withOpacity(0.15),
+          color: Colors.redAccent.withOpacity(0.6),
         ),
         Container(
-          height: 1,
+          height: 2,
           decoration: BoxDecoration(
             boxShadow: [
               BoxShadow(
-                color: AppTheme.primaryRed,
-                blurRadius: 10,
-                spreadRadius: 1,
+                color: AppTheme.primaryRed.withOpacity(1),
+                blurRadius: 20,
+                spreadRadius: 3,
+              ),
+              BoxShadow(
+                color: AppTheme.primaryRed.withOpacity(0.8),
+                blurRadius: 40,
+                spreadRadius: 6,
               ),
             ],
           ),
