@@ -35,6 +35,8 @@ class TrainingPlanActions {
       WidgetRef ref, String value, String planId) {
     final n = ref.read(dashboardProvider.notifier);
 
+    if (value == 'up') n.movePlanUp(planId);
+    if (value == 'down') n.movePlanDown(planId);
     if (value == 'archive') n.archivePlan(planId);
     if (value == 'delete') n.deletePlan(planId);
   }

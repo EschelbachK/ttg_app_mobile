@@ -80,11 +80,13 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
   Future<void> loadTrainingPlans() async => _execute(() async {
     final plans = (await api.getTrainingPlans())
         .map<TrainingPlan>((e) => TrainingPlan.fromJson(e))
-        .toList();
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
 
     final archivedPlans = (await api.getArchivedPlans())
         .map<TrainingPlan>((e) => TrainingPlan.fromJson(e))
-        .toList();
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
 
     final archivedFolders = (await api.getArchivedFolders())
         .map<TrainingFolder>((e) => TrainingFolder.fromJson(e))
@@ -143,6 +145,69 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
 
   Future<void> restorePlan(String id) async =>
       _refresh(() => api.restoreTrainingPlan(id));
+
+  Future<void> movePlanUp(String id) async {
+    final list = [...state.trainingPlans]
+      ..sort((a, b) => a.order.compareTo(b.order));
+
+    final i = list.indexWhere((e) => e.id == id);
+    if (i <= 0) return;
+
+    final current = list[i];
+    final target = list[i - 1];
+
+    // 🔥 optimistic UI
+    final updated = list.map((p) {
+      if (p.id == current.id) {
+        return p.copyWith(order: target.order);
+      }
+      if (p.id == target.id) {
+        return p.copyWith(order: current.order);
+      }
+      return p;
+    }).toList();
+
+    state = state.copyWith(trainingPlans: updated);
+
+    try {
+      await api.updateTrainingPlanOrder(current.id, target.order);
+      await api.updateTrainingPlanOrder(target.id, current.order);
+
+      // 🔥 WICHTIG → RELOAD VOM BACKEND
+      await loadTrainingPlans();
+    } catch (_) {}
+  }
+
+  Future<void> movePlanDown(String id) async {
+    final list = [...state.trainingPlans]
+      ..sort((a, b) => a.order.compareTo(b.order));
+
+    final i = list.indexWhere((e) => e.id == id);
+    if (i >= list.length - 1) return;
+
+    final current = list[i];
+    final target = list[i + 1];
+
+    final updated = list.map((p) {
+      if (p.id == current.id) {
+        return p.copyWith(order: target.order);
+      }
+      if (p.id == target.id) {
+        return p.copyWith(order: current.order);
+      }
+      return p;
+    }).toList();
+
+    state = state.copyWith(trainingPlans: updated);
+
+    try {
+      await api.updateTrainingPlanOrder(current.id, target.order);
+      await api.updateTrainingPlanOrder(target.id, current.order);
+
+      // 🔥 DAS FEHLT BEI DIR
+      await loadTrainingPlans();
+    } catch (_) {}
+  }
 
   Future<void> addFolder(String planId, String name) async =>
       _refresh(() => api.createFolder(

@@ -48,6 +48,13 @@ class DashboardApi {
   Future<void> restoreTrainingPlan(String id) =>
       dio.patch('/training-plans/$id', data: {'archived': false});
 
+  // 🔥 NEU: Plan Order updaten
+  Future<void> updateTrainingPlanOrder(String planId, int order) =>
+      dio.patch(
+        '/training-plans/$planId/order',
+        queryParameters: {'order': order},
+      );
+
   Future<List<dynamic>> getFolders(String planId) =>
       _getList('/training-plans/$planId/folders');
 
