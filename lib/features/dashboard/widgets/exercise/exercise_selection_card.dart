@@ -15,11 +15,13 @@ import '../../../../core/ui/ttg_selection_category_sheet.dart';
 class ExerciseSelectionCard extends ConsumerStatefulWidget {
   final String folderId;
   final String planId;
+  final VoidCallback? onAdded; // ✅ NEU
 
   const ExerciseSelectionCard({
     super.key,
     required this.folderId,
     required this.planId,
+    this.onAdded,
   });
 
   @override
@@ -188,6 +190,9 @@ class _State extends ConsumerState<ExerciseSelectionCard> {
       reps = 0;
       sets = 0;
     });
+
+    // ✅ AUTO CLOSE TRIGGER
+    widget.onAdded?.call();
   }
 
   Widget _card({required Widget child}) => ClipRRect(
