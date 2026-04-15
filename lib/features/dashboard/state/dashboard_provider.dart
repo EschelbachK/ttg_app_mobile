@@ -266,12 +266,19 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         folderId: folderId,
         name: exercise.name,
         bodyRegion: _mapBodyRegion(exercise.bodyRegion),
-        sets: exercise.sets
+        sets: exercise.sets.isNotEmpty
+            ? exercise.sets
             .map((s) => {
           'weight': s.weight,
           'repetitions': s.reps,
         })
-            .toList(),
+            .toList()
+            : [
+          {
+            'weight': 0,
+            'repetitions': 0,
+          }
+        ],
       ));
 
   Future<void> importExercise(

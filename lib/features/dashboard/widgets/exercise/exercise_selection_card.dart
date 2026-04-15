@@ -15,7 +15,7 @@ import '../../../../core/ui/ttg_selection_category_sheet.dart';
 class ExerciseSelectionCard extends ConsumerStatefulWidget {
   final String folderId;
   final String planId;
-  final VoidCallback? onAdded; // ✅ NEU
+  final VoidCallback? onAdded;
 
   const ExerciseSelectionCard({
     super.key,
@@ -169,10 +169,15 @@ class _State extends ConsumerState<ExerciseSelectionCard> {
       id: DateTime.now().toString(),
       name: exercise!,
       bodyRegion: category!,
-      sets: List.generate(
+      sets: sets > 0
+          ? List.generate(
         sets,
             (_) => ExerciseSet(weight: weight, reps: reps),
-      ),
+      )
+          : [
+        // 🔥 FIX: Backend braucht mindestens 1 Set
+        ExerciseSet(weight: 0, reps: 0),
+      ],
     );
 
     ref
@@ -191,7 +196,6 @@ class _State extends ConsumerState<ExerciseSelectionCard> {
       sets = 0;
     });
 
-    // ✅ AUTO CLOSE TRIGGER
     widget.onAdded?.call();
   }
 

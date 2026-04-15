@@ -6,8 +6,10 @@ import '../../../core/ui/ttg_confirm_dialog.dart';
 import '../../../core/ui/ttg_glow_border.dart';
 import '../models/training_plan.dart';
 import '../state/dashboard_provider.dart';
+
+// ✅ FIXED IMPORTS
 import '../widgets/exercise/exercise_selection_card.dart';
-import 'package:ttg_app_mobile/features/dashboard/widgets/exercise/exercise_tile.dart';
+import '../widgets/exercise/exercise_tile.dart';
 
 class MuscleGroupScreen extends ConsumerStatefulWidget {
   final String folderId;
