@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+
 import '../application/workout_controller.dart';
 import '../domain/workout_session.dart';
+import '../domain/progression_result.dart';
 
 class CoachMessageWidget extends StatelessWidget {
   final ExerciseSession exercise;
@@ -14,20 +16,28 @@ class CoachMessageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final suggestion = controller.getSuggestion(exercise);
+    final ProgressionResult? suggestion =
+    controller.getSuggestion(exercise);
+
     if (suggestion == null) return const SizedBox();
 
-    final color = suggestion.reason.contains('Increase')
+    final reason = suggestion.reason;
+
+    final color = reason.contains('Increase')
         ? Colors.green
-        : suggestion.reason.contains('plateau')
+        : reason.contains('plateau')
         ? Colors.orange
         : Colors.red;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Text(
-        suggestion.reason,
-        style: TextStyle(color: color, fontSize: 12),
+        reason,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
