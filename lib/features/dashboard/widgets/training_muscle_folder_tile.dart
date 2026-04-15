@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/ui/ttg_list_tile.dart';
+import '../../../core/ui/ttg_popup_menu.dart';
 import '../models/training_plan.dart';
 import '../models/training_folder.dart';
 
@@ -43,33 +44,52 @@ class TrainingFolderPlanTile extends StatelessWidget {
         ),
         child: TTGListTile(
           title: folder.name,
+          leading: const Icon(
+            Icons.fitness_center,
+            color: AppTheme.primaryRed,
+          ),
           actions: [
             IconButton(
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
-              icon: const Icon(Icons.arrow_upward, size: 16, color: AppTheme.primaryRed),
+              icon: const Icon(
+                Icons.arrow_upward,
+                size: 16,
+                color: AppTheme.primaryRed,
+              ),
               onPressed: onMoveUp,
             ),
             const SizedBox(width: 6),
             IconButton(
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
-              icon: const Icon(Icons.arrow_downward, size: 16, color: AppTheme.primaryRed),
+              icon: const Icon(
+                Icons.arrow_downward,
+                size: 16,
+                color: AppTheme.primaryRed,
+              ),
               onPressed: onMoveDown,
             ),
             const SizedBox(width: 6),
-            PopupMenuButton<String>(
-              padding: EdgeInsets.zero,
-              icon: const Icon(Icons.more_vert, size: 18, color: Colors.white54),
+            TTGPopupMenu(
               onSelected: (v) {
                 if (v == 'copy') onDuplicate();
                 if (v == 'archive') onArchive();
                 if (v == 'delete') onDelete();
               },
-              itemBuilder: (_) => const [
-                PopupMenuItem(value: 'copy', child: Text('Kopieren')),
-                PopupMenuItem(value: 'archive', child: Text('Archivieren')),
-                PopupMenuItem(value: 'delete', child: Text('Löschen')),
+              items: const [
+                PopupMenuItem(
+                  value: 'copy',
+                  child: Text('Kopieren'),
+                ),
+                PopupMenuItem(
+                  value: 'archive',
+                  child: Text('Archivieren'),
+                ),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Text('Löschen'),
+                ),
               ],
             ),
           ],
