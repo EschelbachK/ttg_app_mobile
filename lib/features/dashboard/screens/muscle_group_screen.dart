@@ -28,7 +28,7 @@ class MuscleGroupScreen extends ConsumerStatefulWidget {
 
 class _MuscleGroupScreenState
     extends ConsumerState<MuscleGroupScreen> {
-  late bool open; // 🔥 WICHTIG
+  late bool open;
 
   @override
   void initState() {
@@ -40,7 +40,6 @@ class _MuscleGroupScreenState
 
     final hasExercises = folder.exercises.isNotEmpty;
 
-    // 🔥 LOGIK:
     open = !hasExercises;
   }
 
@@ -56,8 +55,10 @@ class _MuscleGroupScreenState
     return Stack(
       children: [
         Positioned.fill(
-          child: Image.asset("assets/images/dashboard_bg.png",
-              fit: BoxFit.cover),
+          child: Image.asset(
+            "assets/images/dashboard_bg.png",
+            fit: BoxFit.cover,
+          ),
         ),
         Positioned.fill(
           child: Container(color: Colors.black.withOpacity(.55)),
@@ -69,12 +70,14 @@ class _MuscleGroupScreenState
             elevation: 0,
             centerTitle: true,
             leading: IconButton(
-              icon:
-              const Icon(Icons.arrow_back, color: Colors.white54),
+              icon: const Icon(Icons.arrow_back,
+                  color: Colors.white54),
               onPressed: () => Navigator.pop(context),
             ),
-            title: Text(folder.name,
-                style: const TextStyle(color: Colors.white)),
+            title: Text(
+              folder.name,
+              style: const TextStyle(color: Colors.white),
+            ),
           ),
           body: Column(
             children: [
@@ -97,14 +100,15 @@ class _MuscleGroupScreenState
                             borderRadius:
                             BorderRadius.circular(22),
                             border: Border.all(
-                                color:
-                                Colors.white.withOpacity(.12)),
+                              color:
+                              Colors.white.withOpacity(.12),
+                            ),
                           ),
                           child: Column(
                             children: [
                               GestureDetector(
-                                onTap: () =>
-                                    setState(() => open = !open),
+                                onTap: () => setState(
+                                        () => open = !open),
                                 child: Padding(
                                   padding:
                                   const EdgeInsets.symmetric(
@@ -122,10 +126,12 @@ class _MuscleGroupScreenState
                                           BorderRadius.circular(
                                               8),
                                         ),
-                                        child: const Icon(Icons.add,
-                                            size: 16,
-                                            color: AppTheme
-                                                .primaryRed),
+                                        child: const Icon(
+                                          Icons.add,
+                                          size: 16,
+                                          color: AppTheme
+                                              .primaryRed,
+                                        ),
                                       ),
                                       const SizedBox(width: 12),
                                       const Expanded(
@@ -156,7 +162,6 @@ class _MuscleGroupScreenState
                                 ),
                               ),
 
-                              // 🔥 AUTO CLOSE + STATE LOGIK
                               AnimatedSize(
                                 duration: const Duration(
                                     milliseconds: 200),
@@ -188,19 +193,53 @@ class _MuscleGroupScreenState
 
               const SizedBox(height: 10),
 
-              // 🔴 EXERCISE LIST
+              // 🔴 EXERCISE LIST / EMPTY STATE
               Expanded(
                 child: exercises.isEmpty
-                    ? const Center(
-                  child: Text(
-                    'Noch keine Übungen hinzugefügt',
-                    style:
-                    TextStyle(color: Colors.white54),
+                    ? Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 20),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 40),
+
+                      Icon(
+                        Icons.fitness_center,
+                        color:
+                        Colors.white.withOpacity(.35),
+                        size: 48,
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      Text(
+                        "Noch keine Übungen",
+                        style: TextStyle(
+                          color: Colors.white
+                              .withOpacity(.75),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+
+                      const SizedBox(height: 6),
+
+                      Text(
+                        "Füge deine erste Übung hinzu!",
+                        style: TextStyle(
+                          color: Colors.white
+                              .withOpacity(.45),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
                   ),
                 )
                     : ListView.builder(
                   padding:
                   const EdgeInsets.only(bottom: 100),
+                  physics:
+                  const BouncingScrollPhysics(),
                   itemCount: exercises.length,
                   itemBuilder: (_, i) {
                     final e = exercises[i];
@@ -227,7 +266,6 @@ class _MuscleGroupScreenState
                           exerciseId: e.id,
                         );
 
-                        // 🔥 BONUS: wenn letzte Übung gelöscht → wieder öffnen
                         if (exercises.length == 1) {
                           setState(() => open = true);
                         }
