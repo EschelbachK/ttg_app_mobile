@@ -17,7 +17,7 @@ class ExerciseTile extends StatefulWidget {
 }
 
 class _ExerciseTileState extends State<ExerciseTile> {
-  bool open = true;
+  bool open = false; // 🔥 FIX: standardmäßig eingeklappt
   int? dragging;
 
   @override
@@ -190,8 +190,10 @@ class _ExerciseTileState extends State<ExerciseTile> {
                       ),
                     ),
                   ),
+
                   if (open) ...[
                     const SizedBox(height: 8),
+
                     Container(
                       height: 140,
                       margin: const EdgeInsets.symmetric(horizontal: 14),
@@ -204,7 +206,9 @@ class _ExerciseTileState extends State<ExerciseTile> {
                         child: Text("Übungsbild", style: TextStyle(color: Colors.white38)),
                       ),
                     ),
+
                     const SizedBox(height: 10),
+
                     ReorderableListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
@@ -255,11 +259,9 @@ class _ExerciseTileState extends State<ExerciseTile> {
                                 ),
                                 child: Row(
                                   children: [
-                                    Text(
-                                      "#${i + 1}",
-                                      style: const TextStyle(color: Colors.white54),
-                                    ),
+                                    Text("#${i + 1}", style: const TextStyle(color: Colors.white54)),
                                     const SizedBox(width: 8),
+
                                     Expanded(
                                       child: Row(
                                         children: [
@@ -311,7 +313,9 @@ class _ExerciseTileState extends State<ExerciseTile> {
                                         ],
                                       ),
                                     ),
+
                                     const SizedBox(width: 6),
+
                                     GestureDetector(
                                       onTap: () {
                                         setState(() {
@@ -328,7 +332,9 @@ class _ExerciseTileState extends State<ExerciseTile> {
                         );
                       },
                     ),
+
                     const SizedBox(height: 6),
+
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 14),
                       child: GestureDetector(
@@ -360,6 +366,7 @@ class _ExerciseTileState extends State<ExerciseTile> {
                         ),
                       ),
                     ),
+
                     const SizedBox(height: 10),
                   ]
                 ],
