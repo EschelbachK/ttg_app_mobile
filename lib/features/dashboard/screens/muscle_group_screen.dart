@@ -28,7 +28,21 @@ class MuscleGroupScreen extends ConsumerStatefulWidget {
 
 class _MuscleGroupScreenState
     extends ConsumerState<MuscleGroupScreen> {
-  bool open = false;
+  late bool open; // 🔥 WICHTIG
+
+  @override
+  void initState() {
+    super.initState();
+
+    final folder = ref.read(dashboardProvider)
+        .folders
+        .firstWhere((f) => f.id == widget.folderId);
+
+    final hasExercises = folder.exercises.isNotEmpty;
+
+    // 🔥 LOGIK:
+    open = !hasExercises;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +79,8 @@ class _MuscleGroupScreenState
           body: Column(
             children: [
               const SizedBox(height: 20),
+
+              // 🔴 ADD EXERCISE SECTION
               if (!widget.isArchived)
                 Padding(
                   padding:
@@ -81,7 +97,8 @@ class _MuscleGroupScreenState
                             borderRadius:
                             BorderRadius.circular(22),
                             border: Border.all(
-                                color: Colors.white.withOpacity(.12)),
+                                color:
+                                Colors.white.withOpacity(.12)),
                           ),
                           child: Column(
                             children: [
@@ -102,20 +119,21 @@ class _MuscleGroupScreenState
                                           color: AppTheme.primaryRed
                                               .withOpacity(.15),
                                           borderRadius:
-                                          BorderRadius.circular(8),
+                                          BorderRadius.circular(
+                                              8),
                                         ),
                                         child: const Icon(Icons.add,
                                             size: 16,
-                                            color:
-                                            AppTheme.primaryRed),
+                                            color: AppTheme
+                                                .primaryRed),
                                       ),
                                       const SizedBox(width: 12),
                                       const Expanded(
                                         child: Text(
                                           "Übung hinzufügen",
                                           style: TextStyle(
-                                            color:
-                                            AppTheme.primaryRed,
+                                            color: AppTheme
+                                                .primaryRed,
                                             fontSize: 15,
                                             fontWeight:
                                             FontWeight.w600,
@@ -128,7 +146,8 @@ class _MuscleGroupScreenState
                                         const Duration(
                                             milliseconds: 200),
                                         child: const Icon(
-                                          Icons.keyboard_arrow_down,
+                                          Icons
+                                              .keyboard_arrow_down,
                                           color: Colors.white54,
                                         ),
                                       ),
@@ -136,9 +155,11 @@ class _MuscleGroupScreenState
                                   ),
                                 ),
                               ),
+
+                              // 🔥 AUTO CLOSE + STATE LOGIK
                               AnimatedSize(
-                                duration:
-                                const Duration(milliseconds: 200),
+                                duration: const Duration(
+                                    milliseconds: 200),
                                 child: open
                                     ? Padding(
                                   padding:
@@ -149,6 +170,10 @@ class _MuscleGroupScreenState
                                     folderId: folder.id,
                                     planId:
                                     widget.plan.id,
+                                    onAdded: () {
+                                      setState(() =>
+                                      open = false);
+                                    },
                                   ),
                                 )
                                     : const SizedBox(),
@@ -160,7 +185,10 @@ class _MuscleGroupScreenState
                     ),
                   ),
                 ),
+
               const SizedBox(height: 10),
+
+              // 🔴 EXERCISE LIST
               Expanded(
                 child: exercises.isEmpty
                     ? const Center(
@@ -189,11 +217,20 @@ class _MuscleGroupScreenState
                         );
                         if (!ok) return;
 
-                        ref.read(dashboardProvider.notifier).removeExercise(
-                          planId: widget.plan.id,
+                        ref
+                            .read(dashboardProvider
+                            .notifier)
+                            .removeExercise(
+                          planId:
+                          widget.plan.id,
                           folderId: folder.id,
                           exerciseId: e.id,
                         );
+
+                        // 🔥 BONUS: wenn letzte Übung gelöscht → wieder öffnen
+                        if (exercises.length == 1) {
+                          setState(() => open = true);
+                        }
                       },
                     );
                   },
