@@ -4,7 +4,14 @@ import '../../../../core/auth/auth_actions.dart';
 
 class DashboardTopBar extends ConsumerWidget
     implements PreferredSizeWidget {
-  const DashboardTopBar({super.key});
+  final int selectedTab;
+  final Function(int) onTabChanged;
+
+  const DashboardTopBar({
+    super.key,
+    required this.selectedTab,
+    required this.onTabChanged,
+  });
 
   @override
   Size get preferredSize => const Size.fromHeight(64);
@@ -17,23 +24,20 @@ class DashboardTopBar extends ConsumerWidget
       leading: Builder(
         builder: (context) => IconButton(
           icon: const Icon(Icons.menu, color: Colors.white38),
-          onPressed: () =>
-              Scaffold.of(context).openDrawer(),
+          onPressed: () => Scaffold.of(context).openDrawer(),
         ),
       ),
-      title: const _TopBarIcons(),
+      title: _TopBarIcons(
+        selectedTab: selectedTab,
+        onTabChanged: onTabChanged,
+      ),
       actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 16),
-          child: TextButton.icon(
-            onPressed: () =>
-                AuthActions.logout(ref, context),
-            icon: const Icon(Icons.logout),
-            label: const Text("Logout"),
-            style: const ButtonStyle(
-              foregroundColor:
-              MaterialStatePropertyAll(Colors.white70),
-            ),
+        TextButton.icon(
+          onPressed: () => AuthActions.logout(ref, context),
+          icon: const Icon(Icons.logout),
+          label: const Text("Logout"),
+          style: const ButtonStyle(
+            foregroundColor: MaterialStatePropertyAll(Colors.white70),
           ),
         ),
       ],
@@ -42,18 +46,47 @@ class DashboardTopBar extends ConsumerWidget
 }
 
 class _TopBarIcons extends StatelessWidget {
-  const _TopBarIcons();
+  final int selectedTab;
+  final Function(int) onTabChanged;
+
+  const _TopBarIcons({
+    required this.selectedTab,
+    required this.onTabChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       children: [
-        Icon(Icons.grid_view, color: Color(0xFFFF3B30)),
-        SizedBox(width: 16),
-        Icon(Icons.bar_chart, color: Colors.white38),
-        SizedBox(width: 16),
-        Icon(Icons.settings, color: Colors.white38),
+        _icon(Icons.grid_view, 0, const Color(0xFFFF3B30)),
+        const SizedBox(width: 16),
+        _icon(Icons.bar_chart, 2, Colors.redAccent),
+        const SizedBox(width: 16),
+        _icon(Icons.settings, 1, Colors.white),
       ],
+    );
+  }
+
+  Widget _icon(IconData icon, int index, Color activeColor) {
+    final isActive = selectedTab == index;
+
+    return GestureDetector(
+      onTap: () => onTabChanged(index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: isActive
+              ? activeColor.withOpacity(0.15)
+              : Colors.transparent,
+        ),
+        child: Icon(
+          icon,
+          color: isActive ? activeColor : Colors.white38,
+          size: 22,
+        ),
+      ),
     );
   }
 }

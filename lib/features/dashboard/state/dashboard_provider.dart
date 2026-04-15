@@ -52,7 +52,7 @@ class DashboardState {
         archivedPlans: archivedPlans ?? this.archivedPlans,
         showArchive: showArchive ?? this.showArchive,
         isLoading: isLoading ?? this.isLoading,
-        error: error,
+        error: error ?? this.error,
       );
 }
 
@@ -73,8 +73,9 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     } catch (e) {
       final err = GlobalErrorHandler.handle(e);
       state = state.copyWith(error: err.message);
+    } finally {
+      state = state.copyWith(isLoading: false);
     }
-    state = state.copyWith(isLoading: false);
   }
 
   Future<void> loadTrainingPlans() async => _execute(() async {
@@ -95,6 +96,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     final foldersNested = await Future.wait(
       [...plans, ...archivedPlans].map((p) async {
         final folderData = await api.getFolders(p.id);
+
         return Future.wait(folderData.map((e) async {
           final f = TrainingFolder.fromJson(e);
           final ex = await api.getExercises(
@@ -104,7 +106,8 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
 
           return f.copyWith(
             trainingPlanId: p.id,
-            exercises: ex.map<Exercise>((x) => Exercise.fromJson(x)).toList(),
+            exercises:
+            ex.map<Exercise>((x) => Exercise.fromJson(x)).toList(),
           );
         }));
       }),
@@ -157,12 +160,8 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     final target = list[i - 1];
 
     final updated = list.map((p) {
-      if (p.id == current.id) {
-        return p.copyWith(order: target.order);
-      }
-      if (p.id == target.id) {
-        return p.copyWith(order: current.order);
-      }
+      if (p.id == current.id) return p.copyWith(order: target.order);
+      if (p.id == target.id) return p.copyWith(order: current.order);
       return p;
     }).toList();
 
@@ -186,12 +185,8 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     final target = list[i + 1];
 
     final updated = list.map((p) {
-      if (p.id == current.id) {
-        return p.copyWith(order: target.order);
-      }
-      if (p.id == target.id) {
-        return p.copyWith(order: current.order);
-      }
+      if (p.id == current.id) return p.copyWith(order: target.order);
+      if (p.id == target.id) return p.copyWith(order: current.order);
       return p;
     }).toList();
 
@@ -208,12 +203,15 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       _refresh(() => api.createFolder(
         trainingPlanId: planId,
         name: name,
-        order: state.folders.where((f) => f.trainingPlanId == planId).length,
+        order: state.folders
+            .where((f) => f.trainingPlanId == planId)
+            .length,
       ));
 
   Future<void> renameFolder(String id, String name) async =>
       _execute(() async {
         await api.updateFolder(folderId: id, name: name);
+
         state = state.copyWith(
           folders: state.folders
               .map((f) => f.id == id ? f.copyWith(name: name) : f)
@@ -247,12 +245,8 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     final target = list[i - 1];
 
     final updated = state.folders.map((folder) {
-      if (folder.id == f.id) {
-        return folder.copyWith(order: target.order);
-      }
-      if (folder.id == target.id) {
-        return folder.copyWith(order: f.order);
-      }
+      if (folder.id == f.id) return folder.copyWith(order: target.order);
+      if (folder.id == target.id) return folder.copyWith(order: f.order);
       return folder;
     }).toList();
 
@@ -279,12 +273,8 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     final target = list[i + 1];
 
     final updated = state.folders.map((folder) {
-      if (folder.id == f.id) {
-        return folder.copyWith(order: target.order);
-      }
-      if (folder.id == target.id) {
-        return folder.copyWith(order: f.order);
-      }
+      if (folder.id == f.id) return folder.copyWith(order: target.order);
+      if (folder.id == target.id) return folder.copyWith(order: f.order);
       return folder;
     }).toList();
 
@@ -306,7 +296,9 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         await api.createFolder(
           trainingPlanId: targetPlanId,
           name: name,
-          order: state.folders.where((f) => f.trainingPlanId == targetPlanId).length,
+          order: state.folders
+              .where((f) => f.trainingPlanId == targetPlanId)
+              .length,
         );
         await api.restoreFolder(folderId);
       });
@@ -321,10 +313,12 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         folderId: folderId,
         name: exercise.name,
         bodyRegion: _mapBodyRegion(exercise.bodyRegion),
-        sets: exercise.sets.map((s) => {
+        sets: exercise.sets
+            .map((s) => {
           'weight': s.weight,
           'repetitions': s.reps,
-        }).toList(),
+        })
+            .toList(),
       ));
 
   Future<void> addExercise(
@@ -332,19 +326,17 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       String planId,
       Exercise exercise,
       ) async {
-    final updatedFolders = state.folders.map((f) {
-      if (f.id != folderId) return f;
-
-      return f.copyWith(
-        exercises: [...f.exercises, exercise],
-      );
-    }).toList();
-
-    state = state.copyWith(folders: updatedFolders);
+    state = state.copyWith(
+      folders: state.folders.map((f) {
+        if (f.id != folderId) return f;
+        return f.copyWith(exercises: [...f.exercises, exercise]);
+      }).toList(),
+    );
 
     await _createExercise(folderId, planId, exercise);
     await loadTrainingPlans();
   }
+
   Future<void> importExercise(
       String folderId,
       String planId,
