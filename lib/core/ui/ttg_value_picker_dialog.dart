@@ -19,13 +19,12 @@ Future<void> showTTGValuePicker({
     isScrollControlled: true,
     builder: (_) {
       return FractionallySizedBox(
-        heightFactor: 0.40, // 🔥 kompakte Premium Höhe
+        heightFactor: 0.40,
         child: GestureDetector(
           onTap: () => Navigator.pop(context),
           child: Stack(
             children: [
               Container(color: Colors.transparent),
-
               Align(
                 alignment: Alignment.bottomCenter,
                 child: GestureDetector(
@@ -51,7 +50,6 @@ Future<void> showTTGValuePicker({
                         ),
                         child: Column(
                           children: [
-                            /// HANDLE
                             Container(
                               margin: const EdgeInsets.only(bottom: 8),
                               width: 40,
@@ -61,17 +59,19 @@ Future<void> showTTGValuePicker({
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-
-                            /// 🔥 TITLE (tiefer + cleaner)
                             const SizedBox(height: 6),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Container(
-                                    width: 20,
-                                    height: 2,
-                                    color: AppTheme.primaryRed),
-                                const SizedBox(width: 8),
+                                  width: 8,
+                                  height: 2,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.primaryRed.withOpacity(0.7),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
                                 Text(
                                   title,
                                   style: const TextStyle(
@@ -80,15 +80,17 @@ Future<void> showTTGValuePicker({
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: 6),
                                 Container(
-                                    width: 20,
-                                    height: 2,
-                                    color: AppTheme.primaryRed),
+                                  width: 8,
+                                  height: 2,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.primaryRed.withOpacity(0.7),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
                               ],
                             ),
-
-                            /// 🔥 TTG GLOW LINE
                             Container(
                               margin: const EdgeInsets.symmetric(vertical: 12),
                               height: 1,
@@ -102,16 +104,13 @@ Future<void> showTTGValuePicker({
                                 ),
                               ),
                             ),
-
-                            /// 🔥 WHEEL AREA
                             Expanded(
                               child: Center(
                                 child: SizedBox(
-                                  height: 90,
+                                  height: 100,
                                   child: Stack(
                                     alignment: Alignment.center,
                                     children: [
-                                      /// GLASS FOCUS BAR
                                       ClipRRect(
                                         borderRadius: BorderRadius.circular(16),
                                         child: BackdropFilter(
@@ -119,24 +118,19 @@ Future<void> showTTGValuePicker({
                                               sigmaX: 10, sigmaY: 10),
                                           child: Container(
                                             height: 50,
+                                            margin: const EdgeInsets.symmetric(horizontal: 40),
                                             decoration: BoxDecoration(
-                                              color: Colors.white
-                                                  .withOpacity(0.06),
-                                              borderRadius:
-                                              BorderRadius.circular(16),
+                                              color: Colors.white.withOpacity(0.06),
+                                              borderRadius: BorderRadius.circular(16),
                                               border: Border.all(
-                                                color: Colors.white
-                                                    .withOpacity(0.08),
+                                                color: Colors.white.withOpacity(0.08),
                                               ),
                                             ),
                                           ),
                                         ),
                                       ),
-
-                                      /// WHEELS
                                       Row(
-                                        mainAxisAlignment:
-                                        MainAxisAlignment.center,
+                                        mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
                                           TTGWheel(
                                             initial: whole,
@@ -146,8 +140,7 @@ Future<void> showTTGValuePicker({
                                           if (allowDecimal) ...[
                                             const SizedBox(width: 6),
                                             const Text(".",
-                                                style: TextStyle(
-                                                    color: Colors.white)),
+                                                style: TextStyle(color: Colors.white)),
                                             const SizedBox(width: 6),
                                             TTGWheel(
                                               initial: decimal,
@@ -162,10 +155,7 @@ Future<void> showTTGValuePicker({
                                 ),
                               ),
                             ),
-
                             const SizedBox(height: 12),
-
-                            /// BUTTONS
                             Row(
                               children: [
                                 Expanded(
@@ -175,15 +165,12 @@ Future<void> showTTGValuePicker({
                                       height: 42,
                                       alignment: Alignment.center,
                                       decoration: BoxDecoration(
-                                        borderRadius:
-                                        BorderRadius.circular(14),
-                                        color: Colors.white
-                                            .withOpacity(0.06),
+                                        borderRadius: BorderRadius.circular(14),
+                                        color: Colors.white.withOpacity(0.06),
                                       ),
                                       child: const Text(
                                         "Abbrechen",
-                                        style: TextStyle(
-                                            color: Colors.white70),
+                                        style: TextStyle(color: Colors.white70),
                                       ),
                                     ),
                                   ),
@@ -202,8 +189,7 @@ Future<void> showTTGValuePicker({
                                       height: 42,
                                       alignment: Alignment.center,
                                       decoration: BoxDecoration(
-                                        borderRadius:
-                                        BorderRadius.circular(14),
+                                        borderRadius: BorderRadius.circular(14),
                                         color: AppTheme.primaryRed,
                                       ),
                                       child: const Text(
@@ -257,7 +243,6 @@ class _TTGWheelState extends State<TTGWheel> {
   void initState() {
     super.initState();
     selected = widget.initial;
-
     controller = FixedExtentScrollController(
       initialItem: widget.initial,
     );
@@ -271,15 +256,12 @@ class _TTGWheelState extends State<TTGWheel> {
         controller: controller,
         itemExtent: 36,
         physics: const FixedExtentScrollPhysics(),
-
-        /// 🔥 KEY FIX
         onSelectedItemChanged: (i) {
           setState(() {
             selected = i;
           });
           widget.onChanged(i);
         },
-
         childDelegate: ListWheelChildBuilderDelegate(
           builder: (_, i) {
             final isSelected = i == selected;

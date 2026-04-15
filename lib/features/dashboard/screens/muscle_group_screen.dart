@@ -109,55 +109,50 @@ class _MuscleGroupScreenState
                           child: Column(
                             children: [
                               GestureDetector(
-                                onTap: () => setState(
-                                        () => open = !open),
-                                child: Padding(
-                                  padding:
-                                  const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 14),
+                                onTap: () => setState(() => open = !open),
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 6),
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(16),
+                                    color: Colors.white.withOpacity(0.04),
+                                    border: Border.all(color: Colors.white.withOpacity(0.08)),
+                                  ),
                                   child: Row(
                                     children: [
                                       Container(
-                                        width: 26,
-                                        height: 26,
+                                        width: 10,
+                                        height: 10,
                                         decoration: BoxDecoration(
-                                          color: AppTheme.primaryRed
-                                              .withOpacity(.15),
-                                          borderRadius:
-                                          BorderRadius.circular(
-                                              8),
-                                        ),
-                                        child: const Icon(
-                                          Icons.add,
-                                          size: 16,
-                                          color: AppTheme
-                                              .primaryRed,
+                                          shape: BoxShape.circle,
+                                          color: AppTheme.primaryRed,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AppTheme.primaryRed.withOpacity(0.9),
+                                              blurRadius: 12,
+                                              spreadRadius: 2,
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      const SizedBox(width: 12),
+                                      const SizedBox(width: 10),
                                       const Expanded(
                                         child: Text(
                                           "Übung hinzufügen",
                                           style: TextStyle(
-                                            color: AppTheme
-                                                .primaryRed,
-                                            fontSize: 15,
-                                            fontWeight:
-                                            FontWeight.w600,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: 0.3,
+                                            fontSize: 16,
                                           ),
                                         ),
                                       ),
-                                      AnimatedRotation(
-                                        turns: open ? .5 : 0,
-                                        duration:
-                                        const Duration(
-                                            milliseconds: 200),
-                                        child: const Icon(
-                                          Icons
-                                              .keyboard_arrow_down,
-                                          color: Colors.white54,
-                                        ),
+
+                                      // ➕ PLUS ICON statt Arrow Chaos
+                                      const Icon(
+                                        Icons.add,
+                                        size: 18,
+                                        color: AppTheme.primaryRed,
                                       ),
                                     ],
                                   ),
