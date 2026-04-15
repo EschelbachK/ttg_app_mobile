@@ -10,15 +10,27 @@ class ExerciseTile extends StatefulWidget {
   final Exercise exercise;
   final VoidCallback? onDelete;
 
-  const ExerciseTile({super.key, required this.exercise, this.onDelete});
+  const ExerciseTile({
+    super.key,
+    required this.exercise,
+    this.onDelete,
+  });
 
   @override
   State<ExerciseTile> createState() => _ExerciseTileState();
 }
 
 class _ExerciseTileState extends State<ExerciseTile> {
-  bool open = false; // 🔥 FIX: standardmäßig eingeklappt
+  bool open = false;
   int? dragging;
+
+  void _updateExercise(Exercise updated) {
+    setState(() {
+      widget.exercise.sets
+        ..clear()
+        ..addAll(updated.sets);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +69,11 @@ class _ExerciseTileState extends State<ExerciseTile> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Container(width: 12, height: 2, color: AppTheme.primaryRed),
+                                  Container(
+                                    width: 12,
+                                    height: 2,
+                                    color: AppTheme.primaryRed,
+                                  ),
                                   const SizedBox(width: 6),
                                   Text(
                                     e.name,
@@ -67,124 +83,23 @@ class _ExerciseTileState extends State<ExerciseTile> {
                                     ),
                                   ),
                                   const SizedBox(width: 6),
-                                  Container(width: 12, height: 2, color: AppTheme.primaryRed),
+                                  Container(
+                                    width: 12,
+                                    height: 2,
+                                    color: AppTheme.primaryRed,
+                                  ),
                                 ],
                               ),
                             ),
                           ),
                           GestureDetector(
                             onTap: () {
-                              showGeneralDialog(
-                                context: context,
-                                barrierDismissible: true,
-                                barrierLabel: "",
-                                barrierColor: Colors.black.withOpacity(.7),
-                                transitionDuration: const Duration(milliseconds: 200),
-                                pageBuilder: (_, __, ___) => const SizedBox(),
-                                transitionBuilder: (context, animation, _, __) {
-                                  final scale = Tween(begin: 0.9, end: 1.0).animate(
-                                    CurvedAnimation(parent: animation, curve: Curves.easeOut),
-                                  );
-
-                                  return Transform.scale(
-                                    scale: scale.value,
-                                    child: Opacity(
-                                      opacity: animation.value,
-                                      child: Center(
-                                        child: Material(
-                                          color: Colors.transparent,
-                                          child: Container(
-                                            width: 300,
-                                            padding: const EdgeInsets.all(20),
-                                            decoration: BoxDecoration(
-                                              color: Colors.black.withOpacity(.95),
-                                              borderRadius: BorderRadius.circular(20),
-                                              border: Border.all(color: Colors.white.withOpacity(.08)),
-                                            ),
-                                            child: Column(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                const Text(
-                                                  "Übung löschen",
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 10),
-                                                const Text(
-                                                  "Willst du diese Übung wirklich löschen?",
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    color: Colors.white54,
-                                                    fontSize: 13,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 16),
-                                                Divider(color: Colors.white.withOpacity(.08), height: 1),
-                                                const SizedBox(height: 16),
-                                                Row(
-                                                  children: [
-                                                    Expanded(
-                                                      child: GestureDetector(
-                                                        onTap: () => Navigator.pop(context),
-                                                        child: Container(
-                                                          height: 44,
-                                                          alignment: Alignment.center,
-                                                          decoration: BoxDecoration(
-                                                            borderRadius: BorderRadius.circular(12),
-                                                            border: Border.all(
-                                                              color: Colors.white.withOpacity(.08),
-                                                            ),
-                                                          ),
-                                                          child: const Text(
-                                                            "Abbrechen",
-                                                            style: TextStyle(
-                                                              color: Colors.white54,
-                                                              fontWeight: FontWeight.w500,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(width: 10),
-                                                    Expanded(
-                                                      child: GestureDetector(
-                                                        onTap: () {
-                                                          Navigator.pop(context);
-                                                          widget.onDelete?.call();
-                                                        },
-                                                        child: Container(
-                                                          height: 44,
-                                                          alignment: Alignment.center,
-                                                          decoration: BoxDecoration(
-                                                            borderRadius: BorderRadius.circular(12),
-                                                            color: AppTheme.primaryRed,
-                                                          ),
-                                                          child: const Text(
-                                                            "Löschen",
-                                                            style: TextStyle(
-                                                              color: Colors.white,
-                                                              fontWeight: FontWeight.w600,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
+                              widget.onDelete?.call();
                             },
-                            child: const Icon(Icons.close, color: Colors.white38),
+                            child: const Icon(
+                              Icons.close,
+                              color: Colors.white38,
+                            ),
                           ),
                         ],
                       ),
@@ -200,10 +115,15 @@ class _ExerciseTileState extends State<ExerciseTile> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16),
                         color: Colors.black.withOpacity(.3),
-                        border: Border.all(color: Colors.white.withOpacity(.06)),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(.06),
+                        ),
                       ),
                       child: const Center(
-                        child: Text("Übungsbild", style: TextStyle(color: Colors.white38)),
+                        child: Text(
+                          "Übungsbild",
+                          style: TextStyle(color: Colors.white38),
+                        ),
                       ),
                     ),
 
@@ -217,12 +137,15 @@ class _ExerciseTileState extends State<ExerciseTile> {
                         HapticFeedback.mediumImpact();
                         setState(() => dragging = i);
                       },
-                      onReorderEnd: (_) => setState(() => dragging = null),
+                      onReorderEnd: (_) =>
+                          setState(() => dragging = null),
                       onReorder: (oldIndex, newIndex) {
                         if (newIndex > oldIndex) newIndex--;
+
                         final list = [...e.sets];
                         final item = list.removeAt(oldIndex);
                         list.insert(newIndex, item);
+
                         setState(() {
                           e.sets
                             ..clear()
@@ -235,7 +158,10 @@ class _ExerciseTileState extends State<ExerciseTile> {
 
                         return Padding(
                           key: ValueKey("${s.hashCode}-$i"),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 6,
+                          ),
                           child: Transform.scale(
                             scale: active ? 1.04 : 1,
                             child: Container(
@@ -244,24 +170,35 @@ class _ExerciseTileState extends State<ExerciseTile> {
                                 boxShadow: active
                                     ? [
                                   BoxShadow(
-                                    color: AppTheme.primaryRed.withOpacity(.35),
+                                    color: AppTheme.primaryRed
+                                        .withOpacity(.35),
                                     blurRadius: 20,
                                   )
                                 ]
                                     : [],
                               ),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 12,
+                                ),
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.white.withOpacity(.08)),
+                                  borderRadius:
+                                  BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(.08),
+                                  ),
                                   color: Colors.black.withOpacity(.25),
                                 ),
                                 child: Row(
                                   children: [
-                                    Text("#${i + 1}", style: const TextStyle(color: Colors.white54)),
+                                    Text(
+                                      "#${i + 1}",
+                                      style: const TextStyle(
+                                        color: Colors.white54,
+                                      ),
+                                    ),
                                     const SizedBox(width: 8),
-
                                     Expanded(
                                       child: Row(
                                         children: [
@@ -270,20 +207,34 @@ class _ExerciseTileState extends State<ExerciseTile> {
                                               s.weight,
                                               "KG",
                                                   () {
-                                                setState(() {
-                                                  e.sets[i] = ExerciseSet(
-                                                    weight: (s.weight - 1).clamp(0, 999).toDouble(),
-                                                    reps: s.reps,
-                                                  );
-                                                });
+                                                final updated =
+                                                [...e.sets];
+                                                updated[i] =
+                                                    ExerciseSet(
+                                                      weight: (s.weight - 1)
+                                                          .clamp(0, 999)
+                                                          .toDouble(),
+                                                      reps: s.reps,
+                                                    );
+                                                _updateExercise(
+                                                  e.copyWith(
+                                                    sets: updated,
+                                                  ),
+                                                );
                                               },
                                                   () {
-                                                setState(() {
-                                                  e.sets[i] = ExerciseSet(
-                                                    weight: s.weight + 1,
-                                                    reps: s.reps,
-                                                  );
-                                                });
+                                                final updated =
+                                                [...e.sets];
+                                                updated[i] =
+                                                    ExerciseSet(
+                                                      weight: s.weight + 1,
+                                                      reps: s.reps,
+                                                    );
+                                                _updateExercise(
+                                                  e.copyWith(
+                                                    sets: updated,
+                                                  ),
+                                                );
                                               },
                                             ),
                                           ),
@@ -293,36 +244,53 @@ class _ExerciseTileState extends State<ExerciseTile> {
                                               s.reps.toDouble(),
                                               "WDH",
                                                   () {
-                                                setState(() {
-                                                  e.sets[i] = ExerciseSet(
-                                                    weight: s.weight,
-                                                    reps: (s.reps - 1).clamp(0, 999),
-                                                  );
-                                                });
+                                                final updated =
+                                                [...e.sets];
+                                                updated[i] =
+                                                    ExerciseSet(
+                                                      weight: s.weight,
+                                                      reps: (s.reps - 1)
+                                                          .clamp(0, 999),
+                                                    );
+                                                _updateExercise(
+                                                  e.copyWith(
+                                                    sets: updated,
+                                                  ),
+                                                );
                                               },
                                                   () {
-                                                setState(() {
-                                                  e.sets[i] = ExerciseSet(
-                                                    weight: s.weight,
-                                                    reps: s.reps + 1,
-                                                  );
-                                                });
+                                                final updated =
+                                                [...e.sets];
+                                                updated[i] =
+                                                    ExerciseSet(
+                                                      weight: s.weight,
+                                                      reps: s.reps + 1,
+                                                    );
+                                                _updateExercise(
+                                                  e.copyWith(
+                                                    sets: updated,
+                                                  ),
+                                                );
                                               },
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
-
                                     const SizedBox(width: 6),
-
                                     GestureDetector(
                                       onTap: () {
-                                        setState(() {
-                                          e.sets.removeAt(i);
-                                        });
+                                        final updated = [...e.sets];
+                                        updated.removeAt(i);
+                                        _updateExercise(
+                                          e.copyWith(sets: updated),
+                                        );
                                       },
-                                      child: const Icon(Icons.close, color: Colors.white38, size: 18),
+                                      child: const Icon(
+                                        Icons.close,
+                                        color: Colors.white38,
+                                        size: 18,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -336,23 +304,35 @@ class _ExerciseTileState extends State<ExerciseTile> {
                     const SizedBox(height: 6),
 
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      padding:
+                      const EdgeInsets.symmetric(horizontal: 14),
                       child: GestureDetector(
                         onTap: () {
-                          setState(() {
-                            e.sets.add(
-                              ExerciseSet(
-                                weight: e.sets.isNotEmpty ? e.sets.last.weight : 0,
-                                reps: e.sets.isNotEmpty ? e.sets.last.reps : 0,
-                              ),
-                            );
-                          });
+                          final updated = [...e.sets];
+
+                          updated.add(
+                            ExerciseSet(
+                              weight: e.sets.isNotEmpty
+                                  ? e.sets.last.weight
+                                  : 0,
+                              reps: e.sets.isNotEmpty
+                                  ? e.sets.last.reps
+                                  : 8,
+                            ),
+                          );
+
+                          _updateExercise(
+                            e.copyWith(sets: updated),
+                          );
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          padding:
+                          const EdgeInsets.symmetric(vertical: 14),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: AppTheme.primaryRed),
+                            border: Border.all(
+                              color: AppTheme.primaryRed,
+                            ),
                           ),
                           child: const Center(
                             child: Text(
@@ -378,7 +358,12 @@ class _ExerciseTileState extends State<ExerciseTile> {
     );
   }
 
-  Widget _control(double v, String unit, VoidCallback minus, VoidCallback plus) {
+  Widget _control(
+      double v,
+      String unit,
+      VoidCallback minus,
+      VoidCallback plus,
+      ) {
     final isKg = unit == "KG";
 
     return Row(
@@ -392,8 +377,13 @@ class _ExerciseTileState extends State<ExerciseTile> {
             child: Row(
               children: [
                 Text(
-                  isKg ? v.toStringAsFixed(1) : v.toInt().toString(),
-                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                  isKg
+                      ? v.toStringAsFixed(1)
+                      : v.toInt().toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(width: 3),
                 Text(

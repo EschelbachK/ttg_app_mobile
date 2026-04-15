@@ -49,11 +49,9 @@ class _State extends ConsumerState<ExerciseSelectionCard> {
           _label("KATEGORIE"),
           _picker(category, _pickCategory),
           _divider(),
-
           _label("ÜBUNG"),
           _picker(exercise, _pickExercise),
           _divider(),
-
           Row(
             children: [
               Expanded(
@@ -94,9 +92,7 @@ class _State extends ConsumerState<ExerciseSelectionCard> {
               ),
             ],
           ),
-
           const SizedBox(height: 20),
-
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
@@ -165,24 +161,26 @@ class _State extends ConsumerState<ExerciseSelectionCard> {
   void _add() {
     if (category == null || exercise == null) return;
 
+    final safeSets = sets < 1 ? 1 : sets;
+
     final e = Exercise(
       id: DateTime.now().toString(),
       name: exercise!,
       bodyRegion: category!,
-      sets: sets > 0
-          ? List.generate(
-        sets,
-            (_) => ExerciseSet(weight: weight, reps: reps),
-      )
-          : [
-        // 🔥 FIX: Backend braucht mindestens 1 Set
-        ExerciseSet(weight: 0, reps: 0),
-      ],
+      sets: List.generate(
+        safeSets,
+            (_) => ExerciseSet(
+          weight: weight,
+          reps: reps,
+        ),
+      ),
     );
 
-    ref
-        .read(dashboardProvider.notifier)
-        .addExercise(widget.folderId, widget.planId, e);
+    ref.read(dashboardProvider.notifier).addExercise(
+      widget.folderId,
+      widget.planId,
+      e,
+    );
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Übung hinzugefügt")),
@@ -236,13 +234,15 @@ class _State extends ConsumerState<ExerciseSelectionCard> {
         onTap: onTap,
         child: Column(
           children: [
-            Text(title,
-                style:
-                const TextStyle(color: Colors.white38, fontSize: 11)),
+            Text(
+              title,
+              style: const TextStyle(color: Colors.white38, fontSize: 11),
+            ),
             const SizedBox(height: 6),
-            Text(value,
-                style:
-                const TextStyle(color: Colors.white, fontSize: 20)),
+            Text(
+              value,
+              style: const TextStyle(color: Colors.white, fontSize: 20),
+            ),
           ],
         ),
       );
@@ -251,20 +251,29 @@ class _State extends ConsumerState<ExerciseSelectionCard> {
     showTTGValuePicker(
       context: context,
       title: title,
-      initial: current.toDouble(),
+      initial: current <= 0 ? 1 : current.toDouble(),
       allowDecimal: false,
-      onSubmit: (v) => onSave(v.toInt()),
+      onSubmit: (v) {
+        final value = v.toInt();
+        setState(() => onSave(value));
+      },
     );
   }
 
   void _double(
-      String title, double current, double max, Function(double) onSave) {
+      String title,
+      double current,
+      double max,
+      Function(double) onSave,
+      ) {
     showTTGValuePicker(
       context: context,
       title: title,
-      initial: current,
+      initial: current <= 0 ? 1 : current,
       allowDecimal: true,
-      onSubmit: onSave,
+      onSubmit: (v) {
+        setState(() => onSave(v));
+      },
     );
   }
 }
