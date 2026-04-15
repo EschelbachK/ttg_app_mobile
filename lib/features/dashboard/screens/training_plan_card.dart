@@ -7,7 +7,7 @@ import '../../../core/ui/ttg_input_dialog.dart';
 import '../../../core/ui/ttg_popup_menu.dart';
 import '../models/training_plan.dart';
 import '../state/dashboard_provider.dart';
-import '../widgets/training_muscle_folder_tile.dart';
+import '../widgets/musclegroup_folder_tile.dart';
 
 class TrainingPlanCard extends ConsumerStatefulWidget {
   final TrainingPlan plan;
