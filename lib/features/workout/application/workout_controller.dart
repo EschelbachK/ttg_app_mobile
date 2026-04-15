@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ttg_app_mobile/features/dashboard/models/training_plan.dart';
+
 import '../data/workout_api_service.dart';
 import '../domain/workout_session.dart';
 import '../domain/workout_group.dart';
@@ -9,6 +10,7 @@ import '../domain/progression_result.dart';
 import '../domain/workout_history_entry.dart';
 import '../domain/set_log.dart';
 import '../domain/motivation/motivation_event.dart';
+
 import '../providers/motivation_provider.dart';
 import 'workout_state.dart';
 import 'progression_engine.dart';
@@ -41,17 +43,21 @@ class WorkoutController extends StateNotifier<WorkoutState> {
 
   ProgressionResult? getSuggestion(ExerciseSession e) {
     if (e.sets.isEmpty) return null;
+
     final last = e.sets.last;
+
     return engine.calculate(
       ProgressionInput(
         lastWeight: last.weight,
         lastReps: last.reps,
         targetReps: last.reps,
-        history: e.sets.map((s) => WorkoutHistoryEntry(
+        history: e.sets
+            .map((s) => WorkoutHistoryEntry(
           weight: s.weight,
           reps: s.reps,
           date: DateTime.now(),
-        )).toList(),
+        ))
+            .toList(),
       ),
     );
   }
@@ -85,9 +91,11 @@ class WorkoutController extends StateNotifier<WorkoutState> {
 
   Future<void> startWorkout() async {
     if (state.session != null && !state.isFinished) return;
+
     try {
       await api.startWorkout();
       final s = await api.getActiveWorkout();
+
       state = state.copyWith(
         session: s ?? _fallback(),
         isPaused: false,
@@ -106,6 +114,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
 
   Future<void> startWorkoutFromPlan(TrainingPlan plan) async {
     if (state.session != null && !state.isFinished) return;
+
     final dash = ref.read(dashboardProvider);
 
     state = WorkoutState(
@@ -132,8 +141,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
       orElse: () => dash.trainingPlans.first,
     );
 
-    final updated =
-    WorkoutMapper.fromPlan(plan: plan, folders: dash.folders);
+    final updated = WorkoutMapper.fromPlan(plan: plan, folders: dash.folders);
 
     final merged = updated.map((g) {
       final existing = s.groups.firstWhere(
@@ -147,6 +155,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
                 (e) => e.name == ex.name,
             orElse: () => ex,
           );
+
           return ex.copyWith(sets: old.sets);
         }).toList(),
       );
@@ -169,11 +178,15 @@ class WorkoutController extends StateNotifier<WorkoutState> {
       reps: reps,
     );
 
-    final groups = s.groups.map((g) => g.copyWith(
-      exercises: g.exercises.map((e) =>
-      e.id == exerciseId ? e.copyWith(sets: [...e.sets, set]) : e)
-          .toList(),
-    )).toList();
+    final groups = s.groups.map((g) {
+      return g.copyWith(
+        exercises: g.exercises.map((e) {
+          return e.id == exerciseId
+              ? e.copyWith(sets: [...e.sets, set])
+              : e;
+        }).toList(),
+      );
+    }).toList();
 
     state = state.copyWith(session: s.copyWith(groups: groups));
 
@@ -194,8 +207,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
 
     if (history.isNotEmpty) {
       final last = history.last;
-      final prev =
-      history.length > 1 ? history[history.length - 2] : null;
+      final prev = history.length > 1 ? history[history.length - 2] : null;
 
       motivator.evaluate(MotivationEvent(
         repsDiff: prev != null ? last.reps - prev.reps : 0,
@@ -234,20 +246,25 @@ class WorkoutController extends StateNotifier<WorkoutState> {
         setsBefore.where((x) => x.completed != true).length;
 
     final updated = s.copyWith(
-      groups: s.groups.map((g) => g.copyWith(
-        exercises: g.exercises.map((e) {
-          if (e.id != exerciseId) return e;
-          return e.copyWith(
-            sets: e.sets.map((x) => x.id == setId
-                ? x.copyWith(
-              weight: weight ?? x.weight,
-              reps: reps ?? x.reps,
-              completed: completed ?? x.completed,
-            )
-                : x).toList(),
-          );
-        }).toList(),
-      )).toList(),
+      groups: s.groups.map((g) {
+        return g.copyWith(
+          exercises: g.exercises.map((e) {
+            if (e.id != exerciseId) return e;
+
+            return e.copyWith(
+              sets: e.sets.map((x) {
+                return x.id == setId
+                    ? x.copyWith(
+                  weight: weight ?? x.weight,
+                  reps: reps ?? x.reps,
+                  completed: completed ?? x.completed,
+                )
+                    : x;
+              }).toList(),
+            );
+          }).toList(),
+        );
+      }).toList(),
     );
 
     state = state.copyWith(session: updated);
@@ -263,15 +280,11 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     final groupIndex = updated.groups.indexOf(groupAfter);
     final isLastGroup = groupIndex == updated.groups.length - 1;
 
-    // ✅ FIX: nur echter Übergang von >0 → 0
     final justFinishedGroup =
         remainingBefore > 0 && remainingAfter == 0;
 
-    // ✅ GRUPPE FERTIG → Timer + Message
     if (justFinishedGroup) {
-      state = state.copyWith(
-        activeExerciseId: exerciseId,
-      );
+      state = state.copyWith(activeExerciseId: exerciseId);
 
       startRestTimer(
         60,
@@ -287,7 +300,6 @@ class WorkoutController extends StateNotifier<WorkoutState> {
       return;
     }
 
-    // ✅ NORMALE SETS → Timer ohne Message
     if (completed == true && !justFinishedGroup) {
       state = state.copyWith(
         activeExerciseId: exerciseId,

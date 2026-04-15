@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
 import '../../../../core/ui/ttg_background.dart';
 import '../../providers/workout_provider.dart';
 import '../../providers/motivation_provider.dart';
@@ -7,7 +9,6 @@ import '../../application/workout_summary_mapper.dart';
 import '../../application/analytics_engine.dart';
 import '../widgets/progress_chart.dart';
 import '../widgets/streak_widget.dart';
-import 'package:go_router/go_router.dart';
 
 const kPrimaryRed = Color(0xFFE10600);
 
@@ -73,20 +74,12 @@ class _WorkoutSummaryScreenState
           child: Stack(
             children: [
               SafeArea(
-                top: false,
                 child: Column(
                   children: [
                     const SizedBox(height: 90),
 
                     if (message != null)
-                      ScaleTransition(
-                        scale: Tween(begin: 0.9, end: 1.0)
-                            .animate(CurvedAnimation(
-                          parent: _fade,
-                          curve: Curves.easeOut,
-                        )),
-                        child: _MotivationCard(message: message),
-                      ),
+                      _MotivationCard(message: message),
 
                     const SizedBox(height: 14),
                     StreakWidget(motivator: motivation.engine),
@@ -98,6 +91,7 @@ class _WorkoutSummaryScreenState
                         children: [
                           _kpiRow(volume, avgWeight, reps, improving),
                           const SizedBox(height: 32),
+
                           const Center(
                             child: Text(
                               'FORTSCHRITT',
@@ -109,7 +103,9 @@ class _WorkoutSummaryScreenState
                               ),
                             ),
                           ),
+
                           const SizedBox(height: 16),
+
                           AnimatedBuilder(
                             animation: _glow,
                             builder: (_, __) {
@@ -138,6 +134,7 @@ class _WorkoutSummaryScreenState
                               );
                             },
                           ),
+
                           const SizedBox(height: 40),
                         ],
                       ),
@@ -148,42 +145,7 @@ class _WorkoutSummaryScreenState
                       child: AnimatedBuilder(
                         animation: _glow,
                         builder: (_, __) {
-                          return Container(
-                            height: 60,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFFF1A1A), Color(0xFFB30000)],
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: kPrimaryRed.withOpacity(
-                                      0.4 + _glow.value * 0.4),
-                                  blurRadius: 30,
-                                )
-                              ],
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(20),
-                                onTap: () {
-                                  ref.read(workoutProvider.notifier).reset();
-                                  context.go('/workout');
-                                },
-                                child: const Center(
-                                  child: Text(
-                                    'Schließen',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
+                          return _closeButton(context);
                         },
                       ),
                     ),
@@ -191,7 +153,6 @@ class _WorkoutSummaryScreenState
                 ),
               ),
 
-              /// 🔥 NEW TOP BAR
               SafeArea(
                 bottom: false,
                 child: _SummaryTopBar(
@@ -199,6 +160,38 @@ class _WorkoutSummaryScreenState
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _closeButton(BuildContext context) {
+    return Container(
+      height: 60,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFF1A1A), Color(0xFFB30000)],
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () {
+            ref.read(workoutProvider.notifier).reset();
+            context.go('/workout');
+          },
+          child: const Center(
+            child: Text(
+              'Schließen',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 16,
+              ),
+            ),
           ),
         ),
       ),
@@ -238,7 +231,6 @@ class _WorkoutSummaryScreenState
             Colors.white.withOpacity(0.02),
           ],
         ),
-        border: Border.all(color: Colors.white10),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,7 +264,6 @@ class _WorkoutSummaryScreenState
             Colors.white.withOpacity(0.02),
           ],
         ),
-        border: Border.all(color: Colors.white10),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -355,7 +346,6 @@ class _MotivationCard extends StatelessWidget {
             Colors.white.withOpacity(0.02),
           ],
         ),
-        border: Border.all(color: Colors.white10),
       ),
       child: Text(
         message,

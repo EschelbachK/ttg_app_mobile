@@ -56,17 +56,11 @@ class WorkoutState {
       suggestions: suggestions ?? this.suggestions,
       motivation: motivation ?? this.motivation,
       restSeconds: restSeconds ?? this.restSeconds,
-
-      // ✅ FINAL FIX: kein Message-Leak mehr
-      restMessage: clearRestMessage
-          ? null
-          : (restMessage ?? this.restMessage),
-
+      restMessage: clearRestMessage ? null : (restMessage ?? this.restMessage),
       triggerFinishFlow: triggerFinishFlow ?? this.triggerFinishFlow,
       activeExerciseId: activeExerciseId ?? this.activeExerciseId,
     );
   }
 
-  bool get hasActiveWorkout =>
-      session != null && !isFinished && !isPaused;
+  bool get hasActiveWorkout => session != null && !isFinished && !isPaused;
 }
