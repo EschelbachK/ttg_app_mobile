@@ -1,9 +1,10 @@
 import '../domain/workout_session.dart';
 import '../domain/workout_history_entry.dart';
 
-class WorkoutSummaryMapper {
-  static List<WorkoutHistoryEntry> toHistory(WorkoutSession session) {
-    final result = <WorkoutHistoryEntry>[];
+class WorkoutHistoryMapper {
+
+  static List<WorkoutHistoryEntry> fromSession(WorkoutSession session) {
+    final List<WorkoutHistoryEntry> result = [];
 
     for (final g in session.groups) {
       for (final e in g.exercises) {
@@ -12,10 +13,10 @@ class WorkoutSummaryMapper {
             WorkoutHistoryEntry(
               id: s.id,
               exerciseName: e.name,
+              sessionId: session.id,
               weight: s.weight,
               reps: s.reps,
               date: session.startedAt,
-              sessionId: session.id,
             ),
           );
         }

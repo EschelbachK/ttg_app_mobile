@@ -9,6 +9,7 @@ import '../../application/workout_summary_mapper.dart';
 import '../../application/analytics_engine.dart';
 import '../widgets/progress_chart.dart';
 import '../widgets/streak_widget.dart';
+import '../widgets/summary_top_bar.dart';
 
 const kPrimaryRed = Color(0xFFE10600);
 
@@ -63,6 +64,13 @@ class _WorkoutSummaryScreenState
     final avgWeight = analytics.averageWeight(history);
     final reps = analytics.totalReps(history);
     final improving = analytics.isImproving(history);
+    final volumeChange = analytics.volumeChangePercent(history);
+
+    String insight() {
+      if (volumeChange > 10) return "🔥 Starkes Upgrade heute";
+      if (volumeChange < -10) return "⚠️ Leistung gesunken";
+      return "📊 Stabile Session";
+    }
 
     final message = motivation.state.last?.message;
 
@@ -79,7 +87,27 @@ class _WorkoutSummaryScreenState
                     const SizedBox(height: 90),
 
                     if (message != null)
-                      _MotivationCard(message: message),
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 20),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(22),
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.white.withOpacity(0.08),
+                              Colors.white.withOpacity(0.02),
+                            ],
+                          ),
+                        ),
+                        child: Text(
+                          message,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
 
                     const SizedBox(height: 14),
                     StreakWidget(motivator: motivation.engine),
@@ -90,6 +118,17 @@ class _WorkoutSummaryScreenState
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         children: [
                           _kpiRow(volume, avgWeight, reps, improving),
+
+                          const SizedBox(height: 16),
+
+                          Text(
+                            insight(),
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+
                           const SizedBox(height: 32),
 
                           const Center(
@@ -144,9 +183,7 @@ class _WorkoutSummaryScreenState
                       padding: const EdgeInsets.all(16),
                       child: AnimatedBuilder(
                         animation: _glow,
-                        builder: (_, __) {
-                          return _closeButton(context);
-                        },
+                        builder: (_, __) => _closeButton(context),
                       ),
                     ),
                   ],
@@ -155,7 +192,7 @@ class _WorkoutSummaryScreenState
 
               SafeArea(
                 bottom: false,
-                child: _SummaryTopBar(
+                child: SummaryTopBar(
                   onBack: () => context.go('/workout'),
                 ),
               ),
@@ -213,7 +250,7 @@ class _WorkoutSummaryScreenState
           children: [
             Expanded(child: _card('Wiederholungen', reps.toString())),
             const SizedBox(width: 12),
-            Expanded(child: _trendCard(improving)),
+            _trendCard(improving),
           ],
         ),
       ],
@@ -266,94 +303,19 @@ class _WorkoutSummaryScreenState
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text('Trend', style: TextStyle(color: Colors.white54)),
-          Row(
-            children: [
-              Icon(icon, color: color, size: 18),
-              const SizedBox(width: 6),
-              Text(
-                improving ? 'STEIGEND' : 'FALLEND',
-                style: TextStyle(
-                  color: color,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SummaryTopBar extends StatelessWidget {
-  final VoidCallback onBack;
-
-  const _SummaryTopBar({required this.onBack});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: onBack,
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.arrow_back,
-                  color: Colors.white, size: 18),
-            ),
-          ),
           const Spacer(),
-          const Text(
-            'WORKOUT STATISTIK',
+          Icon(icon, color: color, size: 18),
+          const SizedBox(width: 6),
+          Text(
+            improving ? 'STEIGEND' : 'FALLEND',
             style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
+              color: color,
               fontWeight: FontWeight.w900,
-              letterSpacing: 1.5,
             ),
           ),
-          const Spacer(),
-          const SizedBox(width: 40),
         ],
-      ),
-    );
-  }
-}
-
-class _MotivationCard extends StatelessWidget {
-  final String message;
-  const _MotivationCard({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(22),
-        gradient: LinearGradient(
-          colors: [
-            Colors.white.withOpacity(0.08),
-            Colors.white.withOpacity(0.02),
-          ],
-        ),
-      ),
-      child: Text(
-        message,
-        textAlign: TextAlign.center,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w600,
-        ),
       ),
     );
   }

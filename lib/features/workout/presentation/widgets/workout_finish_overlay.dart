@@ -23,6 +23,7 @@ class WorkoutFinishOverlay extends StatefulWidget {
 class _WorkoutFinishOverlayState extends State<WorkoutFinishOverlay>
     with SingleTickerProviderStateMixin {
   late final AnimationController c;
+  bool _disposed = false;
 
   @override
   void initState() {
@@ -30,22 +31,31 @@ class _WorkoutFinishOverlayState extends State<WorkoutFinishOverlay>
 
     c = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3200), // 🐢 langsamer
+      duration: const Duration(milliseconds: 3200),
     )..forward();
 
-    Future.delayed(const Duration(milliseconds: 5000), () {
-      if (mounted) widget.onDone();
-    });
+    _autoClose();
+  }
+
+  void _autoClose() async {
+    await Future.delayed(const Duration(milliseconds: 5000));
+
+    if (!_disposed && mounted) {
+      widget.onDone();
+    }
   }
 
   @override
   void dispose() {
+    _disposed = true;
     c.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final muscles = widget.completedMuscles;
+
     return Positioned.fill(
       child: Container(
         color: Colors.black.withOpacity(0.75),
@@ -57,7 +67,6 @@ class _WorkoutFinishOverlayState extends State<WorkoutFinishOverlay>
               builder: (_, __) {
                 final t = Curves.easeInOutCubic.transform(c.value);
 
-                // 🔥 smoother title slide
                 final titleY = Tween(begin: 0.0, end: -80.0)
                     .transform((t.clamp(0.0, 0.4) / 0.4));
 
@@ -102,8 +111,7 @@ class _WorkoutFinishOverlayState extends State<WorkoutFinishOverlay>
 
                     const SizedBox(height: 50),
 
-                    // 🔥 MUSKELGRUPPEN (gestaffelt)
-                    ...List.generate(widget.completedMuscles.length, (i) {
+                    ...List.generate(muscles.length, (i) {
                       final start = 0.35 + (i * 0.22);
                       final end = start + 0.45;
 
@@ -114,7 +122,7 @@ class _WorkoutFinishOverlayState extends State<WorkoutFinishOverlay>
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         child: _Row(
-                          text: widget.completedMuscles[i],
+                          text: muscles[i],
                           progress: progress,
                         ),
                       );
@@ -148,7 +156,6 @@ class _Row extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 🔥 PHASEN
     final textPhase = (progress / 0.4).clamp(0.0, 1.0);
     final borderPhase = ((progress - 0.4) / 0.35).clamp(0.0, 1.0);
     final checkPhase = ((progress - 0.75) / 0.25).clamp(0.0, 1.0);
@@ -163,7 +170,6 @@ class _Row extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // 🔴 TTG BORDER (zeichnet sich nach Text)
           if (borderEase > 0)
             AnimatedTtgBorder(
               progress: borderEase,
@@ -171,7 +177,6 @@ class _Row extends StatelessWidget {
               height: 36,
             ),
 
-          // 🔤 TEXT (zentriert + slide)
           Transform.translate(
             offset: Offset((1 - textEase) * 160, 0),
             child: Opacity(
@@ -188,7 +193,6 @@ class _Row extends StatelessWidget {
             ),
           ),
 
-          // ✔️ CHECK (kommt zuletzt, rechts)
           Positioned(
             right: 30,
             top: 0,
