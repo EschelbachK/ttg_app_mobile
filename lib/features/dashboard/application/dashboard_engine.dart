@@ -5,9 +5,6 @@ class DashboardEngine {
 
   DashboardEngine(this.history);
 
-  // ─────────────────────────────
-  // SESSION GROUPING
-  // ─────────────────────────────
   List<List<WorkoutHistoryEntry>> get sessions {
     final map = <String, List<WorkoutHistoryEntry>>{};
 
@@ -16,12 +13,9 @@ class DashboardEngine {
     }
 
     return map.values.toList()
-      ..sort((a, b) => a.first.date.compareTo(b.first.date));
+      ..sort((a, b) => a.last.date.compareTo(b.last.date));
   }
 
-  // ─────────────────────────────
-  // VOLUME PER SESSION
-  // ─────────────────────────────
   List<double> volumePerSession() {
     return sessions.map((session) {
       return session.fold(
@@ -31,9 +25,6 @@ class DashboardEngine {
     }).toList();
   }
 
-  // ─────────────────────────────
-  // TREND
-  // ─────────────────────────────
   double progressTrend() {
     final v = volumePerSession();
     if (v.length < 2) return 0;
@@ -46,28 +37,24 @@ class DashboardEngine {
     return ((last - prev) / prev) * 100;
   }
 
-  // ─────────────────────────────
-  // IMPROVEMENT
-  // ─────────────────────────────
   bool isImproving() {
     final v = volumePerSession();
     if (v.length < 2) return false;
     return v.last > v.first;
   }
 
-  // ─────────────────────────────
-  // WEEKLY VOLUME
-  // ─────────────────────────────
   double weeklyVolume() {
-    return history.fold(
+    final now = DateTime.now();
+    final weekAgo = now.subtract(const Duration(days: 7));
+
+    return history
+        .where((e) => e.date.isAfter(weekAgo))
+        .fold(
       0.0,
           (sum, e) => sum + (e.weight * e.reps),
     );
   }
 
-  // ─────────────────────────────
-  // MUSCLE / EXERCISE HEATMAP
-  // ─────────────────────────────
   Map<String, double> muscleHeatmap() {
     final map = <String, double>{};
 

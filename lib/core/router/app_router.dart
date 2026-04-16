@@ -11,7 +11,6 @@ import '../../features/workout/presentation/screens/workout_active_screen.dart';
 import '../../features/workout/presentation/screens/workout_redirect_screen.dart';
 import '../../features/workout/presentation/screens/workout_exercise_detail_screen.dart';
 import '../../features/workout/presentation/screens/workout_summary_screen.dart';
-
 import '../auth/auth_provider.dart';
 import '../navigation/main_navigation.dart';
 
@@ -53,7 +52,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               ),
               GoRoute(
                 path: 'summary',
-                builder: (_, __) => const WorkoutSummaryScreen(),
+                builder: (_, __) => const SummaryScreen(),
               ),
             ],
           ),

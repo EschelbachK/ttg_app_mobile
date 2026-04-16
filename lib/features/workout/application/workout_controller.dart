@@ -3,27 +3,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:ttg_app_mobile/features/dashboard/models/training_plan.dart';
 
+import '../../../core/events/event_bus_provider.dart';
+import '../../../core/events/workout_events.dart';
+import '../../history/application/history_service.dart';
 import '../data/workout_api_service.dart';
 import '../domain/workout_session.dart';
-import '../domain/workout_group.dart';
 import '../domain/set_log.dart';
 import '../domain/progression_input.dart';
 import '../domain/progression_result.dart';
-import '../domain/motivation/motivation_event.dart';
 import '../domain/workout_history_entry.dart';
-
-import '../providers/motivation_provider.dart';
 import 'workout_state.dart';
 import 'progression_engine.dart';
 import 'workout_mapper.dart';
-import 'workout_summary_mapper.dart';
 import '../../dashboard/state/dashboard_provider.dart';
 
 class WorkoutController extends StateNotifier<WorkoutState> {
   final WorkoutApiService api;
   final ProgressionEngine engine = ProgressionEngine();
-  final MotivationNotifier motivator;
   final Ref ref;
+
+  late final HistoryService historyService;
 
   Timer? _restTimer;
   int _restSeconds = 0;
@@ -31,8 +30,10 @@ class WorkoutController extends StateNotifier<WorkoutState> {
   int get restSeconds => _restSeconds;
   bool get showRest => _restSeconds > 0;
 
-  WorkoutController(this.api, this.motivator, this.ref)
-      : super(const WorkoutState());
+  WorkoutController(this.api, this.ref)
+      : super(const WorkoutState()) {
+    historyService = ref.read(historyServiceProvider);
+  }
 
   void _emit() => state = state.copyWith();
 
@@ -42,10 +43,8 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     state = const WorkoutState();
   }
 
-  // ---------------- FIXED SUGGESTION ----------------
   ProgressionResult? getSuggestion(dynamic exercise) {
     final sets = exercise.sets as List<SetLog>;
-
     if (sets.isEmpty) return null;
 
     final last = sets.last;
@@ -142,22 +141,11 @@ class WorkoutController extends StateNotifier<WorkoutState> {
       await api.finishWorkout(s);
     } catch (_) {}
 
-    final history = WorkoutSummaryMapper.toHistory(s);
+    historyService.saveSession(s);
 
-    if (history.isNotEmpty) {
-      final last = history.last;
-      final prev = history.length > 1 ? history[history.length - 2] : null;
-
-      motivator.evaluate(MotivationEvent(
-        repsDiff: prev != null ? last.reps - prev.reps : 0,
-        weightDiff: prev != null ? last.weight - prev.weight : 0,
-        streakDays: motivator.engine.streak.streakCount,
-        isComeback: motivator.engine.streak.streakCount == 1,
-        totalWorkouts: history.length,
-      ));
-
-      motivator.updateStreakFromSession(s);
-    }
+    ref.read(eventBusProvider).emit(
+      WorkoutFinishedEvent(s),
+    );
 
     state = state.copyWith(isFinished: true);
   }
@@ -209,8 +197,14 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     }).toList();
 
     state = state.copyWith(session: s.copyWith(groups: groups));
-  }
 
+    ref.read(eventBusProvider).emit(
+      SetCompletedEvent(
+        exerciseId: exerciseId,
+        set: set,
+      ),
+    );
+  }
   void updateSet({
     required String exerciseId,
     required String setId,
@@ -221,29 +215,79 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     final s = state.session;
     if (s == null) return;
 
-    final updated = s.copyWith(
-      groups: s.groups.map((g) {
-        return g.copyWith(
-          exercises: g.exercises.map((e) {
-            if (e.id != exerciseId) return e;
+    bool didCompleteSet = false;
+    bool isFinalWorkout = true;
+    String? completedGroup;
+    String? nextGroup;
 
-            return e.copyWith(
-              sets: e.sets.map((x) {
-                return x.id == setId
-                    ? x.copyWith(
-                  weight: weight ?? x.weight,
-                  reps: reps ?? x.reps,
-                  completed: completed ?? x.completed,
-                )
-                    : x;
-              }).toList(),
-            );
+    final updatedGroups = s.groups.map((g) {
+      final beforeComplete = g.exercises.every(
+            (e) => e.sets.isNotEmpty && e.sets.every((x) => x.completed == true),
+      );
+
+      final exercises = g.exercises.map((e) {
+        if (e.id != exerciseId) return e;
+
+        return e.copyWith(
+          sets: e.sets.map((x) {
+            if (x.id == setId &&
+                completed == true &&
+                x.completed != true) {
+              didCompleteSet = true;
+            }
+
+            return x.id == setId
+                ? x.copyWith(
+              weight: weight ?? x.weight,
+              reps: reps ?? x.reps,
+              completed: completed ?? x.completed,
+            )
+                : x;
           }).toList(),
         );
-      }).toList(),
-    );
+      }).toList();
 
+      final afterComplete = exercises.every(
+            (e) => e.sets.isNotEmpty && e.sets.every((x) => x.completed == true),
+      );
+
+      if (!beforeComplete && afterComplete) {
+        completedGroup = g.name;
+      }
+
+      if (!afterComplete) {
+        isFinalWorkout = false;
+      }
+
+      return g.copyWith(exercises: exercises);
+    }).toList();
+
+    final updated = s.copyWith(groups: updatedGroups);
     state = state.copyWith(session: updated);
+
+    if (completedGroup != null) {
+      final i = updatedGroups.indexWhere((g) => g.name == completedGroup);
+      if (i != -1 && i + 1 < updatedGroups.length) {
+        nextGroup = updatedGroups[i + 1].name;
+      }
+    }
+
+    if (!didCompleteSet) return;
+
+    if (isFinalWorkout) {
+      finishWorkout();
+      return;
+    }
+
+    if (completedGroup != null) {
+      startRestTimer(
+        60,
+        message:
+        "🔥 $completedGroup abgeschlossen ➜ Nächste: ${nextGroup ?? 'Fertig'}",
+      );
+    } else {
+      startRestTimer(60);
+    }
   }
 
   WorkoutSession _fallback() {

@@ -29,6 +29,11 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
     _showStartOverlay = s.session != null && !s.isPaused;
   }
 
+  String _nextGroup(session, int i) {
+    if (i + 1 >= session.groups.length) return "Workout Ende";
+    return session.groups[i + 1].name;
+  }
+
   Future<void> _exit(BuildContext c) async {
     final ctrl = ref.read(workoutProvider.notifier);
     final r = await showTTGLeaveWorkoutDialog(context: c);
@@ -51,6 +56,24 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
     final state = ref.watch(workoutProvider);
     final ctrl = ref.read(workoutProvider.notifier);
     final s = state.session;
+
+    final isWorkoutComplete = s != null &&
+        s.groups.every(
+              (g) => g.exercises.every(
+                (e) =>
+            e.sets.isNotEmpty &&
+                e.sets.every((set) => set.completed == true),
+          ),
+        );
+
+    if (isWorkoutComplete && !state.isFinished && !_showFinishOverlay) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await ref.read(workoutProvider.notifier).finishWorkout();
+        if (mounted) {
+          setState(() => _showFinishOverlay = true);
+        }
+      });
+    }
 
     if (state.triggerFinishFlow && !_showFinishOverlay) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -79,15 +102,6 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
       );
     }).map((g) => g.name).toList();
 
-    final volume = s.groups
-        .expand((g) => g.exercises)
-        .fold<double>(
-      0,
-          (sum, e) =>
-      sum + e.sets.fold<double>(0, (s, x) => s + x.weight * x.reps),
-    );
-
-    // ✅ FINAL FIX: kein Cache
     final activeRestMessage =
     ctrl.restSeconds > 0 ? state.restMessage : null;
 
@@ -137,13 +151,11 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
               ],
             ),
           ),
-
           if (_showStartOverlay)
             WorkoutStartOverlay(
               onFinish: () =>
                   setState(() => _showStartOverlay = false),
             ),
-
           if (ctrl.restSeconds > 0)
             _RestOverlay(
               key: ValueKey(ctrl.restSeconds),
@@ -151,7 +163,6 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
               onSkip: ctrl.stopRestTimer,
               message: activeRestMessage,
             ),
-
           if (_showFinishOverlay)
             WorkoutFinishOverlay(
               completedMuscles: completedMuscleNames,
@@ -180,10 +191,11 @@ class _RestOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final progress = (seconds / 60).clamp(0.0, 1.0);
+    final hasMessage = message != null && message!.isNotEmpty;
 
     String done = "", next = "";
 
-    if (message != null && message!.isNotEmpty) {
+    if (hasMessage) {
       final parts = message!.split("Nächste:");
       done = parts.first
           .replaceAll(RegExp(r'[🔥➡️➜➝]'), '')
@@ -200,15 +212,7 @@ class _RestOverlay extends StatelessWidget {
     Widget line(String t) => Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Container(
-          width: 24,
-          height: 2,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.transparent, kPrimaryRed],
-            ),
-          ),
-        ),
+        Container(width: 24, height: 2, color: kPrimaryRed),
         const SizedBox(width: 10),
         Text(
           t.toUpperCase(),
@@ -220,15 +224,7 @@ class _RestOverlay extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 10),
-        Container(
-          width: 24,
-          height: 2,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [kPrimaryRed, Colors.transparent],
-            ),
-          ),
-        ),
+        Container(width: 24, height: 2, color: kPrimaryRed),
       ],
     );
 
@@ -276,67 +272,37 @@ class _RestOverlay extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 40),
-
-                // ✅ MESSAGE BLOCK IST WIEDER DA
-                if (message != null && message!.isNotEmpty)
-                  Column(
-                    children: [
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 28),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          color: Colors.white.withOpacity(0.04),
-                          border: Border.all(color: Colors.white.withOpacity(0.08)),
-                        ),
-                        child: Column(
-                          children: [
-                            const Text(
-                              "ABGESCHLOSSEN",
-                              style: TextStyle(
-                                color: Colors.white38,
-                                fontSize: 10,
-                                letterSpacing: 2,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            line(done),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Icon(Icons.keyboard_arrow_down, color: kPrimaryRed, size: 26),
-                      const SizedBox(height: 12),
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 28),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          color: Colors.white.withOpacity(0.04),
-                          border: Border.all(
-                            color: kPrimaryRed.withOpacity(0.6),
-                            width: 1.2,
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            const Text(
-                              "JETZT",
-                              style: TextStyle(
-                                color: Colors.white38,
-                                fontSize: 10,
-                                letterSpacing: 2,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            line(next),
-                          ],
-                        ),
-                      ),
-                    ],
+                if (hasMessage) ...[
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 28),
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.white.withOpacity(0.04),
+                    ),
+                    child: line(done),
                   ),
+                  const SizedBox(height: 20),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 28),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: kPrimaryRed),
+                    ),
+                    child: line(next),
+                  ),
+                ] else ...[
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 28),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.white.withOpacity(0.04),
+                    ),
+                    child: line("Satz weiter"),
+                  ),
+                ],
               ],
             ),
           ),
@@ -365,7 +331,8 @@ class _TopBar extends StatelessWidget {
                 color: Colors.white.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.arrow_back, color: Colors.white, size: 18),
+              child:
+              const Icon(Icons.arrow_back, color: Colors.white, size: 18),
             ),
           ),
           const Spacer(),

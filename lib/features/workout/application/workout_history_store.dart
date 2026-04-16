@@ -14,18 +14,19 @@ class WorkoutHistoryStore extends StateNotifier<List<WorkoutHistoryEntry>> {
 
   WorkoutHistoryStore(this.ref) : super([]);
 
-  /// 🧠 Session wird sauber in History umgewandelt
+  void add(WorkoutHistoryEntry entry) {
+    state = [...state, entry];
+  }
+
   void addSession(WorkoutSession session) {
     final entries = WorkoutSummaryMapper.toHistory(session);
+    if (entries.isEmpty) return;
 
-    // ❗ verhindert doppelte Einträge
     state = [...state, ...entries];
   }
 
-  /// 📊 gesamte History
-  List<WorkoutHistoryEntry> get all => state;
+  List<WorkoutHistoryEntry> get entries => state;
 
-  /// 📦 echte Session Gruppierung (über sessionId)
   List<List<WorkoutHistoryEntry>> get sessions {
     final Map<String, List<WorkoutHistoryEntry>> grouped = {};
 

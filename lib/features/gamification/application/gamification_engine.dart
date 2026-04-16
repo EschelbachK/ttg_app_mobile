@@ -1,35 +1,76 @@
-import '../domain/gamification_state.dart';
+import '../../history/application/history_service.dart';
+import '../../workout/domain/workout_history_entry.dart';
 
 class GamificationEngine {
-  GamificationState addWorkoutXP(GamificationState state, int sets) {
-    final gainedXP = sets * 10;
+  final HistoryService historyService;
 
-    final newXP = state.xp + gainedXP;
-    final newLevel = (newXP / 200).floor() + 1;
+  GamificationEngine(this.historyService);
 
-    return state.copyWith(
-      xp: newXP,
-      level: newLevel,
+  List<WorkoutHistoryEntry> get history =>
+      historyService.getAll();
+
+  int totalXP() {
+    if (history.isEmpty) return 0;
+
+    return history.fold(
+      0,
+          (sum, e) => sum + (e.weight * e.reps).toInt(),
     );
   }
 
-  GamificationState updateStreak(GamificationState state, bool trainedToday) {
-    final streak = trainedToday ? state.streak + 1 : 0;
-
-    return state.copyWith(streak: streak);
+  int level() {
+    final xp = totalXP();
+    return (xp / 1000).floor();
   }
 
-  List<String> checkBadges(GamificationState state) {
-    final badges = [...state.badges];
+  int currentStreak() {
+    if (history.isEmpty) return 0;
 
-    if (state.streak >= 3 && !badges.contains("Consistency")) {
-      badges.add("Consistency");
+    final sessions = _sessionsSorted();
+
+    int streak = 1;
+
+    for (int i = sessions.length - 1; i > 0; i--) {
+      final current = sessions[i].last.date;
+      final prev = sessions[i - 1].last.date;
+
+      final diff = current.difference(prev).inDays;
+
+      if (diff <= 1) {
+        streak++;
+      } else {
+        break;
+      }
     }
 
-    if (state.level >= 5 && !badges.contains("Rising Athlete")) {
-      badges.add("Rising Athlete");
+    return streak;
+  }
+
+  bool hasPR() {
+    if (history.length < 2) return false;
+
+    final volumes = _sessionVolumes();
+
+    return volumes.last > volumes.reduce((a, b) => a > b ? a : b);
+  }
+
+  List<List<WorkoutHistoryEntry>> _sessionsSorted() {
+    final map = <String, List<WorkoutHistoryEntry>>{};
+
+    for (final e in history) {
+      map.putIfAbsent(e.sessionId, () => []).add(e);
     }
 
-    return badges;
+    return map.values.toList()
+      ..sort((a, b) => a.last.date.compareTo(b.last.date));
+  }
+
+  List<double> _sessionVolumes() {
+    return _sessionsSorted().map((session) {
+      return session.fold(
+        0.0,
+            (sum, e) => sum + (e.weight * e.reps),
+      );
+    }).toList();
   }
 }

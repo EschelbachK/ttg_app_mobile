@@ -1,321 +1,110 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../core/ui/ttg_background.dart';
-import '../../providers/workout_provider.dart';
-import '../../providers/motivation_provider.dart';
-import '../../application/workout_summary_mapper.dart';
-import '../../application/analytics_engine.dart';
-import '../widgets/progress_chart.dart';
-import '../widgets/streak_widget.dart';
-import '../widgets/summary_top_bar.dart';
+import '../../application/summary_provider.dart';
+import '../../../gamification/application/gamification_provider.dart';
+import '../../../ai_coach/application/ai_coach_provider.dart';
 
-const kPrimaryRed = Color(0xFFE10600);
-
-class WorkoutSummaryScreen extends ConsumerStatefulWidget {
-  const WorkoutSummaryScreen({super.key});
+class SummaryScreen extends ConsumerWidget {
+  const SummaryScreen({super.key});
 
   @override
-  ConsumerState<WorkoutSummaryScreen> createState() =>
-      _WorkoutSummaryScreenState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final summary = ref.watch(summaryProvider);
+    final game = ref.watch(gamificationProvider);
+    final ai = ref.watch(aiCoachProvider);
+
+    if (summary == null) {
+      return const Scaffold(
+        body: Center(child: Text('Keine Daten vorhanden')),
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Workout Zusammenfassung'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _StatCard(
+              title: 'Gesamtvolumen',
+              value: summary.totalVolume.toStringAsFixed(0),
+            ),
+            _StatCard(
+              title: 'Sätze',
+              value: summary.totalSets.toString(),
+            ),
+            _StatCard(
+              title: 'Wiederholungen',
+              value: summary.totalReps.toString(),
+            ),
+            _StatCard(
+              title: 'Übungen',
+              value: summary.exercises.toString(),
+            ),
+
+            const SizedBox(height: 20),
+
+            // 🎮 XP
+            _StatCard(
+              title: 'Erfahrung (XP)',
+              value: game.totalXP().toString(),
+            ),
+
+            const SizedBox(height: 20),
+
+            // 🧠 Coach Message
+            Text(
+              ai.coachMessage(),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+
+            const Spacer(),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Fertig'),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-class _WorkoutSummaryScreenState
-    extends ConsumerState<WorkoutSummaryScreen>
-    with TickerProviderStateMixin {
-  late final AnimationController _fade;
-  late final AnimationController _glow;
+class _StatCard extends StatelessWidget {
+  final String title;
+  final String value;
 
-  @override
-  void initState() {
-    super.initState();
-
-    _fade = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 700),
-    )..forward();
-
-    _glow = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _fade.dispose();
-    _glow.dispose();
-    super.dispose();
-  }
+  const _StatCard({
+    required this.title,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final workout = ref.watch(workoutProvider);
-    final motivation = ref.watch(motivationProvider);
-
-    final session = workout.session;
-    if (session == null) return const SizedBox();
-
-    final history = WorkoutSummaryMapper.toHistory(session);
-    final analytics = AnalyticsEngine();
-
-    final volume = analytics.totalVolume(history);
-    final avgWeight = analytics.averageWeight(history);
-    final reps = analytics.totalReps(history);
-    final improving = analytics.isImproving(history);
-    final volumeChange = analytics.volumeChangePercent(history);
-
-    String insight() {
-      if (volumeChange > 10) return "🔥 Starkes Upgrade heute";
-      if (volumeChange < -10) return "⚠️ Leistung gesunken";
-      return "📊 Stabile Session";
-    }
-
-    final message = motivation.state.last?.message;
-
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: TtgBackground(
-        child: FadeTransition(
-          opacity: _fade,
-          child: Stack(
-            children: [
-              SafeArea(
-                child: Column(
-                  children: [
-                    const SizedBox(height: 90),
-
-                    if (message != null)
-                      Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 20),
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(22),
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.white.withOpacity(0.08),
-                              Colors.white.withOpacity(0.02),
-                            ],
-                          ),
-                        ),
-                        child: Text(
-                          message,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-
-                    const SizedBox(height: 14),
-                    StreakWidget(motivator: motivation.engine),
-                    const SizedBox(height: 28),
-
-                    Expanded(
-                      child: ListView(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        children: [
-                          _kpiRow(volume, avgWeight, reps, improving),
-
-                          const SizedBox(height: 16),
-
-                          Text(
-                            insight(),
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-
-                          const SizedBox(height: 32),
-
-                          const Center(
-                            child: Text(
-                              'FORTSCHRITT',
-                              style: TextStyle(
-                                color: Colors.white54,
-                                letterSpacing: 2,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          AnimatedBuilder(
-                            animation: _glow,
-                            builder: (_, __) {
-                              return Container(
-                                padding: const EdgeInsets.all(14),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(22),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: kPrimaryRed.withOpacity(
-                                          0.15 + _glow.value * 0.2),
-                                      blurRadius: 40,
-                                    )
-                                  ],
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.white.withOpacity(0.05),
-                                      Colors.white.withOpacity(0.02),
-                                    ],
-                                  ),
-                                ),
-                                child: SizedBox(
-                                  height: 300,
-                                  child: ProgressChart(history: history),
-                                ),
-                              );
-                            },
-                          ),
-
-                          const SizedBox(height: 40),
-                        ],
-                      ),
-                    ),
-
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: AnimatedBuilder(
-                        animation: _glow,
-                        builder: (_, __) => _closeButton(context),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              SafeArea(
-                bottom: false,
-                child: SummaryTopBar(
-                  onBack: () => context.go('/workout'),
-                ),
-              ),
-            ],
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        title: Text(title),
+        trailing: Text(
+          value,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _closeButton(BuildContext context) {
-    return Container(
-      height: 60,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        gradient: const LinearGradient(
-          colors: [Color(0xFFFF1A1A), Color(0xFFB30000)],
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20),
-          onTap: () {
-            ref.read(workoutProvider.notifier).reset();
-            context.go('/workout');
-          },
-          child: const Center(
-            child: Text(
-              'Schließen',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w900,
-                fontSize: 16,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _kpiRow(double volume, double avg, int reps, bool improving) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(child: _card('Volumen', '$volume KG', true)),
-            const SizedBox(width: 12),
-            Expanded(child: _card('Ø Gewicht', avg.toString())),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(child: _card('Wiederholungen', reps.toString())),
-            const SizedBox(width: 12),
-            _trendCard(improving),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _card(String title, String value, [bool highlight = false]) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        gradient: LinearGradient(
-          colors: [
-            Colors.white.withOpacity(0.06),
-            Colors.white.withOpacity(0.02),
-          ],
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(title, style: const TextStyle(color: Colors.white54)),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w900,
-              color: highlight ? kPrimaryRed : Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _trendCard(bool improving) {
-    final color = improving ? Colors.green : Colors.red;
-    final icon = improving ? Icons.arrow_upward : Icons.arrow_downward;
-
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        gradient: LinearGradient(
-          colors: [
-            Colors.white.withOpacity(0.06),
-            Colors.white.withOpacity(0.02),
-          ],
-        ),
-      ),
-      child: Row(
-        children: [
-          const Text('Trend', style: TextStyle(color: Colors.white54)),
-          const Spacer(),
-          Icon(icon, color: color, size: 18),
-          const SizedBox(width: 6),
-          Text(
-            improving ? 'STEIGEND' : 'FALLEND',
-            style: TextStyle(
-              color: color,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-        ],
       ),
     );
   }
