@@ -6,12 +6,10 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/ui/ttg_input_dialog.dart';
 
 import '../state/dashboard_provider.dart';
-import '../widgets/dashboard/dashboard_toggle.dart';
 import '../widgets/dashboard/dashboard_top_bar.dart';
 
 import '../widgets/archive/archived_plan_tile.dart';
 import '../widgets/archive/archived_folder_tile.dart';
-import '../widgets/dashboard_statistics_view.dart';
 
 import 'training_plan_card.dart';
 
@@ -19,26 +17,22 @@ class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  ConsumerState<DashboardScreen> createState() =>
-      _DashboardScreenState();
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   String? expandedPlanId;
-
-  /// 0 = Plans
-  /// 1 = Archive
-  /// 2 = Statistics
   int selectedTab = 0;
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(() =>
-        ref.read(dashboardProvider.notifier).loadTrainingPlans());
+    Future.microtask(
+          () => ref.read(dashboardProvider.notifier).loadTrainingPlans(),
+    );
   }
 
-  Widget section(String title) => Padding(
+  Widget _section(String title) => Padding(
     padding: const EdgeInsets.only(bottom: 12),
     child: Center(
       child: Text(
@@ -65,74 +59,66 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
         ),
         Positioned.fill(
-          child: Container(color: Colors.black.withOpacity(.55)),
+          child: Container(color: Colors.black.withOpacity(0.55)),
         ),
-
         Scaffold(
           backgroundColor: Colors.transparent,
-
           appBar: DashboardTopBar(
             selectedTab: selectedTab,
             onTabChanged: (i) => setState(() => selectedTab = i),
           ),
-
-          body: Column(
-            children: [
-              const SizedBox(height: 10),
-              const DashboardToggle(),
-              const SizedBox(height: 10),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  children: [
-                    const Spacer(),
-                    Text(
-                      selectedTab == 2
-                          ? "STATISTIK"
-                          : state.showArchive
-                          ? "ARCHIV"
-                          : "MEINE TRAININGSPLÄNE",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+          body: SafeArea(
+            child: Column(
+              children: [
+                const SizedBox(height: 12),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      const Spacer(),
+                      Text(
+                        state.showArchive
+                            ? "ARCHIV"
+                            : "MEINE TRAININGSPLÄNE",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                    const Spacer(),
-
-                    if (!state.showArchive && selectedTab != 2)
-                      IconButton(
-                        icon: const Icon(
-                          Icons.add,
-                          color: AppTheme.primaryRed,
-                        ),
-                        onPressed: () => showTTGInputDialog(
-                          context: context,
-                          title: "Neuer Trainingsplan",
-                          buttonText: "Erstellen",
-                          onSubmit: (v) async {
-                            await ref
-                                .read(dashboardProvider.notifier)
-                                .createTrainingPlan(v);
-                          },
-                        ),
-                      )
-                    else
-                      const SizedBox(width: 26),
-                  ],
+                      const Spacer(),
+                      if (!state.showArchive)
+                        IconButton(
+                          icon: const Icon(
+                            Icons.add,
+                            color: AppTheme.primaryRed,
+                          ),
+                          onPressed: () => showTTGInputDialog(
+                            context: context,
+                            title: "Neuer Trainingsplan",
+                            buttonText: "Erstellen",
+                            onSubmit: (v) async {
+                              await ref
+                                  .read(dashboardProvider.notifier)
+                                  .createTrainingPlan(v);
+                            },
+                          ),
+                        )
+                      else
+                        const SizedBox(width: 26),
+                    ],
+                  ),
                 ),
-              ),
-
-              const SizedBox(height: 10),
-
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 0, 8, 6),
-                  child: _buildContent(state),
+                const SizedBox(height: 12),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                    child: _buildContent(state),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
@@ -140,22 +126,17 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   Widget _buildContent(DashboardState state) {
-    if (selectedTab == 2) {
-      return const DashboardStatisticsView();
-    }
-
     if (state.showArchive) {
       return ListView(
+        padding: EdgeInsets.zero,
         children: [
           if (state.archivedPlans.isNotEmpty) ...[
-            section("ARCHIVIERTE TRAININGSPLÄNE"),
-            ...state.archivedPlans
-                .map((p) => ArchivedPlanTile(plan: p)),
+            _section("Archivierte Trainingspläne"),
+            ...state.archivedPlans.map((p) => ArchivedPlanTile(plan: p)),
           ],
           if (state.archivedFolders.isNotEmpty) ...[
-            section("ARCHIVIERTE MUSKELGRUPPEN"),
-            ...state.archivedFolders
-                .map((f) => ArchivedFolderTile(folder: f)),
+            _section("Archivierte Muskelgruppen"),
+            ...state.archivedFolders.map((f) => ArchivedFolderTile(folder: f)),
           ],
         ],
       );
@@ -175,16 +156,16 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     }
 
     return ListView(
+      padding: EdgeInsets.zero,
       children: state.trainingPlans.map((p) {
         return Column(
           children: [
             TrainingPlanCard(
               plan: p,
               expandedPlanId: expandedPlanId,
-              onExpand: (id) =>
-                  setState(() => expandedPlanId = id),
+              onExpand: (id) => setState(() => expandedPlanId = id),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
           ],
         );
       }).toList(),

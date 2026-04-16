@@ -21,7 +21,7 @@ class PRBadge extends StatelessWidget {
         border: Border.all(color: Colors.orange),
       ),
       child: Text(
-        "🏆 $label PR",
+        "🏆 $label",
         style: const TextStyle(
           color: Colors.orange,
           fontWeight: FontWeight.w700,

@@ -22,25 +22,60 @@ class VolumeLineChart extends StatelessWidget {
     final maxValue = values.reduce((a, b) => a > b ? a : b);
 
     return Container(
-      height: 160,
-      padding: const EdgeInsets.all(12),
+      height: 180,
+      padding: const EdgeInsets.fromLTRB(12, 16, 12, 12),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white.withOpacity(0.06),
+            Colors.white.withOpacity(0.02),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
-        children: values.map((v) {
+        children: values.asMap().entries.map((entry) {
+          final index = entry.key;
+          final v = entry.value;
+
           final height = maxValue == 0 ? 0.0 : (v / maxValue);
+
+          final isLast = index == values.length - 1;
 
           return Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 3),
-              child: Container(
-                height: 140 * height,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeOut,
+                height: 150 * height,
                 decoration: BoxDecoration(
-                  color: Colors.redAccent.withOpacity(0.8),
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(8),
+                  gradient: LinearGradient(
+                    colors: isLast
+                        ? [
+                      Colors.redAccent,
+                      Colors.orangeAccent,
+                    ]
+                        : [
+                      Colors.redAccent.withOpacity(0.7),
+                      Colors.redAccent.withOpacity(0.3),
+                    ],
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                  ),
+                  boxShadow: isLast
+                      ? [
+                    BoxShadow(
+                      color: Colors.redAccent.withOpacity(0.4),
+                      blurRadius: 12,
+                    ),
+                  ]
+                      : [],
                 ),
               ),
             ),
