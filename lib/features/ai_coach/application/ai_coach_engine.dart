@@ -6,8 +6,9 @@ class AICoachEngine {
 
   AICoachEngine(this.historyService);
 
-  List<WorkoutHistoryEntry> get history =>
-      historyService.getAll();
+  List<WorkoutHistoryEntry> get history => historyService.getAll();
+
+  String _c(String text) => "😈: $text";
 
   double fatigueScore() {
     if (history.isEmpty) return 0;
@@ -26,17 +27,12 @@ class AICoachEngine {
     if (avgVolume == 0) return 0;
 
     final fatigue = ((avgVolume - last) / avgVolume) * 100;
-
     return fatigue.clamp(0, 100);
   }
 
-  bool isOvertraining() {
-    return fatigueScore() > 75;
-  }
+  bool isOvertraining() => fatigueScore() > 75;
 
-  bool shouldDeload() {
-    return fatigueScore() > 65;
-  }
+  bool shouldDeload() => fatigueScore() > 65;
 
   double suggestWeight() {
     if (history.isEmpty) return 20;
@@ -44,11 +40,8 @@ class AICoachEngine {
     final last = history.last.weight;
     final fatigue = fatigueScore();
 
-    if (fatigue > 70) {
-      return last * 0.85;
-    } else if (fatigue < 30) {
-      return last * 1.05;
-    }
+    if (fatigue > 70) return last * 0.85;
+    if (fatigue < 30) return last * 1.05;
 
     return last;
   }
@@ -67,11 +60,29 @@ class AICoachEngine {
   }
 
   String coachMessage() {
-    final f = fatigueScore();
+    final fatigue = fatigueScore();
+    final trend = performanceTrend();
 
-    if (f > 80) return "⚠️ Overtraining detected — take a break";
-    if (f > 65) return "🧠 High fatigue — consider deload";
-    if (f < 30) return "🔥 You're fresh — push harder today";
-    return "📈 Solid progression — keep going";
+    if (fatigue > 80) {
+      return _c("Zu viel Druck. Dein Körper braucht Pause!");
+    }
+
+    if (fatigue > 65) {
+      return _c("Hohe Belastung. Reduziere Gewicht oder Volumen!");
+    }
+
+    if (trend > 5) {
+      return _c("Du wirst stärker. Genau so!");
+    }
+
+    if (trend < -5) {
+      return _c("Leistung fällt. Fokus auf Technik und Erholung!");
+    }
+
+    if (fatigue < 30) {
+      return _c("Da geht mehr. Erhöhe das Gewicht!");
+    }
+
+    return _c("Stabil. Bleib dran!");
   }
 }

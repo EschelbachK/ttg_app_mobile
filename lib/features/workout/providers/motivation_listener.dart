@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/events/event_bus_provider.dart';
@@ -14,7 +13,6 @@ final motivationListenerProvider = Provider<void>((ref) {
 
   final sub = bus.on<WorkoutFinishedEvent>().listen((event) {
     final history = historyService.getAll();
-
     if (history.isEmpty) return;
 
     final last = history.last;
