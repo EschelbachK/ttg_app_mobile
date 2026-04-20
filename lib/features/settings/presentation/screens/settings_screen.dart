@@ -10,6 +10,7 @@ import '../widgets/language_unit_expand.dart';
 import '../widgets/light_mode_expand.dart';
 import '../widgets/offline_mode_expand.dart';
 import '../widgets/sync_mode_expand.dart';
+import '../widgets/account_expand.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -65,24 +66,10 @@ class SettingsScreen extends ConsumerWidget {
               ],
             ),
 
-            SettingsSection(
+            const SettingsSection(
               title: 'DEIN ACCOUNT',
               children: [
-                SettingsTile(
-                  icon: Icons.lock,
-                  title: 'Passwort',
-                  onTap: () => showPasswordSheet(context),
-                ),
-                SettingsTile(
-                  icon: Icons.privacy_tip,
-                  title: 'Datenschutz',
-                  onTap: () => showPrivacySheet(context),
-                ),
-                SettingsTile(
-                  icon: Icons.warning_amber,
-                  title: 'Account löschen',
-                  onTap: () => showDeleteAccountSheet(context),
-                ),
+                AccountExpand(),
               ],
             ),
           ],
