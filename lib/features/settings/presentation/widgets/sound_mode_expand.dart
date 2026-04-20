@@ -19,63 +19,69 @@ class SoundModeTile extends ConsumerWidget {
           value: s.soundEnabled,
           onChanged: (_) => n.toggleSound(),
           expandable: true,
+          isExpanded: s.soundExpanded,
           onTap: n.toggleSoundExpanded,
         ),
-        AnimatedCrossFade(
-          duration: const Duration(milliseconds: 200),
-          crossFadeState: s.soundExpanded
-              ? CrossFadeState.showSecond
-              : CrossFadeState.showFirst,
-          firstChild: const SizedBox.shrink(),
-          secondChild: Padding(
-            padding: const EdgeInsets.only(top: 8, bottom: 6),
+
+        if (s.soundExpanded)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 8, 6),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
                   'Wähle hier, welche akustischen Signale die App ausgeben soll.',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
 
-                Row(
-                  children: [
-                    Checkbox(
-                      value: s.countdownSound,
-                      onChanged: s.soundEnabled
-                          ? (_) => n.toggleCountdownSound()
-                          : null,
-                    ),
-                    const Text('Töne für Countdowns & Timer'),
-                  ],
+                _row(
+                  'Töne für Countdowns & Timer',
+                  s.countdownSound,
+                  s.soundEnabled ? n.toggleCountdownSound : null,
                 ),
-
-                Row(
-                  children: [
-                    Checkbox(
-                      value: s.startSound,
-                      onChanged: s.soundEnabled
-                          ? (_) => n.toggleStartSound()
-                          : null,
-                    ),
-                    const Text('Startsound aktivieren'),
-                  ],
+                _row(
+                  'Startsound aktivieren',
+                  s.startSound,
+                  s.soundEnabled ? n.toggleStartSound : null,
                 ),
-
-                Row(
-                  children: [
-                    Checkbox(
-                      value: s.voiceFeedback,
-                      onChanged: s.soundEnabled
-                          ? (_) => n.toggleVoiceFeedback()
-                          : null,
-                    ),
-                    const Text('Gesprochenes Feedback'),
-                  ],
+                _row(
+                  'Gesprochenes Feedback',
+                  s.voiceFeedback,
+                  s.soundEnabled ? n.toggleVoiceFeedback : null,
                 ),
               ],
             ),
           ),
-        ),
       ],
+    );
+  }
+
+  Widget _row(String text, bool value, VoidCallback? onTap) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          Checkbox(
+            value: value,
+            onChanged: onTap == null ? null : (_) => onTap(),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                color: onTap == null ? Colors.white38 : Colors.white,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
