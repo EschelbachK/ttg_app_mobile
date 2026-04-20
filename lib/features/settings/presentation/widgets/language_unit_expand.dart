@@ -11,31 +11,61 @@ class LanguageUnitExpand extends ConsumerWidget {
     final s = ref.watch(settingsProvider);
     final n = ref.read(settingsProvider.notifier);
 
-    Widget group(List<Widget> children) => Column(
-      children: [
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: children,
-        ),
-      ],
-    );
-
-    Widget btn(bool active, String text, VoidCallback onTap) =>
-        GestureDetector(
-          onTap: onTap,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            decoration: BoxDecoration(
+    Widget chip(String text, bool active, VoidCallback onTap) {
+      return GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            color: active
+                ? const Color(0xFFE10600).withOpacity(0.9)
+                : Colors.white.withOpacity(0.06),
+            border: Border.all(
               color: active
-                  ? Colors.blueAccent
+                  ? const Color(0xFFE10600).withOpacity(0.6)
                   : Colors.white.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(10),
             ),
-            child: Text(text),
           ),
-        );
+          child: Text(
+            text,
+            style: TextStyle(
+              color: active ? Colors.white : Colors.white70,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      );
+    }
+
+    Widget section(String title, List<Widget> children) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 14),
+        child: Column(
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.35),
+                fontSize: 11,
+                letterSpacing: 2,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Center(
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 10,
+                runSpacing: 10,
+                children: children,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return Column(
       children: [
@@ -49,27 +79,26 @@ class LanguageUnitExpand extends ConsumerWidget {
         ),
 
         if (s.languageExpanded)
-          Column(
-            children: [
-              group([
-                btn(s.language == 'en', 'english',
-                        () => n.setLanguage('en')),
-                btn(s.language == 'de', 'deutsch',
-                        () => n.setLanguage('de')),
-              ]),
-              group([
-                btn(s.weightUnit == 'kg', 'KG',
-                        () => n.setWeightUnit('kg')),
-                btn(s.weightUnit == 'lbs', 'LBS',
-                        () => n.setWeightUnit('lbs')),
-              ]),
-              group([
-                btn(s.heightUnit == 'cm', 'CM',
-                        () => n.setHeightUnit('cm')),
-                btn(s.heightUnit == 'in', 'INCHES',
-                        () => n.setHeightUnit('in')),
-              ]),
-            ],
+          Padding(
+            padding: const EdgeInsets.only(top: 10, bottom: 10),
+            child: Column(
+              children: [
+                section("SPRACHE", [
+                  chip("DEUTSCH", s.language == 'de', () => n.setLanguage('de')),
+                  chip("ENGLISH", s.language == 'en', () => n.setLanguage('en')),
+                ]),
+
+                section("GEWICHT", [
+                  chip("KG", s.weightUnit == 'kg', () => n.setWeightUnit('kg')),
+                  chip("LBS", s.weightUnit == 'lbs', () => n.setWeightUnit('lbs')),
+                ]),
+
+                section("GRÖSSE", [
+                  chip("CM", s.heightUnit == 'cm', () => n.setHeightUnit('cm')),
+                  chip("INCHES", s.heightUnit == 'in', () => n.setHeightUnit('in')),
+                ]),
+              ],
+            ),
           ),
       ],
     );
