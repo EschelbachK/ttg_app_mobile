@@ -31,14 +31,8 @@ class SettingsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = Theme.of(context);
 
-    void handleTap() {
-      if (expandable) return onTap?.call();
-      if (isSwitch) return onChanged?.call(!value!);
-      onTap?.call();
-    }
-
     return GestureDetector(
-      onTap: handleTap,
+      onTap: expandable ? onTap : (!isSwitch ? onTap : null),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         margin: const EdgeInsets.only(bottom: 10),
@@ -107,27 +101,30 @@ class SettingsTile extends StatelessWidget {
                   ),
                   if (trailing != null) trailing!,
                   if (isSwitch)
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      width: 46,
-                      height: 26,
-                      padding: const EdgeInsets.all(3),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: value!
-                            ? t.colorScheme.primary
-                            : Colors.white.withOpacity(0.15),
-                      ),
-                      child: Align(
-                        alignment: value!
-                            ? Alignment.centerRight
-                            : Alignment.centerLeft,
-                        child: Container(
-                          width: 20,
-                          height: 20,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: t.colorScheme.onPrimary,
+                    GestureDetector(
+                      onTap: () => onChanged?.call(!value!),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: 46,
+                        height: 26,
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: value!
+                              ? t.colorScheme.primary
+                              : Colors.white.withOpacity(0.15),
+                        ),
+                        child: Align(
+                          alignment: value!
+                              ? Alignment.centerRight
+                              : Alignment.centerLeft,
+                          child: Container(
+                            width: 20,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: t.colorScheme.onPrimary,
+                            ),
                           ),
                         ),
                       ),
