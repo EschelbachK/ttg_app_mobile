@@ -22,29 +22,15 @@ class LightModeExpand extends ConsumerWidget {
           isExpanded: s.lightExpanded,
           onTap: n.toggleLightExpanded,
         ),
-
         if (s.lightExpanded)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 8, 6),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Aktiviere den hellen Modus, wenn du im Freien trainierst oder die Sichtbarkeit erhöhen möchtest.',
-                  style: TextStyle(color: Colors.white70, height: 1.4),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Checkbox(
-                      value: s.lightMode,
-                      onChanged: (_) => n.toggleLightMode(),
-                    ),
-                    const SizedBox(width: 6),
-                    const Expanded(child: Text('Hellen Modus aktivieren')),
-                  ],
-                ),
-              ],
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 8, 8, 10),
+            child: Text(
+              'Nutze den hellen Modus für bessere Sichtbarkeit bei Tageslicht oder im Freien.',
+              style: TextStyle(
+                color: Colors.white70,
+                height: 1.4,
+              ),
             ),
           ),
       ],
