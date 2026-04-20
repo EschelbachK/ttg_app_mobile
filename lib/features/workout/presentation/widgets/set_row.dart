@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../settings/application/settings_provider.dart';
 import '../../providers/workout_provider.dart';
 
 const kPrimaryRed = Color(0xFFE10600);
@@ -39,6 +40,7 @@ class _SetRowState extends ConsumerState<SetRow> {
   @override
   Widget build(BuildContext context) {
     final controller = ref.read(workoutProvider.notifier);
+    final keyboard = ref.watch(settingsProvider).keyboardMode;
     final isCompleted = widget.completed == true;
 
     void update({double? w, int? r, bool? c}) {
@@ -79,16 +81,22 @@ class _SetRowState extends ConsumerState<SetRow> {
               children: [
                 Expanded(
                   child: _Stepper(
-                    value: widget.weight.toStringAsFixed(1),
+                    value: widget.weight,
+                    isDecimal: true,
                     suffix: 'KG',
+                    keyboard: keyboard,
+                    onChanged: (v) => update(w: v),
                     onMinus: () => update(w: widget.weight - 2.5),
                     onPlus: () => update(w: widget.weight + 2.5),
                   ),
                 ),
                 Expanded(
                   child: _Stepper(
-                    value: widget.reps.toString(),
+                    value: widget.reps.toDouble(),
+                    isDecimal: false,
                     suffix: 'WDH',
+                    keyboard: keyboard,
+                    onChanged: (v) => update(r: v.toInt()),
                     onMinus: () => update(r: widget.reps - 1),
                     onPlus: () => update(r: widget.reps + 1),
                   ),
@@ -126,20 +134,32 @@ class _SetRowState extends ConsumerState<SetRow> {
 }
 
 class _Stepper extends StatelessWidget {
-  final String value;
+  final double value;
+  final bool isDecimal;
   final String suffix;
+  final bool keyboard;
+  final Function(double) onChanged;
   final VoidCallback onMinus;
   final VoidCallback onPlus;
 
   const _Stepper({
     required this.value,
+    required this.isDecimal,
     required this.suffix,
+    required this.keyboard,
+    required this.onChanged,
     required this.onMinus,
     required this.onPlus,
   });
 
   @override
   Widget build(BuildContext context) {
+    final controller = TextEditingController(
+      text: isDecimal
+          ? value.toStringAsFixed(1)
+          : value.toInt().toString(),
+    );
+
     Widget btn(IconData icon, VoidCallback onTap) => GestureDetector(
       onTap: onTap,
       child: Container(
@@ -157,22 +177,60 @@ class _Stepper extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         btn(Icons.remove, onMinus),
+
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 6),
-          child: Row(
+          child: keyboard
+              ? SizedBox(
+            width: 50,
+            child: TextField(
+              controller: controller,
+              keyboardType: TextInputType.numberWithOptions(
+                  decimal: isDecimal),
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.w600),
+              inputFormatters: isDecimal
+                  ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))]
+                  : [FilteringTextInputFormatter.digitsOnly],
+              onChanged: (val) {
+                final parsed = double.tryParse(val);
+                if (parsed != null) onChanged(parsed);
+              },
+              onEditingComplete: () {
+                if (isDecimal) {
+                  final parsed = double.tryParse(controller.text);
+                  if (parsed != null) {
+                    controller.text = parsed.toStringAsFixed(1);
+                    onChanged(parsed);
+                  }
+                }
+                FocusScope.of(context).unfocus();
+              },
+            ),
+          )
+              : Row(
             children: [
-              Text(value,
-                  style: const TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.w600)),
+              Text(
+                isDecimal
+                    ? value.toStringAsFixed(1)
+                    : value.toInt().toString(),
+                style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w600),
+              ),
               const SizedBox(width: 4),
-              Text(suffix,
-                  style: const TextStyle(
-                      color: kPrimaryRed,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700)),
+              Text(
+                suffix,
+                style: const TextStyle(
+                  color: kPrimaryRed,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ],
           ),
         ),
+
         btn(Icons.add, onPlus),
       ],
     );
