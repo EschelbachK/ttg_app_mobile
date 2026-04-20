@@ -91,17 +91,17 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       final cached = await OfflineCache.load(CacheKeys.dashboard);
       if (cached != null) {
         state = state.copyWith(
-          trainingPlans: (cached['plans'] as List)
-              .map((e) => TrainingPlan.fromJson(e))
+          trainingPlans: (cached['plans'] ?? [])
+              .map<TrainingPlan>((e) => TrainingPlan.fromJson(e))
               .toList(),
-          archivedPlans: (cached['archivedPlans'] as List)
-              .map((e) => TrainingPlan.fromJson(e))
+          archivedPlans: (cached['archivedPlans'] ?? [])
+              .map<TrainingPlan>((e) => TrainingPlan.fromJson(e))
               .toList(),
-          archivedFolders: (cached['archivedFolders'] as List)
-              .map((e) => TrainingFolder.fromJson(e))
+          archivedFolders: (cached['archivedFolders'] ?? [])
+              .map<TrainingFolder>((e) => TrainingFolder.fromJson(e))
               .toList(),
-          folders: (cached['folders'] as List)
-              .map((e) => TrainingFolder.fromJson(e))
+          folders: (cached['folders'] ?? [])
+              .map<TrainingFolder>((e) => TrainingFolder.fromJson(e))
               .toList(),
         );
       }
@@ -156,7 +156,8 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       await OfflineCache.save(CacheKeys.dashboard, {
         'plans': plans.map((e) => e.toJson()).toList(),
         'archivedPlans': archivedPlans.map((e) => e.toJson()).toList(),
-        'archivedFolders': archivedFolders.map((e) => e.toJson()).toList(),
+        'archivedFolders':
+        archivedFolders.map((e) => e.toJson()).toList(),
         'folders': allFolders.map((e) => e.toJson()).toList(),
       });
     });
@@ -383,10 +384,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       );
 
   Future<void> _createExercise(
-      String folderId,
-      String planId,
-      Exercise exercise,
-      ) =>
+      String folderId, String planId, Exercise exercise) =>
       _runOrQueue(
         type: 'create_exercise',
         payload: {
@@ -409,10 +407,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       );
 
   Future<void> addExercise(
-      String folderId,
-      String planId,
-      Exercise exercise,
-      ) async {
+      String folderId, String planId, Exercise exercise) async {
     state = state.copyWith(
       folders: state.folders.map((f) {
         if (f.id != folderId) return f;
@@ -425,10 +420,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
   }
 
   Future<void> importExercise(
-      String folderId,
-      String planId,
-      Exercise exercise,
-      ) =>
+      String folderId, String planId, Exercise exercise) =>
       _createExercise(folderId, planId, exercise);
 
   Future<void> removeExercise({
