@@ -1,12 +1,14 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/ui/ttg_glow_border.dart';
+import '../../../settings/application/settings_provider.dart';
 import '../../models/exercise.dart';
 import '../../models/exercise_set.dart';
 
-class ExerciseTile extends StatefulWidget {
+class ExerciseTile extends ConsumerStatefulWidget {
   final Exercise exercise;
   final VoidCallback? onDelete;
 
@@ -17,10 +19,10 @@ class ExerciseTile extends StatefulWidget {
   });
 
   @override
-  State<ExerciseTile> createState() => _ExerciseTileState();
+  ConsumerState<ExerciseTile> createState() => _ExerciseTileState();
 }
 
-class _ExerciseTileState extends State<ExerciseTile> {
+class _ExerciseTileState extends ConsumerState<ExerciseTile> {
   bool open = false;
   int? dragging;
 
@@ -35,6 +37,7 @@ class _ExerciseTileState extends State<ExerciseTile> {
   @override
   Widget build(BuildContext context) {
     final e = widget.exercise;
+    final keyboard = ref.watch(settingsProvider).keyboardMode;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -69,11 +72,7 @@ class _ExerciseTileState extends State<ExerciseTile> {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Container(
-                                    width: 12,
-                                    height: 2,
-                                    color: AppTheme.primaryRed,
-                                  ),
+                                  Container(width: 12, height: 2, color: AppTheme.primaryRed),
                                   const SizedBox(width: 6),
                                   Text(
                                     e.name,
@@ -83,23 +82,14 @@ class _ExerciseTileState extends State<ExerciseTile> {
                                     ),
                                   ),
                                   const SizedBox(width: 6),
-                                  Container(
-                                    width: 12,
-                                    height: 2,
-                                    color: AppTheme.primaryRed,
-                                  ),
+                                  Container(width: 12, height: 2, color: AppTheme.primaryRed),
                                 ],
                               ),
                             ),
                           ),
                           GestureDetector(
-                            onTap: () {
-                              widget.onDelete?.call();
-                            },
-                            child: const Icon(
-                              Icons.close,
-                              color: Colors.white38,
-                            ),
+                            onTap: widget.onDelete,
+                            child: const Icon(Icons.close, color: Colors.white38),
                           ),
                         ],
                       ),
@@ -109,242 +99,101 @@ class _ExerciseTileState extends State<ExerciseTile> {
                   if (open) ...[
                     const SizedBox(height: 8),
 
-                    Container(
-                      height: 140,
-                      margin: const EdgeInsets.symmetric(horizontal: 14),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        color: Colors.black.withOpacity(.3),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(.06),
-                        ),
-                      ),
-                      child: const Center(
-                        child: Text(
-                          "Übungsbild",
-                          style: TextStyle(color: Colors.white38),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
                     ReorderableListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: e.sets.length,
-                      onReorderStart: (i) {
-                        HapticFeedback.mediumImpact();
-                        setState(() => dragging = i);
-                      },
-                      onReorderEnd: (_) =>
-                          setState(() => dragging = null),
                       onReorder: (oldIndex, newIndex) {
                         if (newIndex > oldIndex) newIndex--;
-
                         final list = [...e.sets];
                         final item = list.removeAt(oldIndex);
                         list.insert(newIndex, item);
-
-                        setState(() {
-                          e.sets
-                            ..clear()
-                            ..addAll(list);
-                        });
+                        _updateExercise(e.copyWith(sets: list));
                       },
                       itemBuilder: (_, i) {
                         final s = e.sets[i];
-                        final active = dragging == i;
 
                         return Padding(
                           key: ValueKey("${s.hashCode}-$i"),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 6,
-                          ),
-                          child: Transform.scale(
-                            scale: active ? 1.04 : 1,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: active
-                                    ? [
-                                  BoxShadow(
-                                    color: AppTheme.primaryRed
-                                        .withOpacity(.35),
-                                    blurRadius: 20,
-                                  )
-                                ]
-                                    : [],
-                              ),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 12,
-                                ),
-                                decoration: BoxDecoration(
-                                  borderRadius:
-                                  BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(.08),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.white.withOpacity(.08)),
+                              color: Colors.black.withOpacity(.25),
+                            ),
+                            child: Row(
+                              children: [
+                                Text("#${i + 1}", style: const TextStyle(color: Colors.white54)),
+                                const SizedBox(width: 8),
+
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: _control(
+                                          s.weight,
+                                          "KG",
+                                          keyboard,
+                                              (val) {
+                                            final updated = [...e.sets];
+                                            updated[i] = ExerciseSet(weight: val, reps: s.reps);
+                                            _updateExercise(e.copyWith(sets: updated));
+                                          },
+                                              () {
+                                            final updated = [...e.sets];
+                                            updated[i] = ExerciseSet(weight: s.weight - 1, reps: s.reps);
+                                            _updateExercise(e.copyWith(sets: updated));
+                                          },
+                                              () {
+                                            final updated = [...e.sets];
+                                            updated[i] = ExerciseSet(weight: s.weight + 1, reps: s.reps);
+                                            _updateExercise(e.copyWith(sets: updated));
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: _control(
+                                          s.reps.toDouble(),
+                                          "WDH",
+                                          keyboard,
+                                              (val) {
+                                            final updated = [...e.sets];
+                                            updated[i] = ExerciseSet(weight: s.weight, reps: val.toInt());
+                                            _updateExercise(e.copyWith(sets: updated));
+                                          },
+                                              () {
+                                            final updated = [...e.sets];
+                                            updated[i] = ExerciseSet(weight: s.weight, reps: s.reps - 1);
+                                            _updateExercise(e.copyWith(sets: updated));
+                                          },
+                                              () {
+                                            final updated = [...e.sets];
+                                            updated[i] = ExerciseSet(weight: s.weight, reps: s.reps + 1);
+                                            _updateExercise(e.copyWith(sets: updated));
+                                          },
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  color: Colors.black.withOpacity(.25),
                                 ),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      "#${i + 1}",
-                                      style: const TextStyle(
-                                        color: Colors.white54,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: _control(
-                                              s.weight,
-                                              "KG",
-                                                  () {
-                                                final updated =
-                                                [...e.sets];
-                                                updated[i] =
-                                                    ExerciseSet(
-                                                      weight: (s.weight - 1)
-                                                          .clamp(0, 999)
-                                                          .toDouble(),
-                                                      reps: s.reps,
-                                                    );
-                                                _updateExercise(
-                                                  e.copyWith(
-                                                    sets: updated,
-                                                  ),
-                                                );
-                                              },
-                                                  () {
-                                                final updated =
-                                                [...e.sets];
-                                                updated[i] =
-                                                    ExerciseSet(
-                                                      weight: s.weight + 1,
-                                                      reps: s.reps,
-                                                    );
-                                                _updateExercise(
-                                                  e.copyWith(
-                                                    sets: updated,
-                                                  ),
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Expanded(
-                                            child: _control(
-                                              s.reps.toDouble(),
-                                              "WDH",
-                                                  () {
-                                                final updated =
-                                                [...e.sets];
-                                                updated[i] =
-                                                    ExerciseSet(
-                                                      weight: s.weight,
-                                                      reps: (s.reps - 1)
-                                                          .clamp(0, 999),
-                                                    );
-                                                _updateExercise(
-                                                  e.copyWith(
-                                                    sets: updated,
-                                                  ),
-                                                );
-                                              },
-                                                  () {
-                                                final updated =
-                                                [...e.sets];
-                                                updated[i] =
-                                                    ExerciseSet(
-                                                      weight: s.weight,
-                                                      reps: s.reps + 1,
-                                                    );
-                                                _updateExercise(
-                                                  e.copyWith(
-                                                    sets: updated,
-                                                  ),
-                                                );
-                                              },
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    GestureDetector(
-                                      onTap: () {
-                                        final updated = [...e.sets];
-                                        updated.removeAt(i);
-                                        _updateExercise(
-                                          e.copyWith(sets: updated),
-                                        );
-                                      },
-                                      child: const Icon(
-                                        Icons.close,
-                                        color: Colors.white38,
-                                        size: 18,
-                                      ),
-                                    ),
-                                  ],
+
+                                const SizedBox(width: 6),
+                                GestureDetector(
+                                  onTap: () {
+                                    final updated = [...e.sets];
+                                    updated.removeAt(i);
+                                    _updateExercise(e.copyWith(sets: updated));
+                                  },
+                                  child: const Icon(Icons.close, color: Colors.white38, size: 18),
                                 ),
-                              ),
+                              ],
                             ),
                           ),
                         );
                       },
-                    ),
-
-                    const SizedBox(height: 6),
-
-                    Padding(
-                      padding:
-                      const EdgeInsets.symmetric(horizontal: 14),
-                      child: GestureDetector(
-                        onTap: () {
-                          final updated = [...e.sets];
-
-                          updated.add(
-                            ExerciseSet(
-                              weight: e.sets.isNotEmpty
-                                  ? e.sets.last.weight
-                                  : 0,
-                              reps: e.sets.isNotEmpty
-                                  ? e.sets.last.reps
-                                  : 8,
-                            ),
-                          );
-
-                          _updateExercise(
-                            e.copyWith(sets: updated),
-                          );
-                        },
-                        child: Container(
-                          padding:
-                          const EdgeInsets.symmetric(vertical: 14),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: AppTheme.primaryRed,
-                            ),
-                          ),
-                          child: const Center(
-                            child: Text(
-                              "+ SATZ HINZUFÜGEN",
-                              style: TextStyle(
-                                color: AppTheme.primaryRed,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
                     ),
 
                     const SizedBox(height: 10),
@@ -361,42 +210,38 @@ class _ExerciseTileState extends State<ExerciseTile> {
   Widget _control(
       double v,
       String unit,
+      bool keyboard,
+      Function(double) onChanged,
       VoidCallback minus,
       VoidCallback plus,
       ) {
-    final isKg = unit == "KG";
+    if (keyboard) {
+      return TextFormField(
+        initialValue:
+        unit == "KG" ? v.toStringAsFixed(1) : v.toInt().toString(),
+        keyboardType: TextInputType.number,
+        textAlign: TextAlign.center,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          suffixText: unit,
+          border: InputBorder.none,
+        ),
+        onChanged: (val) {
+          if (val.isEmpty) return;
+          final parsed = double.tryParse(val);
+          if (parsed != null) onChanged(parsed);
+        },
+      );
+    }
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _btn("-", minus),
         const SizedBox(width: 6),
-        Flexible(
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Row(
-              children: [
-                Text(
-                  isKg
-                      ? v.toStringAsFixed(1)
-                      : v.toInt().toString(),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(width: 3),
-                Text(
-                  unit,
-                  style: const TextStyle(
-                    color: AppTheme.primaryRed,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 11,
-                  ),
-                ),
-              ],
-            ),
-          ),
+        Text(
+          unit == "KG" ? v.toStringAsFixed(1) : v.toInt().toString(),
+          style: const TextStyle(color: Colors.white),
         ),
         const SizedBox(width: 6),
         _btn("+", plus),
@@ -417,11 +262,7 @@ class _ExerciseTileState extends State<ExerciseTile> {
         child: Center(
           child: Text(
             t,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
+            style: const TextStyle(color: Colors.white),
           ),
         ),
       ),
