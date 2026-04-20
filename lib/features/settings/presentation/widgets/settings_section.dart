@@ -18,7 +18,6 @@ class SettingsSection extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
@@ -47,10 +46,7 @@ class SettingsSection extends StatelessWidget {
                   color: Colors.white.withOpacity(0.03),
                   border: Border.all(color: Colors.white.withOpacity(0.05)),
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: children,
-                ),
+                child: Column(children: children),
               ),
             ),
           ),
