@@ -1,11 +1,10 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../application/settings_provider.dart';
 import '../widgets/settings_bottom_sheets.dart';
 import '../widgets/settings_section.dart';
 import '../widgets/settings_tile.dart';
-
+import '../widgets/keyboard_mode_expand.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -43,18 +42,7 @@ class SettingsScreen extends ConsumerWidget {
                   subtitle: '${s.restTimerSeconds}s',
                   onTap: () => showRestTimerSheet(context, s, n),
                 ),
-                SettingsTile(
-                  icon: Icons.swap_horiz,
-                  title: 'Werte übernehmen',
-                  value: s.autoFillValues,
-                  onChanged: (_) => n.toggleAutoFill(),
-                ),
-                SettingsTile(
-                  icon: Icons.keyboard,
-                  title: 'Tastatur-Modus',
-                  value: s.keyboardMode,
-                  onChanged: (_) => n.toggleKeyboard(),
-                ),
+                const KeyboardModeTile(),
                 SettingsTile(
                   icon: Icons.music_note,
                   title: 'Audio & Töne',
