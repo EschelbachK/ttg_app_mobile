@@ -9,24 +9,44 @@ class AppTheme {
     end: Alignment.bottomRight,
   );
 
-  static const background = Color(0xFF000000);
-  static const card = Color(0xFF1A1F26);
+  static const backgroundDark = Color(0xFF000000);
+  static const backgroundLight = Color(0xFFF5F6F8);
 
-  static final darkTheme = ThemeData.dark().copyWith(
-    scaffoldBackgroundColor: background,
+  static ThemeData _base(ColorScheme scheme, Color bg) => ThemeData(
+    useMaterial3: true,
+    colorScheme: scheme,
+    scaffoldBackgroundColor: bg,
     primaryColor: primaryRed,
-    colorScheme: const ColorScheme.dark(
+    progressIndicatorTheme:
+    const ProgressIndicatorThemeData(color: primaryRed),
+    textSelectionTheme: TextSelectionThemeData(
+      cursorColor: scheme.brightness == Brightness.dark
+          ? Colors.white
+          : Colors.black,
+      selectionColor: scheme.brightness == Brightness.dark
+          ? Colors.white30
+          : Colors.black26,
+      selectionHandleColor: scheme.brightness == Brightness.dark
+          ? Colors.white
+          : Colors.black,
+    ),
+  );
+
+  static final darkTheme = _base(
+    const ColorScheme.dark(
       primary: primaryRed,
       secondary: primaryRed,
-      surface: background,
+      surface: backgroundDark,
     ),
-    progressIndicatorTheme: const ProgressIndicatorThemeData(
-      color: primaryRed,
+    backgroundDark,
+  );
+
+  static final lightTheme = _base(
+    const ColorScheme.light(
+      primary: primaryRed,
+      secondary: primaryRed,
+      surface: backgroundLight,
     ),
-    textSelectionTheme: const TextSelectionThemeData(
-      cursorColor: Colors.white,
-      selectionColor: Colors.white30,
-      selectionHandleColor: Colors.white,
-    ),
+    backgroundLight,
   );
 }
