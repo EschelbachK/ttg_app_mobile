@@ -14,6 +14,7 @@ import '../widgets/archive/archived_plan_tile.dart';
 import '../widgets/archive/archived_folder_tile.dart';
 
 import 'training_plan_card.dart';
+import '../../navigation/presentation/widgets/ttg_drawer.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -25,6 +26,7 @@ class DashboardScreen extends ConsumerStatefulWidget {
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   String? expandedPlanId;
   int selectedTab = 0;
+  final scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -74,10 +76,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
         ),
         Scaffold(
+          key: scaffoldKey,
+          drawer: const TtgDrawer(),
           backgroundColor: Colors.transparent,
           appBar: DashboardTopBar(
             selectedTab: selectedTab,
             onTabChanged: (i) => setState(() => selectedTab = i),
+            onMenuTap: () => scaffoldKey.currentState?.openDrawer(),
           ),
           body: SafeArea(
             child: Column(
@@ -146,8 +151,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                     boxShadow: !state.showArchive
                                         ? [
                                       BoxShadow(
-                                        color: AppTheme.primaryRed
-                                            .withOpacity(0.4),
+                                        color: AppTheme.primaryRed.withOpacity(0.4),
                                         blurRadius: 20,
                                         spreadRadius: -4,
                                       ),
@@ -182,8 +186,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                                     boxShadow: state.showArchive
                                         ? [
                                       BoxShadow(
-                                        color: AppTheme.primaryRed
-                                            .withOpacity(0.4),
+                                        color: AppTheme.primaryRed.withOpacity(0.4),
                                         blurRadius: 20,
                                         spreadRadius: -4,
                                       ),
@@ -218,9 +221,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     children: [
                       const Spacer(),
                       Text(
-                        state.showArchive
-                            ? "ARCHIV"
-                            : "MEINE TRAININGSPLÄNE",
+                        state.showArchive ? "ARCHIV" : "MEINE TRAININGSPLÄNE",
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -228,10 +229,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                       const Spacer(),
                       if (!state.showArchive)
                         IconButton(
-                          icon: const Icon(
-                            Icons.add,
-                            color: AppTheme.primaryRed,
-                          ),
+                          icon: const Icon(Icons.add, color: AppTheme.primaryRed),
                           onPressed: settings.offlineMode
                               ? null
                               : () => showTTGInputDialog(
@@ -239,9 +237,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             title: "Neuer Trainingsplan",
                             buttonText: "Erstellen",
                             onSubmit: (v) async {
-                              await ref
-                                  .read(dashboardProvider.notifier)
-                                  .createTrainingPlan(v);
+                              await ref.read(dashboardProvider.notifier).createTrainingPlan(v);
                             },
                           ),
                         )
@@ -267,11 +263,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildContent(
-      BuildContext context,
-      DashboardState state,
-      SettingsState settings,
-      ) {
+  Widget _buildContent(BuildContext context, DashboardState state, SettingsState settings) {
     final theme = Theme.of(context);
 
     if (settings.offlineMode) {
@@ -283,16 +275,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             const SizedBox(height: 12),
             Text(
               "Offline Modus aktiv",
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 6),
             Text(
               "Keine Verbindung zum Server",
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: Colors.white54,
-              ),
+              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white54),
             ),
           ],
         ),
@@ -315,9 +303,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       );
     }
 
-    if (state.isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    if (state.isLoading) return const Center(child: CircularProgressIndicator());
 
     if (state.trainingPlans.isEmpty) {
       return Center(
