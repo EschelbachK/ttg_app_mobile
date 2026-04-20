@@ -14,18 +14,17 @@ class OfflineAction {
     'payload': payload,
   };
 
-  factory OfflineAction.fromJson(Map<String, dynamic> json) {
-    return OfflineAction(
-      type: json['type'],
-      payload: Map<String, dynamic>.from(json['payload']),
-    );
-  }
+  factory OfflineAction.fromJson(Map<String, dynamic> json) =>
+      OfflineAction(
+        type: json['type'],
+        payload: Map<String, dynamic>.from(json['payload']),
+      );
 
-  static String encode(List<OfflineAction> actions) =>
-      jsonEncode(actions.map((e) => e.toJson()).toList());
+  static String encode(List<OfflineAction> list) =>
+      jsonEncode(list.map((e) => e.toJson()).toList());
 
-  static List<OfflineAction> decode(String raw) {
-    final list = jsonDecode(raw) as List;
-    return list.map((e) => OfflineAction.fromJson(e)).toList();
-  }
+  static List<OfflineAction> decode(String raw) =>
+      (jsonDecode(raw) as List)
+          .map((e) => OfflineAction.fromJson(e))
+          .toList();
 }
