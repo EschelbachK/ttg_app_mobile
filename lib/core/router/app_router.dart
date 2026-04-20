@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../features/auth/screens/loading_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/dashboard/navigation/dashboard_routes.dart';
@@ -10,6 +11,8 @@ import '../../features/workout/presentation/screens/workout_active_screen.dart';
 import '../../features/workout/presentation/screens/workout_redirect_screen.dart';
 import '../../features/workout/presentation/screens/workout_exercise_detail_screen.dart';
 import '../../features/workout/presentation/screens/workout_summary_screen.dart';
+import '../../core/ui/privacy_webview.dart';
+
 import '../auth/auth_provider.dart';
 import '../navigation/main_navigation.dart';
 
@@ -26,6 +29,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/loading',
         builder: (_, __) => const LoadingScreen(),
       ),
+
       ShellRoute(
         builder: (_, __, child) => MainNavigation(child: child),
         routes: [
@@ -34,6 +38,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/settings',
             builder: (_, __) => const SettingsScreen(),
+          ),
+
+          GoRoute(
+            path: '/privacy',
+            builder: (_, __) => const PrivacyWebView(),
           ),
 
           GoRoute(
