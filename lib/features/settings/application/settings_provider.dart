@@ -8,7 +8,7 @@ StateNotifierProvider<SettingsNotifier, SettingsState>(
 class SettingsState {
   final bool soundEnabled, lightMode, offlineMode, keyboardMode, syncEnabled;
   final bool countdownSound, startSound, voiceFeedback;
-  final bool keyboardExpanded;
+  final bool keyboardExpanded, soundExpanded;
   final int restTimerSeconds;
   final double fontScale;
 
@@ -24,6 +24,7 @@ class SettingsState {
     required this.startSound,
     required this.voiceFeedback,
     this.keyboardExpanded = false,
+    this.soundExpanded = false,
   });
 
   factory SettingsState.initial() => const SettingsState(
@@ -37,6 +38,8 @@ class SettingsState {
     countdownSound: true,
     startSound: true,
     voiceFeedback: false,
+    keyboardExpanded: false,
+    soundExpanded: false,
   );
 
   SettingsState copyWith({
@@ -51,6 +54,7 @@ class SettingsState {
     bool? startSound,
     bool? voiceFeedback,
     bool? keyboardExpanded,
+    bool? soundExpanded,
   }) {
     return SettingsState(
       soundEnabled: soundEnabled ?? this.soundEnabled,
@@ -64,6 +68,7 @@ class SettingsState {
       startSound: startSound ?? this.startSound,
       voiceFeedback: voiceFeedback ?? this.voiceFeedback,
       keyboardExpanded: keyboardExpanded ?? this.keyboardExpanded,
+      soundExpanded: soundExpanded ?? this.soundExpanded,
     );
   }
 }
@@ -169,6 +174,10 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
 
   void toggleKeyboardExpanded() {
     state = state.copyWith(keyboardExpanded: !state.keyboardExpanded);
+  }
+
+  void toggleSoundExpanded() {
+    state = state.copyWith(soundExpanded: !state.soundExpanded);
   }
 
   void toggleSync() {
