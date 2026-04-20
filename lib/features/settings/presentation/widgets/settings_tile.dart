@@ -9,6 +9,7 @@ class SettingsTile extends StatelessWidget {
   final bool? value;
   final ValueChanged<bool>? onChanged;
   final bool expandable;
+  final bool isExpanded;
 
   const SettingsTile({
     super.key,
@@ -19,6 +20,7 @@ class SettingsTile extends StatelessWidget {
     this.value,
     this.onChanged,
     this.expandable = false,
+    this.isExpanded = false,
   });
 
   bool get isSwitch => value != null && onChanged != null;
@@ -28,11 +30,15 @@ class SettingsTile extends StatelessWidget {
     final t = Theme.of(context);
 
     return GestureDetector(
-      onTap: expandable
-          ? onTap
-          : isSwitch
-          ? () => onChanged!(!value!)
-          : onTap,
+      onTap: () {
+        if (expandable) {
+          onTap?.call();
+        } else if (isSwitch) {
+          onChanged?.call(!value!);
+        } else {
+          onTap?.call();
+        }
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         margin: const EdgeInsets.only(bottom: 10),
@@ -41,7 +47,8 @@ class SettingsTile extends StatelessWidget {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(18),
                 color: Colors.white.withOpacity(0.05),
@@ -98,6 +105,7 @@ class SettingsTile extends StatelessWidget {
                       ],
                     ),
                   ),
+
                   if (isSwitch)
                     GestureDetector(
                       onTap: () => onChanged!(!value!),
@@ -111,15 +119,6 @@ class SettingsTile extends StatelessWidget {
                           color: value!
                               ? t.colorScheme.primary
                               : Colors.white.withOpacity(0.15),
-                          boxShadow: value!
-                              ? [
-                            BoxShadow(
-                              color: t.colorScheme.primary.withOpacity(0.6),
-                              blurRadius: 12,
-                              spreadRadius: -2,
-                            ),
-                          ]
-                              : [],
                         ),
                         child: Align(
                           alignment: value!
@@ -135,11 +134,17 @@ class SettingsTile extends StatelessWidget {
                           ),
                         ),
                       ),
-                    )
-                  else
-                    Icon(
-                      expandable ? Icons.expand_more : Icons.chevron_right,
-                      color: Colors.white.withOpacity(0.4),
+                    ),
+
+                  if (expandable)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Icon(
+                        isExpanded
+                            ? Icons.expand_less
+                            : Icons.expand_more,
+                        color: Colors.white.withOpacity(0.4),
+                      ),
                     ),
                 ],
               ),
