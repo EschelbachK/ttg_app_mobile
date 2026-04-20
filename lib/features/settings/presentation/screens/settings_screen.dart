@@ -5,6 +5,7 @@ import '../widgets/settings_bottom_sheets.dart';
 import '../widgets/settings_section.dart';
 import '../widgets/settings_tile.dart';
 import '../widgets/keyboard_mode_expand.dart';
+import '../widgets/sound_mode_expand.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -43,12 +44,7 @@ class SettingsScreen extends ConsumerWidget {
                   onTap: () => showRestTimerSheet(context, s, n),
                 ),
                 const KeyboardModeTile(),
-                SettingsTile(
-                  icon: Icons.music_note,
-                  title: 'Audio & Töne',
-                  value: s.soundEnabled,
-                  onChanged: (_) => n.toggleSound(),
-                ),
+                const SoundModeTile(),
               ],
             ),
 
