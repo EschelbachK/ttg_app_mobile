@@ -166,9 +166,10 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     if (v is String) p.setString(k, v);
   }
 
-  void _toggle(bool current, SettingsState Function(bool) fn, String key) {
+  void _toggle(bool current, String key,
+      SettingsState Function(bool) builder) {
     final v = !current;
-    state = fn(v);
+    state = builder(v);
     _set(key, v);
   }
 
@@ -205,22 +206,28 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
   }
 
   void toggleSound() =>
-      _toggle(state.soundEnabled, (v) => state.copyWith(soundEnabled: v), SettingsKeys.sound);
+      _toggle(state.soundEnabled, SettingsKeys.sound,
+              (v) => state.copyWith(soundEnabled: v));
 
   void toggleLightMode() =>
-      _toggle(state.lightMode, (v) => state.copyWith(lightMode: v), SettingsKeys.light);
+      _toggle(state.lightMode, SettingsKeys.light,
+              (v) => state.copyWith(lightMode: v));
 
   void toggleKeyboard() =>
-      _toggle(state.keyboardMode, (v) => state.copyWith(keyboardMode: v), SettingsKeys.keyboard);
+      _toggle(state.keyboardMode, SettingsKeys.keyboard,
+              (v) => state.copyWith(keyboardMode: v));
 
   void toggleCountdownSound() =>
-      _toggle(state.countdownSound, (v) => state.copyWith(countdownSound: v), SettingsKeys.countdown);
+      _toggle(state.countdownSound, SettingsKeys.countdown,
+              (v) => state.copyWith(countdownSound: v));
 
   void toggleStartSound() =>
-      _toggle(state.startSound, (v) => state.copyWith(startSound: v), SettingsKeys.start);
+      _toggle(state.startSound, SettingsKeys.start,
+              (v) => state.copyWith(startSound: v));
 
   void toggleVoiceFeedback() =>
-      _toggle(state.voiceFeedback, (v) => state.copyWith(voiceFeedback: v), SettingsKeys.voice);
+      _toggle(state.voiceFeedback, SettingsKeys.voice,
+              (v) => state.copyWith(voiceFeedback: v));
 
   void setRestTimer(int v) {
     state = state.copyWith(restTimerSeconds: v);
@@ -247,21 +254,31 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     _set(SettingsKeys.height, v);
   }
 
+  void _toggleExpanded(bool current,
+      SettingsState Function(bool) builder) =>
+      state = builder(!current);
+
   void toggleKeyboardExpanded() =>
-      state = state.copyWith(keyboardExpanded: !state.keyboardExpanded);
+      _toggleExpanded(state.keyboardExpanded,
+              (v) => state.copyWith(keyboardExpanded: v));
 
   void toggleSoundExpanded() =>
-      state = state.copyWith(soundExpanded: !state.soundExpanded);
+      _toggleExpanded(state.soundExpanded,
+              (v) => state.copyWith(soundExpanded: v));
 
   void toggleLanguageExpanded() =>
-      state = state.copyWith(languageExpanded: !state.languageExpanded);
+      _toggleExpanded(state.languageExpanded,
+              (v) => state.copyWith(languageExpanded: v));
 
   void toggleLightExpanded() =>
-      state = state.copyWith(lightExpanded: !state.lightExpanded);
+      _toggleExpanded(state.lightExpanded,
+              (v) => state.copyWith(lightExpanded: v));
 
   void toggleOfflineExpanded() =>
-      state = state.copyWith(offlineExpanded: !state.offlineExpanded);
+      _toggleExpanded(state.offlineExpanded,
+              (v) => state.copyWith(offlineExpanded: v));
 
   void toggleSyncExpanded() =>
-      state = state.copyWith(syncExpanded: !state.syncExpanded);
+      _toggleExpanded(state.syncExpanded,
+              (v) => state.copyWith(syncExpanded: v));
 }
