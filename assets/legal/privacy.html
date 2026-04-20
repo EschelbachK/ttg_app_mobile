@@ -1,161 +1,157 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Datenschutz</title>
+
     <style>
+        html, body {
+          margin: 0;
+          padding: 0;
+          background: #0A0A0A;
+          color: #FFFFFF;
+          font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+          -webkit-font-smoothing: antialiased;
+        }
+
         body {
-          font-family: -apple-system, sans-serif;
-          background: #0E0E0E;
-          color: #EDEDED;
-          padding: 20px;
-          line-height: 1.6;
+          padding: 20px 16px 40px;
         }
 
         h1 {
-          color: #E10600;
-          margin-top: 30px;
+          font-size: 24px;
+          text-align: center;
+          margin-bottom: 20px;
+          letter-spacing: 1.2px;
         }
 
         h2 {
-          color: #ffffff;
-          margin-top: 24px;
+          font-size: 15px;
+          margin-top: 26px;
+          margin-bottom: 8px;
+          color: #E10600;
+          letter-spacing: 0.8px;
         }
 
         p, li {
-          color: #cccccc;
+          font-size: 14px;
+          color: rgba(255,255,255,0.85);
         }
 
-        .section {
-          margin-bottom: 20px;
+        ul {
+          padding-left: 16px;
+          margin: 0;
         }
 
-        .box {
-          background: rgba(255,255,255,0.05);
+        li {
+          margin-bottom: 6px;
+        }
+
+        /* TTG Card */
+        .card {
+          background: rgba(255,255,255,0.04);
+          border-radius: 14px;
           padding: 14px;
-          border-radius: 12px;
           margin-top: 10px;
+          border: 1px solid rgba(255,255,255,0.06);
+          backdrop-filter: blur(12px);
         }
 
+        /* Divider */
+        .divider {
+          height: 1px;
+          margin: 22px 0;
+          background: linear-gradient(to right, transparent, #E10600, transparent);
+        }
+
+        /* Footer */
+        .footer {
+          margin-top: 30px;
+          font-size: 12px;
+          color: rgba(255,255,255,0.4);
+          text-align: center;
+        }
+
+        /* Smooth scrolling */
+        html {
+          scroll-behavior: smooth;
+        }
+
+        /* Prevent weird bounce */
+        body {
+          overscroll-behavior: none;
+        }
     </style>
 </head>
 
 <body>
 
-<h1>Datenschutzerklärung</h1>
+<h1>DATENSCHUTZ</h1>
 
-<div class="section">
-    <h2>1. Allgemeine Hinweise</h2>
-    <p>Der Schutz Ihrer persönlichen Daten ist uns ein wichtiges Anliegen.</p>
+<div class="card">
+    <p>Der Schutz deiner Daten ist uns extrem wichtig. Hier erfährst du, welche Daten wir erheben und warum.</p>
 </div>
 
-<div class="section">
-    <h2>2. Verantwortlicher</h2>
-    <div class="box">
+<div class="divider"></div>
+
+<h2>1. Verantwortlicher</h2>
+<div class="card">
+    <p>
         E.S.Electronics UG (haftungsbeschränkt)<br>
         Kai Eschelbach<br>
         Bildstockweg 12<br>
         69469 Weinheim<br><br>
         kai.eschelbach@gmx.net<br>
         +49 176 24966134
-    </div>
+    </p>
 </div>
 
-<div class="section">
-    <h2>3. Erhobene Daten</h2>
+<h2>2. Welche Daten wir erfassen</h2>
+<div class="card">
     <ul>
         <li>Stammdaten (Name, E-Mail)</li>
-        <li>Fitnessdaten (Gewicht, Training)</li>
-        <li>Gerätedaten</li>
-        <li>Nutzungsdaten</li>
+        <li>Fitness- & Trainingsdaten</li>
+        <li>Geräteinformationen</li>
+        <li>Nutzungsverhalten</li>
     </ul>
 </div>
 
-<div class="section">
-    <h2>4. Zweck</h2>
+<h2>3. Warum wir Daten nutzen</h2>
+<div class="card">
     <ul>
-        <li>App-Funktion</li>
-        <li>Personalisierung</li>
-        <li>Analyse</li>
+        <li>App-Funktionalität</li>
+        <li>Personalisierte Trainings</li>
+        <li>Verbesserung der App</li>
         <li>Support</li>
     </ul>
 </div>
 
-<div class="section">
-    <h2>5. Rechtsgrundlagen</h2>
-    <p>Art. 6 DSGVO (Einwilligung, Vertrag, berechtigtes Interesse)</p>
+<h2>4. Weitergabe</h2>
+<div class="card">
+    <p>Deine Daten werden niemals verkauft. Weitergabe erfolgt nur bei Zustimmung oder gesetzlicher Pflicht.</p>
 </div>
 
-<div class="section">
-    <h2>6. Weitergabe</h2>
-    <p>Nur bei Einwilligung, Vertrag oder gesetzlicher Pflicht</p>
-</div>
-
-<div class="section">
-    <h2>7. Speicherdauer</h2>
-    <p>Nur solange erforderlich</p>
-</div>
-
-<div class="section">
-    <h2>8. Ihre Rechte</h2>
+<h2>5. Deine Rechte</h2>
+<div class="card">
     <ul>
         <li>Auskunft</li>
         <li>Löschung</li>
         <li>Berichtigung</li>
-        <li>Widerruf</li>
+        <li>Datenübertragbarkeit</li>
     </ul>
 </div>
 
-<div class="section">
-    <h2>9. Sicherheit</h2>
-    <p>Technische und organisatorische Maßnahmen</p>
+<h2>6. Sicherheit</h2>
+<div class="card">
+    <p>Wir nutzen moderne Sicherheitsmaßnahmen zum Schutz deiner Daten.</p>
 </div>
 
-<div class="section">
-    <h2>10. Änderungen</h2>
-    <p>Die aktuelle Version ist immer in der App verfügbar</p>
-</div>
+<div class="divider"></div>
 
-<h1>Nutzungsbedingungen</h1>
-
-<div class="section">
-    <h2>1. Geltungsbereich</h2>
-    <p>Regelt Nutzung der Fitness-App</p>
-</div>
-
-<div class="section">
-    <h2>2. Anbieter</h2>
-    <div class="box">
-        E.S.Electronics UG (haftungsbeschränkt)<br>
-        Kai Eschelbach<br>
-        Weinheim
-    </div>
-</div>
-
-<div class="section">
-    <h2>3. Nutzung</h2>
-    <ul>
-        <li>Eigenverantwortlich</li>
-        <li>Keine medizinische Beratung</li>
-    </ul>
-</div>
-
-<div class="section">
-    <h2>4. Haftung</h2>
-    <p>Nur bei Vorsatz oder grober Fahrlässigkeit</p>
-</div>
-
-<div class="section">
-    <h2>5. Kündigung</h2>
-    <p>Jederzeit möglich</p>
-</div>
-
-<div class="section">
-    <h2>6. Recht</h2>
-    <p>Bundesrepublik Deutschland</p>
-</div>
-
-<div class="section">
-    <p><strong>Stand: 20.04.2026</strong></p>
+<div class="footer">
+    Stand: 20.04.2026
 </div>
 
 </body>
