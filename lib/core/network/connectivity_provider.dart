@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../offline/sync_provider.dart';
+import '../../features/settings/application/settings_provider.dart';
 
 final connectivityProvider = Provider<void>((ref) {
   final connectivity = Connectivity();
@@ -11,7 +12,9 @@ final connectivityProvider = Provider<void>((ref) {
     final hasConnection =
     results.any((r) => r != ConnectivityResult.none);
 
-    if (hasConnection) {
+    final s = ref.read(settingsProvider);
+
+    if (hasConnection && !s.offlineMode && s.syncEnabled) {
       ref.read(syncEngineProvider).processQueue();
     }
   });
