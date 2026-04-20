@@ -3,6 +3,7 @@ import 'offline_action.dart';
 import '../../features/dashboard/api/dashboard_api.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'sync_state_provider.dart';
+import '../../features/settings/application/settings_provider.dart';
 
 class SyncEngine {
   final DashboardApi api;
@@ -10,17 +11,24 @@ class SyncEngine {
 
   SyncEngine(this.api, this.ref);
 
-  Future<void> processQueue() async {
-    final notifier = ref.read(syncStateProvider.notifier);
+  bool get _canSync {
+    final s = ref.read(settingsProvider);
+    return !s.offlineMode && s.syncEnabled;
+  }
 
+  Future<void> processQueue() async {
+    if (!_canSync) return;
+
+    final notifier = ref.read(syncStateProvider.notifier);
     final actions = await OfflineQueue.getAll();
     if (actions.isEmpty) return;
 
     notifier.setSyncing();
 
     try {
-      for (final action in actions) {
-        await _handle(action);
+      for (final a in actions) {
+        if (!_canSync) return;
+        await _handle(a);
       }
 
       await OfflineQueue.clear();
@@ -29,9 +37,7 @@ class SyncEngine {
       notifier.setError();
     }
 
-    Future.delayed(const Duration(seconds: 2), () {
-      notifier.reset();
-    });
+    Future.delayed(const Duration(seconds: 2), notifier.reset);
   }
 
   Future<void> _handle(OfflineAction a) async {
@@ -39,26 +45,18 @@ class SyncEngine {
       case 'create_plan':
         await api.createTrainingPlan(a.payload['name']);
         break;
-
       case 'rename_plan':
-        await api.updateTrainingPlan(
-          a.payload['id'],
-          a.payload['name'],
-        );
+        await api.updateTrainingPlan(a.payload['id'], a.payload['name']);
         break;
-
       case 'delete_plan':
         await api.deleteTrainingPlan(a.payload['id']);
         break;
-
       case 'archive_plan':
         await api.archiveTrainingPlan(a.payload['id']);
         break;
-
       case 'restore_plan':
         await api.restoreTrainingPlan(a.payload['id']);
         break;
-
       case 'create_folder':
         await api.createFolder(
           trainingPlanId: a.payload['planId'],
@@ -66,23 +64,18 @@ class SyncEngine {
           order: 0,
         );
         break;
-
       case 'delete_folder':
         await api.deleteFolder(a.payload['id']);
         break;
-
       case 'duplicate_folder':
         await api.duplicateFolder(a.payload['id']);
         break;
-
       case 'archive_folder':
         await api.archiveFolder(a.payload['id']);
         break;
-
       case 'restore_folder':
         await api.restoreFolder(a.payload['id']);
         break;
-
       case 'import_folder':
         await api.createFolder(
           trainingPlanId: a.payload['targetPlanId'],
@@ -91,7 +84,6 @@ class SyncEngine {
         );
         await api.restoreFolder(a.payload['folderId']);
         break;
-
       case 'create_exercise':
         await api.createExercise(
           planId: a.payload['planId'],
@@ -101,7 +93,6 @@ class SyncEngine {
           sets: [],
         );
         break;
-
       case 'delete_exercise':
         await api.deleteExercise(
           planId: a.payload['planId'],
