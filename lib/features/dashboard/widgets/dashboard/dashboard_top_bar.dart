@@ -6,11 +6,13 @@ import '../../../../core/auth/auth_actions.dart';
 class DashboardTopBar extends ConsumerWidget implements PreferredSizeWidget {
   final int selectedTab;
   final Function(int) onTabChanged;
+  final VoidCallback onMenuTap;
 
   const DashboardTopBar({
     super.key,
     required this.selectedTab,
     required this.onTabChanged,
+    required this.onMenuTap,
   });
 
   @override
@@ -21,11 +23,9 @@ class DashboardTopBar extends ConsumerWidget implements PreferredSizeWidget {
     return AppBar(
       backgroundColor: const Color(0xFF1B1F23),
       elevation: 0,
-      leading: Builder(
-        builder: (context) => IconButton(
-          icon: const Icon(Icons.menu, color: Colors.white38),
-          onPressed: () => Scaffold.of(context).openDrawer(),
-        ),
+      leading: IconButton(
+        icon: const Icon(Icons.menu, color: Colors.white38),
+        onPressed: onMenuTap,
       ),
       title: _TopBarIcons(
         selectedTab: selectedTab,
@@ -73,18 +73,14 @@ class _TopBarIcons extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         onTabChanged(index);
-        if (index == 1) {
-          context.push('/settings');
-        }
+        if (index == 1) context.push('/settings');
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
-          color: isActive
-              ? activeColor.withOpacity(0.15)
-              : Colors.transparent,
+          color: isActive ? activeColor.withOpacity(0.15) : Colors.transparent,
         ),
         child: Icon(
           icon,
