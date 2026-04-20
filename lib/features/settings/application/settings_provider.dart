@@ -10,17 +10,9 @@ StateNotifierProvider<SettingsNotifier, SettingsState>(
 class SettingsState {
   final bool soundEnabled, lightMode, offlineMode, keyboardMode, syncEnabled;
   final bool countdownSound, startSound, voiceFeedback;
-
-  final bool keyboardExpanded,
-      soundExpanded,
-      languageExpanded,
-      lightExpanded,
-      offlineExpanded,
-      syncExpanded;
-
+  final bool keyboardExpanded, soundExpanded, languageExpanded, lightExpanded, offlineExpanded, syncExpanded;
   final int restTimerSeconds;
   final double fontScale;
-
   final String language, weightUnit, heightUnit;
 
   const SettingsState({
@@ -62,47 +54,33 @@ class SettingsState {
   );
 
   SettingsState copyWith({
-    bool? soundEnabled,
-    bool? lightMode,
-    bool? offlineMode,
-    int? restTimerSeconds,
-    bool? keyboardMode,
-    bool? syncEnabled,
-    double? fontScale,
-    bool? countdownSound,
-    bool? startSound,
-    bool? voiceFeedback,
-    bool? keyboardExpanded,
-    bool? soundExpanded,
-    bool? languageExpanded,
-    bool? lightExpanded,
-    bool? offlineExpanded,
-    bool? syncExpanded,
-    String? language,
-    String? weightUnit,
-    String? heightUnit,
-  }) =>
-      SettingsState(
-        soundEnabled: soundEnabled ?? this.soundEnabled,
-        lightMode: lightMode ?? this.lightMode,
-        offlineMode: offlineMode ?? this.offlineMode,
-        restTimerSeconds: restTimerSeconds ?? this.restTimerSeconds,
-        keyboardMode: keyboardMode ?? this.keyboardMode,
-        syncEnabled: syncEnabled ?? this.syncEnabled,
-        fontScale: fontScale ?? this.fontScale,
-        countdownSound: countdownSound ?? this.countdownSound,
-        startSound: startSound ?? this.startSound,
-        voiceFeedback: voiceFeedback ?? this.voiceFeedback,
-        language: language ?? this.language,
-        weightUnit: weightUnit ?? this.weightUnit,
-        heightUnit: heightUnit ?? this.heightUnit,
-        keyboardExpanded: keyboardExpanded ?? this.keyboardExpanded,
-        soundExpanded: soundExpanded ?? this.soundExpanded,
-        languageExpanded: languageExpanded ?? this.languageExpanded,
-        lightExpanded: lightExpanded ?? this.lightExpanded,
-        offlineExpanded: offlineExpanded ?? this.offlineExpanded,
-        syncExpanded: syncExpanded ?? this.syncExpanded,
-      );
+    bool? soundEnabled, bool? lightMode, bool? offlineMode,
+    int? restTimerSeconds, bool? keyboardMode, bool? syncEnabled,
+    double? fontScale, bool? countdownSound, bool? startSound, bool? voiceFeedback,
+    bool? keyboardExpanded, bool? soundExpanded, bool? languageExpanded,
+    bool? lightExpanded, bool? offlineExpanded, bool? syncExpanded,
+    String? language, String? weightUnit, String? heightUnit,
+  }) => SettingsState(
+    soundEnabled: soundEnabled ?? this.soundEnabled,
+    lightMode: lightMode ?? this.lightMode,
+    offlineMode: offlineMode ?? this.offlineMode,
+    restTimerSeconds: restTimerSeconds ?? this.restTimerSeconds,
+    keyboardMode: keyboardMode ?? this.keyboardMode,
+    syncEnabled: syncEnabled ?? this.syncEnabled,
+    fontScale: fontScale ?? this.fontScale,
+    countdownSound: countdownSound ?? this.countdownSound,
+    startSound: startSound ?? this.startSound,
+    voiceFeedback: voiceFeedback ?? this.voiceFeedback,
+    language: language ?? this.language,
+    weightUnit: weightUnit ?? this.weightUnit,
+    heightUnit: heightUnit ?? this.heightUnit,
+    keyboardExpanded: keyboardExpanded ?? this.keyboardExpanded,
+    soundExpanded: soundExpanded ?? this.soundExpanded,
+    languageExpanded: languageExpanded ?? this.languageExpanded,
+    lightExpanded: lightExpanded ?? this.lightExpanded,
+    offlineExpanded: offlineExpanded ?? this.offlineExpanded,
+    syncExpanded: syncExpanded ?? this.syncExpanded,
+  );
 }
 
 class SettingsKeys {
@@ -113,11 +91,9 @@ class SettingsKeys {
   static const keyboard = 'keyboard_mode';
   static const sync = 'sync_enabled';
   static const font = 'font_scale';
-
   static const countdown = 'countdown_sound';
   static const start = 'start_sound';
   static const voice = 'voice_feedback';
-
   static const language = 'language';
   static const weight = 'weight_unit';
   static const height = 'height_unit';
@@ -166,8 +142,7 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     if (v is String) p.setString(k, v);
   }
 
-  void _toggle(bool current, String key,
-      SettingsState Function(bool) builder) {
+  void _toggle(bool current, String key, SettingsState Function(bool) builder) {
     final v = !current;
     state = builder(v);
     _set(key, v);
@@ -175,110 +150,40 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
 
   void toggleOffline() {
     final v = !state.offlineMode;
-
-    state = state.copyWith(
-      offlineMode: v,
-      syncEnabled: v ? false : state.syncEnabled,
-    );
-
+    state = state.copyWith(offlineMode: v, syncEnabled: v ? false : state.syncEnabled);
     _set(SettingsKeys.offline, v);
     if (v) _set(SettingsKeys.sync, false);
-
-    if (!v && state.syncEnabled) {
-      ref.read(syncEngineProvider).processQueue();
-    }
+    if (!v && state.syncEnabled) ref.read(syncEngineProvider).processQueue();
   }
 
   void toggleSync() {
     final v = !state.syncEnabled;
-
-    state = state.copyWith(
-      syncEnabled: v,
-      offlineMode: v ? false : state.offlineMode,
-    );
-
+    state = state.copyWith(syncEnabled: v, offlineMode: v ? false : state.offlineMode);
     _set(SettingsKeys.sync, v);
     if (v) _set(SettingsKeys.offline, false);
-
-    if (v && !state.offlineMode) {
-      ref.read(syncEngineProvider).processQueue();
-    }
+    if (v && !state.offlineMode) ref.read(syncEngineProvider).processQueue();
   }
 
-  void toggleSound() =>
-      _toggle(state.soundEnabled, SettingsKeys.sound,
-              (v) => state.copyWith(soundEnabled: v));
+  void toggleSound() => _toggle(state.soundEnabled, SettingsKeys.sound, (v) => state.copyWith(soundEnabled: v));
+  void toggleLightMode() => _toggle(state.lightMode, SettingsKeys.light, (v) => state.copyWith(lightMode: v));
+  void toggleKeyboard() => _toggle(state.keyboardMode, SettingsKeys.keyboard, (v) => state.copyWith(keyboardMode: v));
+  void toggleCountdownSound() => _toggle(state.countdownSound, SettingsKeys.countdown, (v) => state.copyWith(countdownSound: v));
+  void toggleStartSound() => _toggle(state.startSound, SettingsKeys.start, (v) => state.copyWith(startSound: v));
+  void toggleVoiceFeedback() => _toggle(state.voiceFeedback, SettingsKeys.voice, (v) => state.copyWith(voiceFeedback: v));
 
-  void toggleLightMode() =>
-      _toggle(state.lightMode, SettingsKeys.light,
-              (v) => state.copyWith(lightMode: v));
+  void setRestTimer(int v) { state = state.copyWith(restTimerSeconds: v); _set(SettingsKeys.rest, v); }
+  void setFontScale(double v) { state = state.copyWith(fontScale: v); _set(SettingsKeys.font, v); }
+  void setLanguage(String v) { state = state.copyWith(language: v); _set(SettingsKeys.language, v); }
+  void setWeightUnit(String v) { state = state.copyWith(weightUnit: v); _set(SettingsKeys.weight, v); }
+  void setHeightUnit(String v) { state = state.copyWith(heightUnit: v); _set(SettingsKeys.height, v); }
 
-  void toggleKeyboard() =>
-      _toggle(state.keyboardMode, SettingsKeys.keyboard,
-              (v) => state.copyWith(keyboardMode: v));
-
-  void toggleCountdownSound() =>
-      _toggle(state.countdownSound, SettingsKeys.countdown,
-              (v) => state.copyWith(countdownSound: v));
-
-  void toggleStartSound() =>
-      _toggle(state.startSound, SettingsKeys.start,
-              (v) => state.copyWith(startSound: v));
-
-  void toggleVoiceFeedback() =>
-      _toggle(state.voiceFeedback, SettingsKeys.voice,
-              (v) => state.copyWith(voiceFeedback: v));
-
-  void setRestTimer(int v) {
-    state = state.copyWith(restTimerSeconds: v);
-    _set(SettingsKeys.rest, v);
-  }
-
-  void setFontScale(double v) {
-    state = state.copyWith(fontScale: v);
-    _set(SettingsKeys.font, v);
-  }
-
-  void setLanguage(String v) {
-    state = state.copyWith(language: v);
-    _set(SettingsKeys.language, v);
-  }
-
-  void setWeightUnit(String v) {
-    state = state.copyWith(weightUnit: v);
-    _set(SettingsKeys.weight, v);
-  }
-
-  void setHeightUnit(String v) {
-    state = state.copyWith(heightUnit: v);
-    _set(SettingsKeys.height, v);
-  }
-
-  void _toggleExpanded(bool current,
-      SettingsState Function(bool) builder) =>
+  void _expand(bool current, SettingsState Function(bool) builder) =>
       state = builder(!current);
 
-  void toggleKeyboardExpanded() =>
-      _toggleExpanded(state.keyboardExpanded,
-              (v) => state.copyWith(keyboardExpanded: v));
-
-  void toggleSoundExpanded() =>
-      _toggleExpanded(state.soundExpanded,
-              (v) => state.copyWith(soundExpanded: v));
-
-  void toggleLanguageExpanded() =>
-      _toggleExpanded(state.languageExpanded,
-              (v) => state.copyWith(languageExpanded: v));
-
-  void toggleLightExpanded() =>
-      _toggleExpanded(state.lightExpanded,
-              (v) => state.copyWith(lightExpanded: v));
-
-  void toggleOfflineExpanded() =>
-      _toggleExpanded(state.offlineExpanded,
-              (v) => state.copyWith(offlineExpanded: v));
-
-  void toggleSyncExpanded() =>
-      _toggleExpanded(state.syncExpanded,
-              (v) => state.copyWith(syncExpanded: v));
+  void toggleKeyboardExpanded() => _expand(state.keyboardExpanded, (v) => state.copyWith(keyboardExpanded: v));
+  void toggleSoundExpanded() => _expand(state.soundExpanded, (v) => state.copyWith(soundExpanded: v));
+  void toggleLanguageExpanded() => _expand(state.languageExpanded, (v) => state.copyWith(languageExpanded: v));
+  void toggleLightExpanded() => _expand(state.lightExpanded, (v) => state.copyWith(lightExpanded: v));
+  void toggleOfflineExpanded() => _expand(state.offlineExpanded, (v) => state.copyWith(offlineExpanded: v));
+  void toggleSyncExpanded() => _expand(state.syncExpanded, (v) => state.copyWith(syncExpanded: v));
 }
