@@ -3,33 +3,31 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../application/settings_provider.dart';
 
-Widget _glassContainer(BuildContext context, Widget child) {
-  final t = Theme.of(context);
-  final isDark = t.brightness == Brightness.dark;
+Widget _glass(BuildContext c, Widget child) {
+  final t = Theme.of(c);
+  final dark = t.brightness == Brightness.dark;
 
-  Widget content = Container(
+  final box = Container(
     padding: const EdgeInsets.all(20),
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(24),
-      color: isDark ? null : Colors.white,
-      gradient: isDark
+      color: dark ? null : Colors.white,
+      gradient: dark
           ? LinearGradient(
         colors: [
           Colors.white.withOpacity(0.08),
           Colors.white.withOpacity(0.02),
         ],
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
       )
           : null,
       border: Border.all(
-        color: isDark
+        color: dark
             ? Colors.white.withOpacity(0.1)
             : Colors.black.withOpacity(0.06),
       ),
       boxShadow: [
         BoxShadow(
-          color: isDark
+          color: dark
               ? Colors.black.withOpacity(0.4)
               : Colors.black.withOpacity(0.08),
           blurRadius: 25,
@@ -42,159 +40,144 @@ Widget _glassContainer(BuildContext context, Widget child) {
 
   return ClipRRect(
     borderRadius: BorderRadius.circular(24),
-    child: isDark
+    child: dark
         ? BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
-      child: content,
+      child: box,
     )
-        : content,
+        : box,
   );
 }
 
-Widget _saveButton(VoidCallback onTap) {
+Widget _btn(String text, VoidCallback tap, {Color? color}) {
   return GestureDetector(
-    onTap: onTap,
+    onTap: tap,
     child: Container(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+      padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.4),
-            blurRadius: 25,
-            spreadRadius: -8,
-          ),
-        ],
         gradient: LinearGradient(
           colors: [
-            AppTheme.primaryRed.withOpacity(0.9),
-            AppTheme.primaryRed,
+            (color ?? AppTheme.primaryRed).withOpacity(0.9),
+            color ?? AppTheme.primaryRed,
           ],
         ),
       ),
-      child: const Text(
-        'SPEICHERN',
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-          letterSpacing: 1,
+      child: Center(
+        child: Text(
+          text,
+          style: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
     ),
   );
 }
 
-void showRestTimerSheet(BuildContext context, SettingsState s, SettingsNotifier n) {
-  int temp = s.restTimerSeconds;
-
-  showModalBottomSheet(
-    context: context,
-    backgroundColor: Colors.transparent,
-    isScrollControlled: true,
-    builder: (_) {
-      return StatefulBuilder(
-        builder: (_, set) {
-          final t = Theme.of(context);
-
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-            child: _glassContainer(
-              context,
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('SATZPAUSE', style: t.textTheme.bodySmall),
-                  const SizedBox(height: 10),
-                  Text('$temp SEKUNDEN', style: t.textTheme.titleLarge),
-                  Slider(
-                    value: temp.toDouble(),
-                    min: 10,
-                    max: 180,
-                    activeColor: AppTheme.primaryRed,
-                    inactiveColor: Colors.grey.withOpacity(0.2),
-                    thumbColor: AppTheme.primaryRed,
-                    overlayColor: WidgetStateProperty.all(
-                      AppTheme.primaryRed.withOpacity(0.15),
-                    ),
-                    onChanged: (v) => set(() => temp = v.toInt()),
-                  ),
-                  const SizedBox(height: 10),
-                  _saveButton(() {
-                    n.setRestTimer(temp);
-                    Navigator.pop(context);
-                  }),
-                ],
-              ),
-            ),
-          );
-        },
-      );
-    },
-  );
-}
-
-void showFontScaleSheet(BuildContext context, SettingsState s, SettingsNotifier n) {
+void showFontScaleSheet(BuildContext c, SettingsState s, SettingsNotifier n) {
   double temp = s.fontScale;
 
   showModalBottomSheet(
-    context: context,
+    context: c,
     backgroundColor: Colors.transparent,
-    builder: (_) {
-      return StatefulBuilder(
-        builder: (_, set) {
-          final t = Theme.of(context);
+    builder: (_) => StatefulBuilder(
+      builder: (_, set) {
+        final t = Theme.of(c);
 
-          return Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-            child: _glassContainer(
-              context,
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('SCHRIFTGRÖSSE', style: t.textTheme.bodySmall),
-                  const SizedBox(height: 10),
-                  Text('${temp.toStringAsFixed(1)}x', style: t.textTheme.titleLarge),
-                  Slider(
-                    value: temp,
-                    min: 0.8,
-                    max: 1.5,
-                    activeColor: AppTheme.primaryRed,
-                    inactiveColor: Colors.grey.withOpacity(0.2),
-                    thumbColor: AppTheme.primaryRed,
-                    overlayColor: WidgetStateProperty.all(
-                      AppTheme.primaryRed.withOpacity(0.15),
-                    ),
-                    onChanged: (v) => set(() => temp = v),
-                  ),
-                  const SizedBox(height: 10),
-                  _saveButton(() {
-                    n.setFontScale(temp);
-                    Navigator.pop(context);
-                  }),
-                ],
-              ),
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+          child: _glass(
+            c,
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('SCHRIFTGRÖSSE', style: t.textTheme.bodySmall),
+                const SizedBox(height: 10),
+                Text('${temp.toStringAsFixed(1)}x', style: t.textTheme.titleLarge),
+                Slider(
+                  value: temp,
+                  min: 0.8,
+                  max: 1.5,
+                  activeColor: AppTheme.primaryRed,
+                  onChanged: (v) => set(() => temp = v),
+                ),
+                const SizedBox(height: 10),
+                _btn('Speichern', () {
+                  n.setFontScale(temp);
+                  Navigator.pop(c);
+                }),
+              ],
             ),
-          );
-        },
-      );
-    },
+          ),
+        );
+      },
+    ),
   );
 }
 
-void showDeleteAccountSheet(BuildContext context) {
+void showPasswordSheet(BuildContext c) {
   showModalBottomSheet(
-    context: context,
+    context: c,
     backgroundColor: Colors.transparent,
-    builder: (_) {
-      return Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-        child: _glassContainer(
-          context,
-          const Padding(
-            padding: EdgeInsets.all(20),
-            child: Text('Account löschen bestätigen'),
-          ),
+    isScrollControlled: true,
+    builder: (_) => Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+      child: _glass(
+        c,
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('PASSWORT'),
+            const SizedBox(height: 10),
+            const TextField(decoration: InputDecoration(hintText: 'Neues Passwort')),
+            const SizedBox(height: 10),
+            const TextField(decoration: InputDecoration(hintText: 'Wiederholen')),
+            const SizedBox(height: 16),
+            _btn('Speichern', () => Navigator.pop(c)),
+          ],
         ),
-      );
-    },
+      ),
+    ),
+  );
+}
+
+void showPrivacySheet(BuildContext c) {
+  showModalBottomSheet(
+    context: c,
+    backgroundColor: Colors.transparent,
+    builder: (_) => Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+      child: _glass(
+        c,
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('DATENSCHUTZ'),
+            const SizedBox(height: 10),
+            _btn('Datenschutzerklärung lesen', () {}),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+void showDeleteAccountSheet(BuildContext c) {
+  showModalBottomSheet(
+    context: c,
+    backgroundColor: Colors.transparent,
+    builder: (_) => Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+      child: _glass(
+        c,
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('ACCOUNT LÖSCHEN'),
+            const SizedBox(height: 10),
+            _btn('Account löschen', () => Navigator.pop(c), color: Colors.red),
+          ],
+        ),
+      ),
+    ),
   );
 }
