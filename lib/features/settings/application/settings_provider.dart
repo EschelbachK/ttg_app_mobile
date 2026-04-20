@@ -1,9 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../core/offline/sync_provider.dart';
 
 final settingsProvider =
 StateNotifierProvider<SettingsNotifier, SettingsState>(
-      (ref) => SettingsNotifier(),
+      (ref) => SettingsNotifier(ref),
 );
 
 class SettingsState {
@@ -80,29 +81,28 @@ class SettingsState {
     String? language,
     String? weightUnit,
     String? heightUnit,
-  }) {
-    return SettingsState(
-      soundEnabled: soundEnabled ?? this.soundEnabled,
-      lightMode: lightMode ?? this.lightMode,
-      offlineMode: offlineMode ?? this.offlineMode,
-      restTimerSeconds: restTimerSeconds ?? this.restTimerSeconds,
-      keyboardMode: keyboardMode ?? this.keyboardMode,
-      syncEnabled: syncEnabled ?? this.syncEnabled,
-      fontScale: fontScale ?? this.fontScale,
-      countdownSound: countdownSound ?? this.countdownSound,
-      startSound: startSound ?? this.startSound,
-      voiceFeedback: voiceFeedback ?? this.voiceFeedback,
-      language: language ?? this.language,
-      weightUnit: weightUnit ?? this.weightUnit,
-      heightUnit: heightUnit ?? this.heightUnit,
-      keyboardExpanded: keyboardExpanded ?? this.keyboardExpanded,
-      soundExpanded: soundExpanded ?? this.soundExpanded,
-      languageExpanded: languageExpanded ?? this.languageExpanded,
-      lightExpanded: lightExpanded ?? this.lightExpanded,
-      offlineExpanded: offlineExpanded ?? this.offlineExpanded,
-      syncExpanded: syncExpanded ?? this.syncExpanded,
-    );
-  }
+  }) =>
+      SettingsState(
+        soundEnabled: soundEnabled ?? this.soundEnabled,
+        lightMode: lightMode ?? this.lightMode,
+        offlineMode: offlineMode ?? this.offlineMode,
+        restTimerSeconds: restTimerSeconds ?? this.restTimerSeconds,
+        keyboardMode: keyboardMode ?? this.keyboardMode,
+        syncEnabled: syncEnabled ?? this.syncEnabled,
+        fontScale: fontScale ?? this.fontScale,
+        countdownSound: countdownSound ?? this.countdownSound,
+        startSound: startSound ?? this.startSound,
+        voiceFeedback: voiceFeedback ?? this.voiceFeedback,
+        language: language ?? this.language,
+        weightUnit: weightUnit ?? this.weightUnit,
+        heightUnit: heightUnit ?? this.heightUnit,
+        keyboardExpanded: keyboardExpanded ?? this.keyboardExpanded,
+        soundExpanded: soundExpanded ?? this.soundExpanded,
+        languageExpanded: languageExpanded ?? this.languageExpanded,
+        lightExpanded: lightExpanded ?? this.lightExpanded,
+        offlineExpanded: offlineExpanded ?? this.offlineExpanded,
+        syncExpanded: syncExpanded ?? this.syncExpanded,
+      );
 }
 
 class SettingsKeys {
@@ -124,9 +124,10 @@ class SettingsKeys {
 }
 
 class SettingsNotifier extends StateNotifier<SettingsState> {
+  final Ref ref;
   SharedPreferences? _prefs;
 
-  SettingsNotifier() : super(SettingsState.initial()) {
+  SettingsNotifier(this.ref) : super(SettingsState.initial()) {
     _init();
   }
 
@@ -171,12 +172,6 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     _set(key, v);
   }
 
-  void toggleSound() =>
-      _toggle(state.soundEnabled, (v) => state.copyWith(soundEnabled: v), SettingsKeys.sound);
-
-  void toggleLightMode() =>
-      _toggle(state.lightMode, (v) => state.copyWith(lightMode: v), SettingsKeys.light);
-
   void toggleOffline() {
     final v = !state.offlineMode;
 
@@ -187,6 +182,10 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
 
     _set(SettingsKeys.offline, v);
     if (v) _set(SettingsKeys.sync, false);
+
+    if (!v && state.syncEnabled) {
+      ref.read(syncEngineProvider).processQueue();
+    }
   }
 
   void toggleSync() {
@@ -199,7 +198,17 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
 
     _set(SettingsKeys.sync, v);
     if (v) _set(SettingsKeys.offline, false);
+
+    if (v && !state.offlineMode) {
+      ref.read(syncEngineProvider).processQueue();
+    }
   }
+
+  void toggleSound() =>
+      _toggle(state.soundEnabled, (v) => state.copyWith(soundEnabled: v), SettingsKeys.sound);
+
+  void toggleLightMode() =>
+      _toggle(state.lightMode, (v) => state.copyWith(lightMode: v), SettingsKeys.light);
 
   void toggleKeyboard() =>
       _toggle(state.keyboardMode, (v) => state.copyWith(keyboardMode: v), SettingsKeys.keyboard);
