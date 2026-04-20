@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../features/settings/application/settings_provider.dart';
 import 'auth_interceptor.dart';
 
 final dioProvider = Provider<Dio>((ref) {
@@ -12,9 +14,24 @@ final dioProvider = Provider<Dio>((ref) {
     ),
   );
 
-  dio.interceptors.addAll([
-    AuthInterceptor(ref),
-  ]);
+  dio.interceptors.add(
+    InterceptorsWrapper(
+      onRequest: (options, handler) {
+        if (ref.read(settingsProvider).offlineMode) {
+          return handler.reject(
+            DioException(
+              requestOptions: options,
+              type: DioExceptionType.cancel,
+              error: 'OFFLINE_MODE',
+            ),
+          );
+        }
+        handler.next(options);
+      },
+    ),
+  );
+
+  dio.interceptors.add(AuthInterceptor(ref));
 
   return dio;
 });
