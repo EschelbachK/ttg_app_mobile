@@ -22,29 +22,15 @@ class OfflineModeExpand extends ConsumerWidget {
           isExpanded: s.offlineExpanded,
           onTap: n.toggleOfflineExpanded,
         ),
-
         if (s.offlineExpanded)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 8, 6),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Trainiere ohne Internetverbindung. Deine Daten werden lokal gespeichert und später synchronisiert.',
-                  style: TextStyle(color: Colors.white70, height: 1.4),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Checkbox(
-                      value: s.offlineMode,
-                      onChanged: (_) => n.toggleOffline(),
-                    ),
-                    const SizedBox(width: 6),
-                    const Expanded(child: Text('Offline-Modus aktivieren')),
-                  ],
-                ),
-              ],
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 8, 8, 10),
+            child: Text(
+              'Trainiere ohne Internet. Deine Daten werden lokal gespeichert und automatisch synchronisiert, sobald du wieder online bist.',
+              style: TextStyle(
+                color: Colors.white70,
+                height: 1.4,
+              ),
             ),
           ),
       ],
