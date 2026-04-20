@@ -14,22 +14,56 @@ class SettingsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context);
-    final isDark = t.brightness == Brightness.dark;
-    const c = Color(0xFFE10600);
+    final dark = t.brightness == Brightness.dark;
 
-    Widget container = Container(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              const Expanded(child: _Line()),
+              Text(
+                title.toUpperCase(),
+                style: TextStyle(
+                  color: dark ? Colors.white : Colors.black,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 2,
+                ),
+              ),
+              const Expanded(child: _Line()),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _GlassBox(dark: dark, children: children),
+        ],
+      ),
+    );
+  }
+}
+
+class _GlassBox extends StatelessWidget {
+  final bool dark;
+  final List<Widget> children;
+
+  const _GlassBox({required this.dark, required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    final box = Container(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
-        color: isDark ? Colors.white.withOpacity(0.03) : Colors.white,
+        color: dark ? Colors.white.withOpacity(0.03) : Colors.white,
         border: Border.all(
-          color: isDark
+          color: dark
               ? Colors.white.withOpacity(0.05)
               : Colors.black.withOpacity(0.06),
         ),
         boxShadow: [
           BoxShadow(
-            color: isDark
+            color: dark
                 ? Colors.black.withOpacity(0.5)
                 : Colors.black.withOpacity(0.06),
             blurRadius: 20,
@@ -40,54 +74,29 @@ class SettingsSection extends StatelessWidget {
       child: Column(children: children),
     );
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              const Expanded(child: _Line(color: c)),
-              Text(
-                title.toUpperCase(),
-                style: TextStyle(
-                  color: isDark ? Colors.white : Colors.black,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 2,
-                ),
-              ),
-              const Expanded(child: _Line(color: c)),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(18),
-            child: isDark
-                ? BackdropFilter(
-              filter:
-              ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-              child: container,
-            )
-                : container,
-          ),
-        ],
-      ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(18),
+      child: dark
+          ? BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: box,
+      )
+          : box,
     );
   }
 }
 
 class _Line extends StatelessWidget {
-  final Color color;
-  const _Line({required this.color});
+  const _Line();
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 1.5,
       margin: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.transparent, color, Colors.transparent],
+          colors: [Colors.transparent, Color(0xFFE10600), Colors.transparent],
         ),
       ),
     );
