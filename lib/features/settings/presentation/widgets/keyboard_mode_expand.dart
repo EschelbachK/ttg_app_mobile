@@ -22,39 +22,16 @@ class KeyboardModeTile extends ConsumerWidget {
           isExpanded: s.keyboardExpanded,
           onTap: n.toggleKeyboardExpanded,
         ),
-
         if (s.keyboardExpanded)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 8, 6),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Aktiviere den Tastatur-Modus, wenn du bei der Eingabe von Gewicht und Wiederholungen die Tastatur nutzen möchtest.',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 13,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                Row(
-                  children: [
-                    Checkbox(
-                      value: s.keyboardMode,
-                      onChanged: (_) => n.toggleKeyboard(),
-                    ),
-                    const SizedBox(width: 6),
-                    const Expanded(
-                      child: Text(
-                        'Tastatur-Modus aktivieren',
-                        style: TextStyle(fontSize: 14),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 8, 8, 10),
+            child: Text(
+              'Aktiviere den Tastatur-Modus, um Gewicht und Wiederholungen direkt über die Tastatur einzugeben.',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 13,
+                height: 1.4,
+              ),
             ),
           ),
       ],
