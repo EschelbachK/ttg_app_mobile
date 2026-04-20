@@ -30,120 +30,136 @@ class SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context);
+    final isDark = t.brightness == Brightness.dark;
+
+    Widget content = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+        border: Border.all(
+          color: isSwitch && value == true
+              ? t.colorScheme.primary.withOpacity(0.5)
+              : (isDark
+              ? Colors.white.withOpacity(0.06)
+              : Colors.black.withOpacity(0.06)),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withOpacity(0.6)
+                : Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            spreadRadius: -5,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: isDark
+                  ? Colors.white.withOpacity(0.04)
+                  : Colors.black.withOpacity(0.04),
+            ),
+            child: Icon(
+              icon,
+              size: 20,
+              color: isSwitch && value == true
+                  ? t.colorScheme.primary
+                  : t.iconTheme.color,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: t.textTheme.bodyMedium
+                        ?.copyWith(fontWeight: FontWeight.w600)),
+                if (subtitle != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 3),
+                    child: Text(
+                      subtitle!,
+                      style: t.textTheme.bodySmall?.copyWith(
+                        color: isDark
+                            ? Colors.white.withOpacity(0.5)
+                            : Colors.black.withOpacity(0.6),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+
+          if (trailing != null) trailing!,
+
+          if (isSwitch)
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => onChanged?.call(!value!),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: 46,
+                height: 26,
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: value!
+                      ? t.colorScheme.primary
+                      : (isDark
+                      ? Colors.white.withOpacity(0.15)
+                      : Colors.black.withOpacity(0.1)),
+                ),
+                child: Align(
+                  alignment: value!
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
+                  child: Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: t.colorScheme.onPrimary,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+          if (expandable)
+            Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: Icon(
+                isExpanded ? Icons.expand_less : Icons.expand_more,
+                color: isDark
+                    ? Colors.white.withOpacity(0.4)
+                    : Colors.black.withOpacity(0.4),
+              ),
+            ),
+        ],
+      ),
+    );
 
     return GestureDetector(
-      onTap: expandable ? onTap : (!isSwitch ? onTap : null),
+      behavior: HitTestBehavior.translucent,
+      onTap: onTap, // 🔥 DAS IST DER FIX
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         margin: const EdgeInsets.only(bottom: 10),
-        child: ClipRRect(
+        child: isDark
+            ? ClipRRect(
           borderRadius: BorderRadius.circular(18),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-            child: Container(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                color: Colors.white.withOpacity(0.05),
-                border: Border.all(
-                  color: isSwitch && value == true
-                      ? t.colorScheme.primary.withOpacity(0.5)
-                      : Colors.white.withOpacity(0.06),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.6),
-                    blurRadius: 25,
-                    spreadRadius: -5,
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.white.withOpacity(0.04),
-                    ),
-                    child: Icon(
-                      icon,
-                      size: 20,
-                      color: isSwitch && value == true
-                          ? t.colorScheme.primary
-                          : t.iconTheme.color,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: t.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        if (subtitle != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 3),
-                            child: Text(
-                              subtitle!,
-                              style: t.textTheme.bodySmall?.copyWith(
-                                color: Colors.white.withOpacity(0.5),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  if (trailing != null) trailing!,
-                  if (isSwitch)
-                    GestureDetector(
-                      onTap: () => onChanged?.call(!value!),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        width: 46,
-                        height: 26,
-                        padding: const EdgeInsets.all(3),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          color: value!
-                              ? t.colorScheme.primary
-                              : Colors.white.withOpacity(0.15),
-                        ),
-                        child: Align(
-                          alignment: value!
-                              ? Alignment.centerRight
-                              : Alignment.centerLeft,
-                          child: Container(
-                            width: 20,
-                            height: 20,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: t.colorScheme.onPrimary,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  if (expandable)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 8),
-                      child: Icon(
-                        isExpanded
-                            ? Icons.expand_less
-                            : Icons.expand_more,
-                        color: Colors.white.withOpacity(0.4),
-                      ),
-                    ),
-                ],
-              ),
-            ),
+            child: content,
           ),
-        ),
+        )
+            : content,
       ),
     );
   }
