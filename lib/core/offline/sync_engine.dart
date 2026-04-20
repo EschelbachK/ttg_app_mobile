@@ -25,15 +25,22 @@ class SyncEngine {
 
     notifier.setSyncing();
 
-    try {
-      for (final a in actions) {
-        if (!_canSync) return;
-        await _handle(a);
-      }
+    final failed = <OfflineAction>[];
 
+    for (final a in actions) {
+      if (!_canSync) break;
+      try {
+        await _handle(a);
+      } catch (_) {
+        failed.add(a);
+      }
+    }
+
+    if (failed.isEmpty) {
       await OfflineQueue.clear();
       notifier.setSuccess();
-    } catch (_) {
+    } else {
+      await OfflineQueue.replaceAll(failed);
       notifier.setError();
     }
 
