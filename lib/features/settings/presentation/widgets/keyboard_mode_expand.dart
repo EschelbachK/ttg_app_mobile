@@ -13,14 +13,13 @@ class KeyboardModeTile extends ConsumerWidget {
 
     return Column(
       children: [
-        GestureDetector(
+        SettingsTile(
+          icon: Icons.keyboard,
+          title: 'Tastatur-Modus',
+          value: s.keyboardMode,
+          onChanged: (_) => n.toggleKeyboard(),
+          expandable: true,
           onTap: n.toggleKeyboardExpanded,
-          child: SettingsTile(
-            icon: Icons.keyboard,
-            title: 'Tastatur-Modus',
-            value: s.keyboardMode,
-            onChanged: (_) => n.toggleKeyboard(),
-          ),
         ),
         AnimatedCrossFade(
           duration: const Duration(milliseconds: 200),
@@ -29,7 +28,7 @@ class KeyboardModeTile extends ConsumerWidget {
               : CrossFadeState.showFirst,
           firstChild: const SizedBox.shrink(),
           secondChild: Padding(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.only(top: 8, bottom: 6),
             child: Column(
               children: [
                 const Text(
