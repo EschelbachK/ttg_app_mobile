@@ -22,29 +22,15 @@ class SyncModeExpand extends ConsumerWidget {
           isExpanded: s.syncExpanded,
           onTap: n.toggleSyncExpanded,
         ),
-
         if (s.syncExpanded)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 8, 6),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Synchronisiert deine Trainingsdaten zwischen Geräten und sichert deinen Fortschritt.',
-                  style: TextStyle(color: Colors.white70, height: 1.4),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Checkbox(
-                      value: s.syncEnabled,
-                      onChanged: (_) => n.toggleSync(),
-                    ),
-                    const SizedBox(width: 6),
-                    const Expanded(child: Text('Synchronisation aktivieren')),
-                  ],
-                ),
-              ],
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 8, 8, 10),
+            child: Text(
+              'Synchronisiert deine Trainingsdaten automatisch und sichert deinen Fortschritt über alle Geräte hinweg.',
+              style: TextStyle(
+                color: Colors.white70,
+                height: 1.4,
+              ),
             ),
           ),
       ],
