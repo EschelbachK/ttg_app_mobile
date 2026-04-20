@@ -22,6 +22,9 @@ class OfflineQueue {
 
   static Future<List<OfflineAction>> getAll() => _load();
 
+  static Future<void> replaceAll(List<OfflineAction> list) =>
+      _save(list);
+
   static Future<void> clear() async =>
       (await _p).remove(_key);
 }
