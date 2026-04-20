@@ -1,32 +1,43 @@
 name: ttg_app_mobile
-description: "Train2Gain-App"
+description: TrainToGain-App
 publish_to: 'none'
 
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.11.0
+  sdk: ">=3.3.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
+
   http: ^1.2.1
-  dio: ^5.4.0
-  flutter_secure_storage: ^9.0.0
-  flutter_riverpod: ^2.5.1
-  go_router: ^13.2.0
-  shared_preferences: ^2.2.2
+  dio: ^5.9.0
+
+  flutter_riverpod: ^2.6.1
+  go_router: ^13.2.5
+
+  # ✅ FIX
+  shared_preferences: ^2.3.3
+
+  audioplayers: ^5.2.1
+
   fl_chart: ^0.68.0
+
   cupertino_icons: ^1.0.8
-  phosphor_flutter: ^2.0.0
+  phosphor_flutter: ^2.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^6.0.0
+
+  flutter_lints: ^3.0.2
 
 flutter:
   uses-material-design: true
+
   assets:
     - assets/images/login_bg.png
     - assets/images/dashboard_bg.png
+    - assets/sounds/beep.mp3
+    - assets/sounds/finish.mp3
