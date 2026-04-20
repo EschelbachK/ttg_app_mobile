@@ -11,6 +11,7 @@ class PrivacyWebView extends StatefulWidget {
 
 class _PrivacyWebViewState extends State<PrivacyWebView> {
   late final WebViewController controller;
+  bool loading = true;
 
   @override
   void initState() {
@@ -25,7 +26,12 @@ class _PrivacyWebViewState extends State<PrivacyWebView> {
 
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.black);
+      ..setBackgroundColor(Colors.black)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageFinished: (_) => setState(() => loading = false),
+        ),
+      );
 
     _load();
   }
@@ -36,9 +42,13 @@ class _PrivacyWebViewState extends State<PrivacyWebView> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
+  void dispose() {
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
+    super.dispose();
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -46,6 +56,11 @@ class _PrivacyWebViewState extends State<PrivacyWebView> {
           Positioned.fill(
             child: WebViewWidget(controller: controller),
           ),
+
+          if (loading)
+            const Center(
+              child: CircularProgressIndicator(),
+            ),
 
           Positioned(
             top: 0,
@@ -76,7 +91,9 @@ class _PrivacyWebViewState extends State<PrivacyWebView> {
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.08),
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white.withOpacity(0.1)),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.1),
+                      ),
                     ),
                     child: const Icon(Icons.arrow_back, size: 20),
                   ),
