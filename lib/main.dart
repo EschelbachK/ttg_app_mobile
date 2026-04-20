@@ -20,19 +20,30 @@ void main() {
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref.read(connectivityProvider);
+      ref.read(syncEngineProvider).processQueue();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     ref
       ..listen(motivationListenerProvider, (_, __) {})
       ..listen(soundListenerProvider, (_, __) {})
       ..listen(gamificationListenerProvider, (_, __) {})
       ..listen(aiListenerProvider, (_, __) {});
-
-    ref.read(connectivityProvider);
-    ref.read(syncEngineProvider).processQueue();
 
     final router = ref.watch(appRouterProvider);
     final settings = ref.watch(settingsProvider);
