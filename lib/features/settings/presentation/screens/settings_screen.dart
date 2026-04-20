@@ -5,6 +5,7 @@ import '../../application/settings_provider.dart';
 import '../widgets/settings_bottom_sheets.dart';
 import '../widgets/settings_section.dart';
 import '../widgets/settings_tile.dart';
+import '../widgets/account_sheets.dart';
 
 import '../widgets/keyboard_mode_expand.dart';
 import '../widgets/sound_mode_expand.dart';
@@ -80,17 +81,17 @@ class SettingsScreen extends ConsumerWidget {
                 SettingsTile(
                   icon: Icons.lock,
                   title: 'Passwort',
-                  onTap: () {},
+                  onTap: () => showPasswordSheet(context),
                 ),
                 SettingsTile(
                   icon: Icons.privacy_tip,
                   title: 'Datenschutz',
-                  onTap: () {},
+                  onTap: () => showPrivacySheet(context),
                 ),
                 SettingsTile(
                   icon: Icons.warning_amber,
                   title: 'Account löschen',
-                  onTap: () => showDeleteAccountSheet(context),
+                  onTap: () => showDeleteAccountSheetNew(context),
                 ),
               ],
             ),
