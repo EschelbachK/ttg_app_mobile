@@ -38,3 +38,4 @@ flutter:
     - assets/images/dashboard_bg.png
     - assets/sounds/beep.mp3
     - assets/sounds/finish.mp3
+    - assets/legal/privacy.html
