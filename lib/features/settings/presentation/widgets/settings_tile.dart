@@ -33,11 +33,9 @@ class SettingsTile extends StatelessWidget {
       onTap: () {
         if (expandable) {
           onTap?.call();
-        } else if (isSwitch) {
-          onChanged?.call(!value!);
-        } else {
-          onTap?.call();
+          return;
         }
+        if (!isSwitch) onTap?.call();
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
@@ -47,8 +45,7 @@ class SettingsTile extends StatelessWidget {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
             child: Container(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(18),
                 color: Colors.white.withOpacity(0.05),
@@ -105,10 +102,9 @@ class SettingsTile extends StatelessWidget {
                       ],
                     ),
                   ),
-
                   if (isSwitch)
                     GestureDetector(
-                      onTap: () => onChanged!(!value!),
+                      onTap: () => onChanged?.call(!value!),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         width: 46,
@@ -135,7 +131,6 @@ class SettingsTile extends StatelessWidget {
                         ),
                       ),
                     ),
-
                   if (expandable)
                     Padding(
                       padding: const EdgeInsets.only(left: 8),
