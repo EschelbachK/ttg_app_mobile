@@ -1,73 +1,74 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/ui/privacy_webview.dart';
 import '../../application/settings_provider.dart';
 
-Widget _glass(BuildContext c, Widget child) {
-  final t = Theme.of(c);
-  final dark = t.brightness == Brightness.dark;
-
-  final box = Container(
-    padding: const EdgeInsets.all(20),
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(24),
-      color: dark ? null : Colors.white,
-      gradient: dark
-          ? LinearGradient(
-        colors: [
-          Colors.white.withOpacity(0.08),
-          Colors.white.withOpacity(0.02),
-        ],
-      )
-          : null,
-      border: Border.all(
-        color: dark
-            ? Colors.white.withOpacity(0.1)
-            : Colors.black.withOpacity(0.06),
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: dark
-              ? Colors.black.withOpacity(0.4)
-              : Colors.black.withOpacity(0.08),
-          blurRadius: 25,
-          spreadRadius: -8,
+Widget _sheet(BuildContext c, Widget child) {
+  return Padding(
+    padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(28),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 22),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.85),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: Colors.white.withOpacity(0.06)),
+          ),
+          child: child,
         ),
-      ],
+      ),
     ),
-    child: child,
-  );
-
-  return ClipRRect(
-    borderRadius: BorderRadius.circular(24),
-    child: dark
-        ? BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
-      child: box,
-    )
-        : box,
   );
 }
 
+Widget _handle() => Center(
+  child: Container(
+    width: 40,
+    height: 4,
+    margin: const EdgeInsets.only(bottom: 12),
+    decoration: BoxDecoration(
+      color: Colors.white.withOpacity(0.2),
+      borderRadius: BorderRadius.circular(10),
+    ),
+  ),
+);
+
 Widget _btn(String text, VoidCallback tap, {Color? color}) {
+  final c = color ?? AppTheme.primaryRed;
+
   return GestureDetector(
     onTap: tap,
     child: Container(
-      padding: const EdgeInsets.symmetric(vertical: 14),
+      height: 50,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        gradient: LinearGradient(
-          colors: [
-            (color ?? AppTheme.primaryRed).withOpacity(0.9),
-            color ?? AppTheme.primaryRed,
-          ],
-        ),
+        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(colors: [c.withOpacity(0.9), c]),
       ),
       child: Center(
         child: Text(
           text,
-          style: const TextStyle(fontWeight: FontWeight.w600),
+          style: const TextStyle(fontWeight: FontWeight.w700),
         ),
+      ),
+    ),
+  );
+}
+
+Widget _input(String hint) {
+  return TextField(
+    style: const TextStyle(color: Colors.white),
+    decoration: InputDecoration(
+      hintText: hint,
+      hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
+      enabledBorder: const UnderlineInputBorder(
+        borderSide: BorderSide(color: Colors.white24),
+      ),
+      focusedBorder: const UnderlineInputBorder(
+        borderSide: BorderSide(color: Colors.white),
       ),
     ),
   );
@@ -79,37 +80,32 @@ void showFontScaleSheet(BuildContext c, SettingsState s, SettingsNotifier n) {
   showModalBottomSheet(
     context: c,
     backgroundColor: Colors.transparent,
-    builder: (_) => StatefulBuilder(
-      builder: (_, set) {
-        final t = Theme.of(c);
-
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-          child: _glass(
-            c,
-            Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('SCHRIFTGRÖSSE', style: t.textTheme.bodySmall),
-                const SizedBox(height: 10),
-                Text('${temp.toStringAsFixed(1)}x', style: t.textTheme.titleLarge),
-                Slider(
-                  value: temp,
-                  min: 0.8,
-                  max: 1.5,
-                  activeColor: AppTheme.primaryRed,
-                  onChanged: (v) => set(() => temp = v),
-                ),
-                const SizedBox(height: 10),
-                _btn('Speichern', () {
-                  n.setFontScale(temp);
-                  Navigator.pop(c);
-                }),
-              ],
+    builder: (_) => _sheet(
+      c,
+      StatefulBuilder(
+        builder: (_, set) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _handle(),
+            const Text('Schriftgröße',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 12),
+            Text('${temp.toStringAsFixed(1)}x'),
+            Slider(
+              value: temp,
+              min: 0.8,
+              max: 1.5,
+              activeColor: AppTheme.primaryRed,
+              onChanged: (v) => set(() => temp = v),
             ),
-          ),
-        );
-      },
+            const SizedBox(height: 20),
+            _btn('Speichern', () {
+              n.setFontScale(temp);
+              Navigator.pop(c);
+            }),
+          ],
+        ),
+      ),
     ),
   );
 }
@@ -119,22 +115,21 @@ void showPasswordSheet(BuildContext c) {
     context: c,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
-    builder: (_) => Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-      child: _glass(
-        c,
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('PASSWORT'),
-            const SizedBox(height: 10),
-            const TextField(decoration: InputDecoration(hintText: 'Neues Passwort')),
-            const SizedBox(height: 10),
-            const TextField(decoration: InputDecoration(hintText: 'Wiederholen')),
-            const SizedBox(height: 16),
-            _btn('Speichern', () => Navigator.pop(c)),
-          ],
-        ),
+    builder: (_) => _sheet(
+      c,
+      Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _handle(),
+          const Text('Passwort ändern',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 18),
+          _input('Neues Passwort'),
+          const SizedBox(height: 14),
+          _input('Neues Passwort wiederholen'),
+          const SizedBox(height: 22),
+          _btn('Speichern', () => Navigator.pop(c)),
+        ],
       ),
     ),
   );
@@ -144,18 +139,29 @@ void showPrivacySheet(BuildContext c) {
   showModalBottomSheet(
     context: c,
     backgroundColor: Colors.transparent,
-    builder: (_) => Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-      child: _glass(
-        c,
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('DATENSCHUTZ'),
-            const SizedBox(height: 10),
-            _btn('Datenschutzerklärung lesen', () {}),
-          ],
-        ),
+    builder: (_) => _sheet(
+      c,
+      Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _handle(),
+          const Text('Datenschutz',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 12),
+          Text(
+            'Wir nehmen den Schutz deiner Daten sehr ernst.\nMehr Infos findest du in der Datenschutzerklärung.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white.withOpacity(0.7)),
+          ),
+          const SizedBox(height: 20),
+          _btn('Datenschutzerklärung lesen', () {
+            Navigator.pop(c);
+            Navigator.push(
+              c,
+              MaterialPageRoute(builder: (_) => const PrivacyWebView()),
+            );
+          }),
+        ],
       ),
     ),
   );
@@ -165,19 +171,25 @@ void showDeleteAccountSheet(BuildContext c) {
   showModalBottomSheet(
     context: c,
     backgroundColor: Colors.transparent,
-    builder: (_) => Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-      child: _glass(
-        c,
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('ACCOUNT LÖSCHEN'),
-            const SizedBox(height: 10),
-            _btn('Account löschen', () => Navigator.pop(c), color: Colors.red),
-          ],
-        ),
+    builder: (_) => _sheet(
+      c,
+      Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _handle(),
+          const Text('Account löschen',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          const SizedBox(height: 12),
+          Text(
+            'Dieser Vorgang ist endgültig und kann nicht rückgängig gemacht werden.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white.withOpacity(0.7)),
+          ),
+          const SizedBox(height: 20),
+          _btn('Account löschen', () => Navigator.pop(c), color: Colors.red),
+        ],
       ),
     ),
   );
+
 }
