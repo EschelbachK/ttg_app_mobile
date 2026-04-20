@@ -11,7 +11,8 @@ class XpProgressBar extends StatelessWidget {
   });
 
   int _xpForNextLevel(int level) {
-    return level * 1000;
+    final safeLevel = level <= 0 ? 1 : level;
+    return safeLevel * 1000;
   }
 
   @override
@@ -32,7 +33,7 @@ class XpProgressBar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'LEVEL $level',
+            'LEVEL ${level <= 0 ? 1 : level}',
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w900,
@@ -41,7 +42,7 @@ class XpProgressBar extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0, end: progress),
+            tween: Tween(begin: 0, end: progress.clamp(0, 1)),
             duration: const Duration(milliseconds: 1200),
             builder: (context, val, _) {
               return ClipRRect(
@@ -50,7 +51,8 @@ class XpProgressBar extends StatelessWidget {
                   value: val,
                   minHeight: 10,
                   backgroundColor: Colors.white.withOpacity(0.08),
-                  valueColor: const AlwaysStoppedAnimation(Colors.white),
+                  valueColor:
+                  const AlwaysStoppedAnimation(Colors.white),
                 ),
               );
             },

@@ -5,6 +5,7 @@ import 'package:ttg_app_mobile/features/dashboard/models/training_plan.dart';
 
 import '../../../core/events/event_bus_provider.dart';
 import '../../../core/events/workout_events.dart';
+import '../../../core/haptics/haptic_provider.dart';
 import '../../history/application/history_service.dart';
 import '../data/workout_api_service.dart';
 import '../domain/workout_session.dart';
@@ -16,6 +17,7 @@ import 'workout_state.dart';
 import 'progression_engine.dart';
 import 'workout_mapper.dart';
 import '../../dashboard/state/dashboard_provider.dart';
+import '../../settings/application/settings_provider.dart';
 
 class WorkoutController extends StateNotifier<WorkoutState> {
   final WorkoutApiService api;
@@ -30,8 +32,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
   int get restSeconds => _restSeconds;
   bool get showRest => _restSeconds > 0;
 
-  WorkoutController(this.api, this.ref)
-      : super(const WorkoutState()) {
+  WorkoutController(this.api, this.ref) : super(const WorkoutState()) {
     historyService = ref.read(historyServiceProvider);
   }
 
@@ -147,6 +148,8 @@ class WorkoutController extends StateNotifier<WorkoutState> {
       WorkoutFinishedEvent(s),
     );
 
+    ref.read(hapticProvider).success();
+
     state = state.copyWith(isFinished: true);
   }
 
@@ -158,14 +161,25 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     _restTimer?.cancel();
     _restSeconds = seconds;
 
+    final bus = ref.read(eventBusProvider);
+
     state = state.copyWith(restMessage: message);
 
     _restTimer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (_restSeconds-- <= 0) {
+      _restSeconds--;
+
+      bus.emit(TimerTickEvent(_restSeconds));
+
+      if (_restSeconds <= 0) {
         t.cancel();
         _restSeconds = 0;
+
+        bus.emit(RestFinishedEvent());
+        ref.read(hapticProvider).medium();
+
         state = state.copyWith(restMessage: null);
       }
+
       _emit();
     });
   }
@@ -204,7 +218,10 @@ class WorkoutController extends StateNotifier<WorkoutState> {
         set: set,
       ),
     );
+
+    ref.read(hapticProvider).light();
   }
+
   void updateSet({
     required String exerciseId,
     required String setId,
@@ -230,9 +247,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
 
         return e.copyWith(
           sets: e.sets.map((x) {
-            if (x.id == setId &&
-                completed == true &&
-                x.completed != true) {
+            if (x.id == setId && completed == true && x.completed != true) {
               didCompleteSet = true;
             }
 
@@ -255,9 +270,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
         completedGroup = g.name;
       }
 
-      if (!afterComplete) {
-        isFinalWorkout = false;
-      }
+      if (!afterComplete) isFinalWorkout = false;
 
       return g.copyWith(exercises: exercises);
     }).toList();
@@ -274,19 +287,25 @@ class WorkoutController extends StateNotifier<WorkoutState> {
 
     if (!didCompleteSet) return;
 
+    ref.read(hapticProvider).medium();
+
     if (isFinalWorkout) {
       finishWorkout();
       return;
     }
 
+    final rest = ref.read(settingsProvider).restTimerSeconds;
+
     if (completedGroup != null) {
+      ref.read(hapticProvider).heavy();
+
       startRestTimer(
-        60,
+        rest,
         message:
         "🔥 $completedGroup abgeschlossen ➜ Nächste: ${nextGroup ?? 'Fertig'}",
       );
     } else {
-      startRestTimer(60);
+      startRestTimer(rest);
     }
   }
 

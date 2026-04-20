@@ -51,17 +51,14 @@ class WorkoutApiService {
     }
   }
 
-  Future<void> startWorkout() async {
-    await dio.post('/workout/start');
-  }
+  Future<void> startWorkout() async => dio.post('/workout/start');
 
-  Future<void> addSet(String exerciseId, double weight, int reps) async {
-    await dio.post('/sets', data: {
-      'exerciseId': exerciseId,
-      'weight': weight,
-      'reps': reps,
-    });
-  }
+  Future<void> addSet(String exerciseId, double weight, int reps) async =>
+      dio.post('/sets', data: {
+        'exerciseId': exerciseId,
+        'weight': weight,
+        'reps': reps,
+      });
 
   Future<void> updateSet(
       String exerciseId,
@@ -69,28 +66,20 @@ class WorkoutApiService {
       int reps,
       double weight,
       bool completed,
-      ) async {
-    await dio.patch('/sets/$setId', data: {
-      'exerciseId': exerciseId,
-      'reps': reps,
-      'weight': weight,
-      'completed': completed,
-    });
-  }
+      ) async =>
+      dio.patch('/sets/$setId', data: {
+        'exerciseId': exerciseId,
+        'reps': reps,
+        'weight': weight,
+        'completed': completed,
+      });
 
-  Future<void> deleteSet(String exerciseId, String setId) async {
-    await dio.delete('/sets/$setId', data: {
-      'exerciseId': exerciseId,
-    });
-  }
+  Future<void> deleteSet(String exerciseId, String setId) async =>
+      dio.delete('/sets/$setId', data: {'exerciseId': exerciseId});
 
-  Future<void> finishWorkout(WorkoutSession session) async {
-    await dio.post('/workout/finish', data: {
-      'id': session.id,
-    });
-  }
+  Future<void> finishWorkout(WorkoutSession session) async =>
+      dio.post('/workout/finish', data: {'id': session.id});
 
-  Future<void> reorderExercises(List<Map<String, dynamic>> data) async {
-    await dio.post('/exercises/reorder', data: data);
-  }
+  Future<void> reorderExercises(List<Map<String, dynamic>> data) async =>
+      dio.post('/exercises/reorder', data: data);
 }

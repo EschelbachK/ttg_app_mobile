@@ -7,6 +7,9 @@ import '../../../ai_coach/widgets/ai_coach_message.dart';
 import '../../application/summary_provider.dart';
 import '../../../gamification/application/gamification_provider.dart';
 import '../../../ai_coach/application/ai_coach_provider.dart';
+import '../../../history/application/history_service.dart';
+import '../../application/progress_analytics_engine.dart';
+
 import '../widgets/animated_stat_card.dart';
 import '../widgets/xp_progress_bar.dart';
 import '../widgets/performance_block.dart';
@@ -31,13 +34,10 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
     _controller.addListener(() {
       final max = _controller.position.maxScrollExtent;
       final current = _controller.position.pixels;
-
       final isBottom = current >= max - 20;
 
       if (isBottom != _atBottom) {
-        setState(() {
-          _atBottom = isBottom;
-        });
+        setState(() => _atBottom = isBottom);
       }
     });
   }
@@ -55,6 +55,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
     final summary = ref.watch(summaryProvider);
     final game = ref.watch(gamificationProvider);
     final ai = ref.watch(aiCoachProvider);
+    final historyService = ref.watch(historyServiceProvider);
 
     if (summary == null) {
       return const Scaffold(
@@ -67,6 +68,13 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
         ),
       );
     }
+
+    final history = historyService.getAll();
+    final engine = ProgressAnalyticsEngine(history);
+    final compare = engine.compareLastSessions();
+
+    final current = compare["last"] ?? summary.totalVolume;
+    final previous = compare["previous"] ?? 0.0;
 
     final xp = game.totalXP();
     final level = game.level();
@@ -99,8 +107,8 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
                       const SizedBox(height: 30),
 
                       PerformanceBlock(
-                        current: summary.totalVolume,
-                        previous: summary.previousVolume,
+                        current: current,
+                        previous: previous,
                       ),
 
                       AnimatedStatCard(
@@ -144,7 +152,6 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
                   ),
                 ),
               ),
-
               Align(
                 alignment: Alignment.bottomCenter,
                 child: SizedBox(
@@ -154,21 +161,18 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
                     child: _atBottom
                         ? Padding(
                       key: const ValueKey('done'),
-                      padding:
-                      const EdgeInsets.fromLTRB(20, 10, 20, 20),
+                      padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
                       child: GestureDetector(
                         onTap: () => Navigator.pop(context),
                         child: Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 18),
+                          padding: const EdgeInsets.symmetric(vertical: 18),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(20),
                             color: kPrimaryRed,
                             boxShadow: [
                               BoxShadow(
-                                color:
-                                kPrimaryRed.withOpacity(0.6),
+                                color: kPrimaryRed.withOpacity(0.6),
                                 blurRadius: 30,
                                 offset: const Offset(0, 10),
                               )
@@ -199,8 +203,7 @@ class _SummaryScreenState extends ConsumerState<SummaryScreen> {
                             color: kPrimaryRed,
                             boxShadow: [
                               BoxShadow(
-                                color:
-                                kPrimaryRed.withOpacity(0.6),
+                                color: kPrimaryRed.withOpacity(0.6),
                                 blurRadius: 20,
                                 offset: const Offset(0, 6),
                               )
