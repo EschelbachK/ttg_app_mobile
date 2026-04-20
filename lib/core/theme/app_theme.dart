@@ -12,23 +12,17 @@ class AppTheme {
   static const backgroundDark = Color(0xFF000000);
   static const backgroundLight = Color(0xFFF5F6F8);
 
-  static ThemeData _base(ColorScheme scheme, Color bg) => ThemeData(
+  static ThemeData _base(ColorScheme scheme) => ThemeData(
     useMaterial3: true,
     colorScheme: scheme,
-    scaffoldBackgroundColor: bg,
+    scaffoldBackgroundColor: scheme.background,
     primaryColor: primaryRed,
     progressIndicatorTheme:
     const ProgressIndicatorThemeData(color: primaryRed),
     textSelectionTheme: TextSelectionThemeData(
-      cursorColor: scheme.brightness == Brightness.dark
-          ? Colors.white
-          : Colors.black,
-      selectionColor: scheme.brightness == Brightness.dark
-          ? Colors.white30
-          : Colors.black26,
-      selectionHandleColor: scheme.brightness == Brightness.dark
-          ? Colors.white
-          : Colors.black,
+      cursorColor: scheme.onBackground,
+      selectionColor: scheme.onBackground.withOpacity(0.2),
+      selectionHandleColor: scheme.onBackground,
     ),
   );
 
@@ -36,17 +30,21 @@ class AppTheme {
     const ColorScheme.dark(
       primary: primaryRed,
       secondary: primaryRed,
-      surface: backgroundDark,
+      background: backgroundDark,
+      surface: Color(0xFF0A0A0A),
+      onBackground: Colors.white,
+      onSurface: Colors.white,
     ),
-    backgroundDark,
   );
 
   static final lightTheme = _base(
     const ColorScheme.light(
       primary: primaryRed,
       secondary: primaryRed,
-      surface: backgroundLight,
+      background: backgroundLight,
+      surface: Colors.white,
+      onBackground: Colors.black,
+      onSurface: Colors.black,
     ),
-    backgroundLight,
   );
 }
