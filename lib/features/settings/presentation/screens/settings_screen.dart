@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../application/settings_provider.dart';
 import '../widgets/settings_bottom_sheets.dart';
 import '../widgets/settings_section.dart';
 import '../widgets/settings_tile.dart';
-import '../widgets/account_sheets.dart';
-
 import '../widgets/keyboard_mode_expand.dart';
 import '../widgets/sound_mode_expand.dart';
 import '../widgets/language_unit_expand.dart';
@@ -30,7 +27,6 @@ class SettingsScreen extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           children: [
             const SizedBox(height: 12),
-
             Center(
               child: Text(
                 'EINSTELLUNGEN',
@@ -40,22 +36,17 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ),
             ),
-
             const SizedBox(height: 24),
 
-            SettingsSection(
+            const SettingsSection(
               title: 'WÄHREND DES TRAININGS',
-              children: const [
-                KeyboardModeTile(),
-                SoundModeTile(),
-              ],
+              children: [KeyboardModeTile(), SoundModeTile()],
             ),
 
             SettingsSection(
               title: 'ALLGEMEINE EINSTELLUNGEN',
               children: [
                 const LanguageUnitExpand(),
-
                 SettingsTile(
                   icon: Icons.text_fields,
                   title: 'Schriftgröße',
@@ -68,7 +59,6 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-
                 const LightModeExpand(),
                 const OfflineModeExpand(),
                 const SyncModeExpand(),
@@ -91,7 +81,7 @@ class SettingsScreen extends ConsumerWidget {
                 SettingsTile(
                   icon: Icons.warning_amber,
                   title: 'Account löschen',
-                  onTap: () => showDeleteAccountSheetNew(context),
+                  onTap: () => showDeleteAccountSheet(context),
                 ),
               ],
             ),
