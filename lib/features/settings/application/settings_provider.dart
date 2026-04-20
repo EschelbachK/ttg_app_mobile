@@ -6,7 +6,8 @@ StateNotifierProvider<SettingsNotifier, SettingsState>(
         (ref) => SettingsNotifier());
 
 class SettingsState {
-  final bool soundEnabled, lightMode, offlineMode, keyboardMode, autoFillValues, syncEnabled;
+  final bool soundEnabled, lightMode, offlineMode, keyboardMode, syncEnabled;
+  final bool keyboardExpanded;
   final int restTimerSeconds;
   final double fontScale;
 
@@ -16,9 +17,9 @@ class SettingsState {
     required this.offlineMode,
     required this.restTimerSeconds,
     required this.keyboardMode,
-    required this.autoFillValues,
     required this.syncEnabled,
     required this.fontScale,
+    this.keyboardExpanded = false,
   });
 
   factory SettingsState.initial() => const SettingsState(
@@ -27,7 +28,6 @@ class SettingsState {
     offlineMode: false,
     restTimerSeconds: 60,
     keyboardMode: false,
-    autoFillValues: true,
     syncEnabled: true,
     fontScale: 1,
   );
@@ -38,9 +38,9 @@ class SettingsState {
     bool? offlineMode,
     int? restTimerSeconds,
     bool? keyboardMode,
-    bool? autoFillValues,
     bool? syncEnabled,
     double? fontScale,
+    bool? keyboardExpanded,
   }) {
     return SettingsState(
       soundEnabled: soundEnabled ?? this.soundEnabled,
@@ -48,9 +48,9 @@ class SettingsState {
       offlineMode: offlineMode ?? this.offlineMode,
       restTimerSeconds: restTimerSeconds ?? this.restTimerSeconds,
       keyboardMode: keyboardMode ?? this.keyboardMode,
-      autoFillValues: autoFillValues ?? this.autoFillValues,
       syncEnabled: syncEnabled ?? this.syncEnabled,
       fontScale: fontScale ?? this.fontScale,
+      keyboardExpanded: keyboardExpanded ?? this.keyboardExpanded,
     );
   }
 }
@@ -61,7 +61,6 @@ class SettingsKeys {
   static const offline = 'offline_mode';
   static const rest = 'rest_timer';
   static const keyboard = 'keyboard_mode';
-  static const autoFill = 'auto_fill';
   static const sync = 'sync_enabled';
   static const font = 'font_scale';
 }
@@ -88,7 +87,6 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
       offlineMode: p.getBool(SettingsKeys.offline) ?? false,
       restTimerSeconds: p.getInt(SettingsKeys.rest) ?? 60,
       keyboardMode: p.getBool(SettingsKeys.keyboard) ?? false,
-      autoFillValues: p.getBool(SettingsKeys.autoFill) ?? true,
       syncEnabled: p.getBool(SettingsKeys.sync) ?? true,
       fontScale: p.getDouble(SettingsKeys.font) ?? 1,
     );
@@ -97,13 +95,9 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
   void _set<T>(String key, T value) {
     final p = _prefs;
     if (p == null) return;
-    if (value is bool) {
-      p.setBool(key, value);
-    } else if (value is int) {
-      p.setInt(key, value);
-    } else if (value is double) {
-      p.setDouble(key, value);
-    }
+    if (value is bool) p.setBool(key, value);
+    if (value is int) p.setInt(key, value);
+    if (value is double) p.setDouble(key, value);
   }
 
   void toggleSound() {
@@ -135,10 +129,8 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     _set(SettingsKeys.keyboard, v);
   }
 
-  void toggleAutoFill() {
-    final v = !state.autoFillValues;
-    state = state.copyWith(autoFillValues: v);
-    _set(SettingsKeys.autoFill, v);
+  void toggleKeyboardExpanded() {
+    state = state.copyWith(keyboardExpanded: !state.keyboardExpanded);
   }
 
   void toggleSync() {
