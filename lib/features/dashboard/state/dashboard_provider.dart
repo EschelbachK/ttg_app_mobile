@@ -1,6 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/dio_provider.dart';
 import '../../../core/error/global_error_handler.dart';
+import '../../../core/offline/offline_queue.dart';
+import '../../../core/offline/offline_action.dart';
+import '../../../core/offline/offline_cache.dart';
+import '../../../core/offline/cache_keys.dart';
 import '../../settings/application/settings_provider.dart';
 import '../api/dashboard_api.dart';
 import '../models/exercise.dart';
@@ -45,17 +49,16 @@ class DashboardState {
     bool? showArchive,
     bool? isLoading,
     String? error,
-  }) {
-    return DashboardState(
-      trainingPlans: trainingPlans ?? this.trainingPlans,
-      folders: folders ?? this.folders,
-      archivedFolders: archivedFolders ?? this.archivedFolders,
-      archivedPlans: archivedPlans ?? this.archivedPlans,
-      showArchive: showArchive ?? this.showArchive,
-      isLoading: isLoading ?? this.isLoading,
-      error: error ?? this.error,
-    );
-  }
+  }) =>
+      DashboardState(
+        trainingPlans: trainingPlans ?? this.trainingPlans,
+        folders: folders ?? this.folders,
+        archivedFolders: archivedFolders ?? this.archivedFolders,
+        archivedPlans: archivedPlans ?? this.archivedPlans,
+        showArchive: showArchive ?? this.showArchive,
+        isLoading: isLoading ?? this.isLoading,
+        error: error ?? this.error,
+      );
 }
 
 class DashboardNotifier extends StateNotifier<DashboardState> {
@@ -65,17 +68,14 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
   DashboardNotifier(this.api, this.ref)
       : super(DashboardState.initial());
 
+  bool get _offline => ref.read(settingsProvider).offlineMode;
+
   void showPlans() => state = state.copyWith(showArchive: false);
   void showArchive() => state = state.copyWith(showArchive: true);
 
   Future<void> _execute(Future<void> Function() fn) async {
-    if (ref.read(settingsProvider).offlineMode) {
-      state = state.copyWith(isLoading: false);
-      return;
-    }
-
+    if (_offline) return;
     state = state.copyWith(isLoading: true, error: null);
-
     try {
       await fn();
     } catch (e) {
@@ -86,77 +86,134 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     }
   }
 
-  Future<void> loadTrainingPlans() async => _execute(() async {
-    final plans = (await api.getTrainingPlans())
-        .map<TrainingPlan>((e) => TrainingPlan.fromJson(e))
-        .toList()
-      ..sort((a, b) => a.order.compareTo(b.order));
+  Future<void> loadTrainingPlans() async {
+    if (_offline) {
+      final cached = await OfflineCache.load(CacheKeys.dashboard);
+      if (cached != null) {
+        state = state.copyWith(
+          trainingPlans: (cached['plans'] as List)
+              .map((e) => TrainingPlan.fromJson(e))
+              .toList(),
+          archivedPlans: (cached['archivedPlans'] as List)
+              .map((e) => TrainingPlan.fromJson(e))
+              .toList(),
+          archivedFolders: (cached['archivedFolders'] as List)
+              .map((e) => TrainingFolder.fromJson(e))
+              .toList(),
+          folders: (cached['folders'] as List)
+              .map((e) => TrainingFolder.fromJson(e))
+              .toList(),
+        );
+      }
+      return;
+    }
 
-    final archivedPlans = (await api.getArchivedPlans())
-        .map<TrainingPlan>((e) => TrainingPlan.fromJson(e))
-        .toList()
-      ..sort((a, b) => a.order.compareTo(b.order));
+    await _execute(() async {
+      final plans = (await api.getTrainingPlans())
+          .map<TrainingPlan>((e) => TrainingPlan.fromJson(e))
+          .toList()
+        ..sort((a, b) => a.order.compareTo(b.order));
 
-    final archivedFolders = (await api.getArchivedFolders())
-        .map<TrainingFolder>((e) => TrainingFolder.fromJson(e))
-        .toList();
+      final archivedPlans = (await api.getArchivedPlans())
+          .map<TrainingPlan>((e) => TrainingPlan.fromJson(e))
+          .toList()
+        ..sort((a, b) => a.order.compareTo(b.order));
 
-    final foldersNested = await Future.wait(
-      [...plans, ...archivedPlans].map((p) async {
-        final folderData = await api.getFolders(p.id);
+      final archivedFolders = (await api.getArchivedFolders())
+          .map<TrainingFolder>((e) => TrainingFolder.fromJson(e))
+          .toList();
 
-        return Future.wait(folderData.map((e) async {
-          final f = TrainingFolder.fromJson(e);
-          final ex = await api.getExercises(
-            planId: p.id,
-            folderId: f.id,
-          );
+      final foldersNested = await Future.wait(
+        [...plans, ...archivedPlans].map((p) async {
+          final folderData = await api.getFolders(p.id);
+          return Future.wait(folderData.map((e) async {
+            final f = TrainingFolder.fromJson(e);
+            final ex = await api.getExercises(
+              planId: p.id,
+              folderId: f.id,
+            );
+            return f.copyWith(
+              trainingPlanId: p.id,
+              exercises:
+              ex.map<Exercise>((x) => Exercise.fromJson(x)).toList(),
+            );
+          }));
+        }),
+      );
 
-          return f.copyWith(
-            trainingPlanId: p.id,
-            exercises:
-            ex.map<Exercise>((x) => Exercise.fromJson(x)).toList(),
-          );
-        }));
-      }),
-    );
+      final allFolders = foldersNested
+          .expand((e) => e)
+          .where((f) => !archivedFolders.any((a) => a.id == f.id))
+          .toList();
 
-    final allFolders = foldersNested
-        .expand((e) => e)
-        .where((f) => !archivedFolders.any((a) => a.id == f.id))
-        .toList();
+      state = state.copyWith(
+        trainingPlans: plans,
+        archivedPlans: archivedPlans,
+        archivedFolders: archivedFolders,
+        folders: allFolders,
+      );
 
-    state = state.copyWith(
-      trainingPlans: plans,
-      archivedPlans: archivedPlans,
-      archivedFolders: archivedFolders,
-      folders: allFolders,
-    );
-  });
+      await OfflineCache.save(CacheKeys.dashboard, {
+        'plans': plans.map((e) => e.toJson()).toList(),
+        'archivedPlans': archivedPlans.map((e) => e.toJson()).toList(),
+        'archivedFolders': archivedFolders.map((e) => e.toJson()).toList(),
+        'folders': allFolders.map((e) => e.toJson()).toList(),
+      });
+    });
+  }
 
-  Future<void> _refresh(Future<void> Function() fn) async {
-    if (ref.read(settingsProvider).offlineMode) return;
-    await fn();
+  Future<void> _runOrQueue({
+    required String type,
+    required Map<String, dynamic> payload,
+    required Future<void> Function() online,
+  }) async {
+    if (_offline) {
+      await OfflineQueue.add(
+        OfflineAction(type: type, payload: payload),
+      );
+      return;
+    }
+    await online();
     await loadTrainingPlans();
   }
 
-  Future<void> createTrainingPlan(String name) async =>
-      _refresh(() => api.createTrainingPlan(name));
+  Future<void> createTrainingPlan(String name) =>
+      _runOrQueue(
+        type: 'create_plan',
+        payload: {'name': name},
+        online: () => api.createTrainingPlan(name),
+      );
 
-  Future<void> importPlan(TrainingPlan plan) async =>
-      _refresh(() => api.createTrainingPlan(plan.name));
+  Future<void> importPlan(TrainingPlan plan) =>
+      createTrainingPlan(plan.name);
 
-  Future<void> renamePlan(String id, String name) async =>
-      _refresh(() => api.updateTrainingPlan(id, name));
+  Future<void> renamePlan(String id, String name) =>
+      _runOrQueue(
+        type: 'rename_plan',
+        payload: {'id': id, 'name': name},
+        online: () => api.updateTrainingPlan(id, name),
+      );
 
-  Future<void> deletePlan(String id) async =>
-      _refresh(() => api.deleteTrainingPlan(id));
+  Future<void> deletePlan(String id) =>
+      _runOrQueue(
+        type: 'delete_plan',
+        payload: {'id': id},
+        online: () => api.deleteTrainingPlan(id),
+      );
 
-  Future<void> archivePlan(String id) async =>
-      _refresh(() => api.archiveTrainingPlan(id));
+  Future<void> archivePlan(String id) =>
+      _runOrQueue(
+        type: 'archive_plan',
+        payload: {'id': id},
+        online: () => api.archiveTrainingPlan(id),
+      );
 
-  Future<void> restorePlan(String id) async =>
-      _refresh(() => api.restoreTrainingPlan(id));
+  Future<void> restorePlan(String id) =>
+      _runOrQueue(
+        type: 'restore_plan',
+        payload: {'id': id},
+        online: () => api.restoreTrainingPlan(id),
+      );
 
   Future<void> movePlanUp(String id) async {
     final list = [...state.trainingPlans]
@@ -176,7 +233,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       }).toList(),
     );
 
-    if (ref.read(settingsProvider).offlineMode) return;
+    if (_offline) return;
 
     try {
       await api.updateTrainingPlanOrder(current.id, target.order);
@@ -203,7 +260,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       }).toList(),
     );
 
-    if (ref.read(settingsProvider).offlineMode) return;
+    if (_offline) return;
 
     try {
       await api.updateTrainingPlanOrder(current.id, target.order);
@@ -250,14 +307,18 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
     );
   }
 
-  Future<void> addFolder(String planId, String name) async =>
-      _refresh(() => api.createFolder(
-        trainingPlanId: planId,
-        name: name,
-        order: state.folders
-            .where((f) => f.trainingPlanId == planId)
-            .length,
-      ));
+  Future<void> addFolder(String planId, String name) =>
+      _runOrQueue(
+        type: 'create_folder',
+        payload: {'planId': planId, 'name': name},
+        online: () => api.createFolder(
+          trainingPlanId: planId,
+          name: name,
+          order: state.folders
+              .where((f) => f.trainingPlanId == planId)
+              .length,
+        ),
+      );
 
   Future<void> renameFolder(String id, String name) async =>
       _execute(() async {
@@ -269,51 +330,83 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         );
       });
 
-  Future<void> deleteFolder(String id) async =>
-      _refresh(() => api.deleteFolder(id));
+  Future<void> deleteFolder(String id) =>
+      _runOrQueue(
+        type: 'delete_folder',
+        payload: {'id': id},
+        online: () => api.deleteFolder(id),
+      );
 
-  Future<void> duplicateFolder(String id) async =>
-      _refresh(() => api.duplicateFolder(id));
+  Future<void> duplicateFolder(String id) =>
+      _runOrQueue(
+        type: 'duplicate_folder',
+        payload: {'id': id},
+        online: () => api.duplicateFolder(id),
+      );
 
-  Future<void> archiveFolder(String id) async =>
-      _refresh(() => api.archiveFolder(id));
+  Future<void> archiveFolder(String id) =>
+      _runOrQueue(
+        type: 'archive_folder',
+        payload: {'id': id},
+        online: () => api.archiveFolder(id),
+      );
 
-  Future<void> restoreFolder(String id) async =>
-      _refresh(() => api.restoreFolder(id));
+  Future<void> restoreFolder(String id) =>
+      _runOrQueue(
+        type: 'restore_folder',
+        payload: {'id': id},
+        online: () => api.restoreFolder(id),
+      );
 
   Future<void> importFolderToPlan({
     required String folderId,
     required String targetPlanId,
     required String name,
-  }) async =>
-      _refresh(() async {
-        await api.createFolder(
-          trainingPlanId: targetPlanId,
-          name: name,
-          order: state.folders
-              .where((f) => f.trainingPlanId == targetPlanId)
-              .length,
-        );
-        await api.restoreFolder(folderId);
-      });
+  }) =>
+      _runOrQueue(
+        type: 'import_folder',
+        payload: {
+          'folderId': folderId,
+          'targetPlanId': targetPlanId,
+          'name': name,
+        },
+        online: () async {
+          await api.createFolder(
+            trainingPlanId: targetPlanId,
+            name: name,
+            order: state.folders
+                .where((f) => f.trainingPlanId == targetPlanId)
+                .length,
+          );
+          await api.restoreFolder(folderId);
+        },
+      );
 
   Future<void> _createExercise(
       String folderId,
       String planId,
       Exercise exercise,
-      ) async =>
-      _refresh(() => api.createExercise(
-        planId: planId,
-        folderId: folderId,
-        name: exercise.name,
-        bodyRegion: _mapBodyRegion(exercise.bodyRegion),
-        sets: exercise.sets
-            .map((s) => {
-          'weight': s.weight,
-          'repetitions': s.reps,
-        })
-            .toList(),
-      ));
+      ) =>
+      _runOrQueue(
+        type: 'create_exercise',
+        payload: {
+          'folderId': folderId,
+          'planId': planId,
+          'name': exercise.name,
+        },
+        online: () => api.createExercise(
+          planId: planId,
+          folderId: folderId,
+          name: exercise.name,
+          bodyRegion: _mapBodyRegion(exercise.bodyRegion),
+          sets: exercise.sets
+              .map((s) => {
+            'weight': s.weight,
+            'repetitions': s.reps,
+          })
+              .toList(),
+        ),
+      );
 
   Future<void> addExercise(
       String folderId,
@@ -335,22 +428,30 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       String folderId,
       String planId,
       Exercise exercise,
-      ) async =>
+      ) =>
       _createExercise(folderId, planId, exercise);
 
   Future<void> removeExercise({
     required String planId,
     required String folderId,
     required String exerciseId,
-  }) async =>
-      _refresh(() => api.deleteExercise(
-        planId: planId,
-        folderId: folderId,
-        exerciseId: exerciseId,
-      ));
+  }) =>
+      _runOrQueue(
+        type: 'delete_exercise',
+        payload: {
+          'planId': planId,
+          'folderId': folderId,
+          'exerciseId': exerciseId,
+        },
+        online: () => api.deleteExercise(
+          planId: planId,
+          folderId: folderId,
+          exerciseId: exerciseId,
+        ),
+      );
 
-  String _mapBodyRegion(String category) {
-    switch (category) {
+  String _mapBodyRegion(String c) {
+    switch (c) {
       case "Brust":
         return "BRUST";
       case "Rücken":

@@ -58,8 +58,14 @@ class SettingsScreen extends ConsumerWidget {
                 SettingsTile(
                   icon: Icons.text_fields,
                   title: 'Schriftgröße',
-                  subtitle: '${s.fontScale.toStringAsFixed(1)}x',
                   onTap: () => showFontScaleSheet(context, s, n),
+                  trailing: Text(
+                    '${s.fontScale.toStringAsFixed(1)}x',
+                    style: TextStyle(
+                      color: t.colorScheme.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
 
                 const LightModeExpand(),

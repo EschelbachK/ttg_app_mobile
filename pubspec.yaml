@@ -16,12 +16,10 @@ dependencies:
 
   flutter_riverpod: ^2.6.1
   go_router: ^13.2.5
+  connectivity_plus: ^6.0.3
 
-  # ✅ FIX
   shared_preferences: ^2.3.3
-
   audioplayers: ^5.2.1
-
   fl_chart: ^0.68.0
 
   cupertino_icons: ^1.0.8
@@ -30,7 +28,6 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
   flutter_lints: ^3.0.2
 
 flutter:

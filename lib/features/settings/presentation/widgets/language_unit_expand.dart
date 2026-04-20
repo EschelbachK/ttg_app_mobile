@@ -41,25 +41,31 @@ class LanguageUnitExpand extends ConsumerWidget {
 
     Widget section(String title, List<Widget> children) {
       return Padding(
-        padding: const EdgeInsets.only(top: 14),
-        child: Column(
+        padding: const EdgeInsets.only(top: 16, left: 16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              title,
-              style: TextStyle(
-                color: Colors.white.withOpacity(0.35),
-                fontSize: 11,
-                letterSpacing: 2,
-                fontWeight: FontWeight.w600,
+            SizedBox(
+              width: 90,
+              child: Text(
+                title,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.35),
+                  fontSize: 11,
+                  letterSpacing: 2,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-            const SizedBox(height: 10),
-            Center(
-              child: Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 10,
-                runSpacing: 10,
-                children: children,
+
+            Expanded(
+              child: Row(
+                children: children
+                    .map((c) => Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: c,
+                ))
+                    .toList(),
               ),
             ),
           ],
@@ -87,12 +93,10 @@ class LanguageUnitExpand extends ConsumerWidget {
                   chip("DEUTSCH", s.language == 'de', () => n.setLanguage('de')),
                   chip("ENGLISH", s.language == 'en', () => n.setLanguage('en')),
                 ]),
-
                 section("GEWICHT", [
                   chip("KG", s.weightUnit == 'kg', () => n.setWeightUnit('kg')),
                   chip("LBS", s.weightUnit == 'lbs', () => n.setWeightUnit('lbs')),
                 ]),
-
                 section("GRÖSSE", [
                   chip("CM", s.heightUnit == 'cm', () => n.setHeightUnit('cm')),
                   chip("INCHES", s.heightUnit == 'in', () => n.setHeightUnit('in')),

@@ -31,6 +31,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
 
   int get restSeconds => _restSeconds;
   bool get showRest => _restSeconds > 0;
+  bool get _offline => ref.read(settingsProvider).offlineMode;
 
   WorkoutController(this.api, this.ref) : super(const WorkoutState()) {
     historyService = ref.read(historyServiceProvider);
@@ -75,8 +76,8 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     if (state.session != null && !state.isFinished) return;
 
     try {
-      await api.startWorkout();
-      final s = await api.getActiveWorkout();
+      if (!_offline) await api.startWorkout();
+      final s = !_offline ? await api.getActiveWorkout() : null;
 
       state = state.copyWith(
         session: s ?? _fallback(),
@@ -139,7 +140,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     if (s == null) return;
 
     try {
-      await api.finishWorkout(s);
+      if (!_offline) await api.finishWorkout(s);
     } catch (_) {}
 
     historyService.saveSession(s);
@@ -213,10 +214,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     state = state.copyWith(session: s.copyWith(groups: groups));
 
     ref.read(eventBusProvider).emit(
-      SetCompletedEvent(
-        exerciseId: exerciseId,
-        set: set,
-      ),
+      SetCompletedEvent(exerciseId: exerciseId, set: set),
     );
 
     ref.read(hapticProvider).light();

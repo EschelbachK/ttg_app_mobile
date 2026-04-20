@@ -3,6 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/offline/sync_provider.dart';
+import 'core/offline/sync_status_listener.dart';
+import 'core/offline/sync_status_bar.dart';
+import 'core/network/connectivity_provider.dart';
 
 import 'features/settings/application/settings_provider.dart';
 
@@ -27,27 +31,36 @@ class MyApp extends ConsumerWidget {
       ..listen(gamificationListenerProvider, (_, __) {})
       ..listen(aiListenerProvider, (_, __) {});
 
+    ref.read(connectivityProvider);
+    ref.read(syncEngineProvider).processQueue();
+
     final router = ref.watch(appRouterProvider);
     final settings = ref.watch(settingsProvider);
 
-    final theme = settings.lightMode
-        ? AppTheme.lightTheme
-        : AppTheme.darkTheme;
+    final theme =
+    settings.lightMode ? AppTheme.lightTheme : AppTheme.darkTheme;
 
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      routerConfig: router,
-      title: 'TrainToGain',
-      theme: theme,
-      builder: (context, child) {
-        final mq = MediaQuery.of(context);
-        return MediaQuery(
-          data: mq.copyWith(
-            textScaler: TextScaler.linear(settings.fontScale),
-          ),
-          child: child!,
-        );
-      },
+    return SyncStatusListener(
+      child: MaterialApp.router(
+        debugShowCheckedModeBanner: false,
+        routerConfig: router,
+        title: 'TrainToGain',
+        theme: theme,
+        builder: (context, child) {
+          final mq = MediaQuery.of(context);
+          return MediaQuery(
+            data: mq.copyWith(
+              textScaler: TextScaler.linear(settings.fontScale),
+            ),
+            child: Column(
+              children: [
+                const SyncStatusBar(),
+                Expanded(child: child!),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }

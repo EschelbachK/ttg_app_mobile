@@ -10,6 +10,7 @@ class SettingsTile extends StatelessWidget {
   final ValueChanged<bool>? onChanged;
   final bool expandable;
   final bool isExpanded;
+  final Widget? trailing;
 
   const SettingsTile({
     super.key,
@@ -21,6 +22,7 @@ class SettingsTile extends StatelessWidget {
     this.onChanged,
     this.expandable = false,
     this.isExpanded = false,
+    this.trailing,
   });
 
   bool get isSwitch => value != null && onChanged != null;
@@ -102,6 +104,9 @@ class SettingsTile extends StatelessWidget {
                       ],
                     ),
                   ),
+
+                  if (trailing != null) trailing!,
+
                   if (isSwitch)
                     GestureDetector(
                       onTap: () => onChanged?.call(!value!),
@@ -131,6 +136,7 @@ class SettingsTile extends StatelessWidget {
                         ),
                       ),
                     ),
+
                   if (expandable)
                     Padding(
                       padding: const EdgeInsets.only(left: 8),

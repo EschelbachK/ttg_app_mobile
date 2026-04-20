@@ -8,7 +8,6 @@ StateNotifierProvider<SettingsNotifier, SettingsState>(
 
 class SettingsState {
   final bool soundEnabled, lightMode, offlineMode, keyboardMode, syncEnabled;
-
   final bool countdownSound, startSound, voiceFeedback;
 
   final bool keyboardExpanded,
@@ -178,11 +177,29 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
   void toggleLightMode() =>
       _toggle(state.lightMode, (v) => state.copyWith(lightMode: v), SettingsKeys.light);
 
-  void toggleOffline() =>
-      _toggle(state.offlineMode, (v) => state.copyWith(offlineMode: v), SettingsKeys.offline);
+  void toggleOffline() {
+    final v = !state.offlineMode;
 
-  void toggleSync() =>
-      _toggle(state.syncEnabled, (v) => state.copyWith(syncEnabled: v), SettingsKeys.sync);
+    state = state.copyWith(
+      offlineMode: v,
+      syncEnabled: v ? false : state.syncEnabled,
+    );
+
+    _set(SettingsKeys.offline, v);
+    if (v) _set(SettingsKeys.sync, false);
+  }
+
+  void toggleSync() {
+    final v = !state.syncEnabled;
+
+    state = state.copyWith(
+      syncEnabled: v,
+      offlineMode: v ? false : state.offlineMode,
+    );
+
+    _set(SettingsKeys.sync, v);
+    if (v) _set(SettingsKeys.offline, false);
+  }
 
   void toggleKeyboard() =>
       _toggle(state.keyboardMode, (v) => state.copyWith(keyboardMode: v), SettingsKeys.keyboard);
