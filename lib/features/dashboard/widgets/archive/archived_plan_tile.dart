@@ -4,6 +4,7 @@ import '../../models/training_plan.dart';
 import '../../state/dashboard_provider.dart';
 import '../../utils/dashboard_mapper.dart';
 import '../import_plan_sheet.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class ArchivedPlanTile extends ConsumerStatefulWidget {
   final TrainingPlan plan;
@@ -15,8 +16,7 @@ class ArchivedPlanTile extends ConsumerStatefulWidget {
       _ArchivedPlanTileState();
 }
 
-class _ArchivedPlanTileState
-    extends ConsumerState<ArchivedPlanTile> {
+class _ArchivedPlanTileState extends ConsumerState<ArchivedPlanTile> {
   bool expanded = false;
   bool isRemoving = false;
 
@@ -27,6 +27,8 @@ class _ArchivedPlanTileState
   }
 
   void _showDeleteDialog(BuildContext context) {
+    final theme = Theme.of(context);
+
     showDialog(
       context: context,
       barrierColor: Colors.black.withOpacity(0.6),
@@ -39,18 +41,13 @@ class _ArchivedPlanTileState
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.black.withOpacity(0.85),
-                    const Color(0xFF1A0000).withOpacity(0.85),
-                  ],
-                ),
+                color: theme.colorScheme.surface,
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.12),
+                  color: theme.dividerColor.withOpacity(0.2),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFFF3B30).withOpacity(0.25),
+                    color: AppTheme.primaryRed.withOpacity(0.25),
                     blurRadius: 30,
                     spreadRadius: -10,
                     offset: const Offset(0, 15),
@@ -60,34 +57,35 @@ class _ArchivedPlanTileState
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text("Plan löschen?",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600)),
+                  Text("Plan löschen?",
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      )),
                   const SizedBox(height: 10),
                   Text(
                     'Möchtest du "${widget.plan.name}" endgültig löschen?',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
-                        fontSize: 13),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.textTheme.bodyMedium?.color
+                          ?.withOpacity(0.7),
+                    ),
                   ),
                   const SizedBox(height: 24),
                   Row(
                     children: [
                       Expanded(
                         child: GestureDetector(
-                          onTap: () =>
-                              Navigator.pop(dialogContext),
+                          onTap: () => Navigator.pop(dialogContext),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 14),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
                             alignment: Alignment.center,
-                            child: Text("Abbrechen",
-                                style: TextStyle(
-                                    color: Colors.white
-                                        .withOpacity(0.6))),
+                            child: Text(
+                              "Abbrechen",
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.textTheme.bodyMedium?.color
+                                    ?.withOpacity(0.6),
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -97,24 +95,22 @@ class _ArchivedPlanTileState
                           onTap: () {
                             Navigator.pop(dialogContext);
                             _runAction(() => ref
-                                .read(
-                                dashboardProvider.notifier)
+                                .read(dashboardProvider.notifier)
                                 .deletePlan(widget.plan.id));
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 14),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
-                              color: const Color(0xFFFF3B30),
-                              borderRadius:
-                              BorderRadius.circular(30),
+                              color: AppTheme.primaryRed,
+                              borderRadius: BorderRadius.circular(30),
                             ),
-                            child: const Text("Löschen",
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight:
-                                    FontWeight.w600)),
+                            child: const Text(
+                              "Löschen",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600),
+                            ),
                           ),
                         ),
                       ),
@@ -150,6 +146,7 @@ class _ArchivedPlanTileState
   Widget build(BuildContext context) {
     final plan = widget.plan;
     final state = ref.watch(dashboardProvider);
+    final theme = Theme.of(context);
 
     final folders = state.folders
         .where((f) => f.trainingPlanId == plan.id)
@@ -163,11 +160,15 @@ class _ArchivedPlanTileState
         scale: isRemoving ? 0.95 : 1,
         child: Container(
           margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          padding:
+          const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            color: Colors.black.withOpacity(0.35),
-            border: Border.all(color: Colors.white.withOpacity(0.15)),
+            color: theme.colorScheme.surface.withOpacity(
+                theme.brightness == Brightness.dark ? 0.35 : 0.95),
+            border: Border.all(
+              color: theme.dividerColor.withOpacity(0.2),
+            ),
           ),
           child: Column(
             children: [
@@ -180,16 +181,13 @@ class _ArchivedPlanTileState
                       child: Row(
                         children: [
                           const Icon(Icons.folder,
-                              color: Color(0xFFFF3B30), size: 18),
+                              color: AppTheme.primaryRed, size: 18),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               plan.name,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
+                              style: theme.textTheme.bodyMedium?.copyWith(
                                 fontWeight: FontWeight.w600,
-                                letterSpacing: 0.3,
                               ),
                             ),
                           ),
@@ -197,7 +195,7 @@ class _ArchivedPlanTileState
                             expanded
                                 ? Icons.keyboard_arrow_up
                                 : Icons.keyboard_arrow_down,
-                            color: Colors.white54,
+                            color: theme.iconTheme.color?.withOpacity(0.6),
                           ),
                         ],
                       ),
@@ -208,15 +206,14 @@ class _ArchivedPlanTileState
                     children: [
                       IconButton(
                         icon: const Icon(Icons.file_download,
-                            color: Color(0xFFFF3B30), size: 25),
+                            color: AppTheme.primaryRed, size: 25),
                         onPressed: () => _runAction(() => ref
-                            .read(
-                            dashboardProvider.notifier)
+                            .read(dashboardProvider.notifier)
                             .restorePlan(plan.id)),
                       ),
                       IconButton(
                         icon: const Icon(Icons.close,
-                            color: Color(0xFFFF3B30), size: 25),
+                            color: AppTheme.primaryRed, size: 25),
                         onPressed: () =>
                             _showDeleteDialog(context),
                       ),
@@ -228,38 +225,46 @@ class _ArchivedPlanTileState
                 const SizedBox(height: 10),
                 ...folders.map((f) => Container(
                   margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    color: Colors.black.withOpacity(0.35),
-                    border: Border.all(color: Colors.white.withOpacity(0.12)),
+                    color: theme.colorScheme.surface.withOpacity(
+                        theme.brightness == Brightness.dark
+                            ? 0.35
+                            : 1),
+                    border: Border.all(
+                      color:
+                      theme.dividerColor.withOpacity(0.15),
+                    ),
                   ),
                   child: Row(
                     children: [
                       const Icon(Icons.fitness_center,
-                          color: Color(0xFFFF3B30), size: 20),
+                          color: AppTheme.primaryRed, size: 20),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           f.name,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
+                          style:
+                          theme.textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w600,
-                            letterSpacing: 0.3,
                           ),
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFF3B30).withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(20),
+                          color: AppTheme.primaryRed
+                              .withOpacity(0.15),
+                          borderRadius:
+                          BorderRadius.circular(20),
                         ),
                         child: Text(
                           plan.name,
                           style: const TextStyle(
-                            color: Color(0xFFFF3B30),
+                            color: AppTheme.primaryRed,
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                           ),
@@ -268,7 +273,7 @@ class _ArchivedPlanTileState
                       const SizedBox(width: 6),
                       IconButton(
                         icon: const Icon(Icons.file_download,
-                            color: Color(0xFFFF3B30), size: 25),
+                            color: AppTheme.primaryRed, size: 25),
                         onPressed: () => _openImport(
                           context,
                           f.id,

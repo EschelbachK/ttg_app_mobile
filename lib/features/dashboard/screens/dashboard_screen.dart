@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/ui/ttg_input_dialog.dart';
 
+import '../../settings/application/settings_provider.dart';
+
 import '../state/dashboard_provider.dart';
 import '../widgets/dashboard/dashboard_top_bar.dart';
 
@@ -32,23 +34,29 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _section(String title) => Padding(
-    padding: const EdgeInsets.only(bottom: 12),
-    child: Center(
-      child: Text(
-        title,
-        style: const TextStyle(
-          color: Colors.white70,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1,
+  Widget _section(BuildContext context, String title) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Center(
+        child: Text(
+          title,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1,
+            color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(dashboardProvider);
+    final settings = ref.watch(settingsProvider);
+    final theme = Theme.of(context);
+    final notifier = ref.read(dashboardProvider.notifier);
 
     return Stack(
       children: [
@@ -59,7 +67,11 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
         ),
         Positioned.fill(
-          child: Container(color: Colors.black.withOpacity(0.55)),
+          child: Container(
+            color: theme.brightness == Brightness.dark
+                ? Colors.black.withOpacity(0.55)
+                : Colors.white.withOpacity(0.6),
+          ),
         ),
         Scaffold(
           backgroundColor: Colors.transparent,
@@ -70,8 +82,136 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           body: SafeArea(
             child: Column(
               children: [
-                const SizedBox(height: 12),
-                const SizedBox(height: 12),
+                if (settings.offlineMode)
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.redAccent.withOpacity(0.4),
+                      ),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        "OFFLINE MODUS AKTIV",
+                        style: TextStyle(
+                          color: Colors.redAccent,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                const SizedBox(height: 18),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                      child: Container(
+                        height: 48,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(18),
+                          color: Colors.white.withOpacity(0.06),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.08),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.6),
+                              blurRadius: 30,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: notifier.showPlans,
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 180),
+                                  margin: const EdgeInsets.all(4),
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(14),
+                                    color: !state.showArchive
+                                        ? AppTheme.primaryRed.withOpacity(0.2)
+                                        : Colors.transparent,
+                                    boxShadow: !state.showArchive
+                                        ? [
+                                      BoxShadow(
+                                        color: AppTheme.primaryRed
+                                            .withOpacity(0.4),
+                                        blurRadius: 20,
+                                        spreadRadius: -4,
+                                      ),
+                                    ]
+                                        : [],
+                                  ),
+                                  child: Text(
+                                    "PLÄNE",
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.5,
+                                      color: !state.showArchive
+                                          ? AppTheme.primaryRed
+                                          : Colors.white54,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: notifier.showArchive,
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 180),
+                                  margin: const EdgeInsets.all(4),
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(14),
+                                    color: state.showArchive
+                                        ? AppTheme.primaryRed.withOpacity(0.2)
+                                        : Colors.transparent,
+                                    boxShadow: state.showArchive
+                                        ? [
+                                      BoxShadow(
+                                        color: AppTheme.primaryRed
+                                            .withOpacity(0.4),
+                                        blurRadius: 20,
+                                        spreadRadius: -4,
+                                      ),
+                                    ]
+                                        : [],
+                                  ),
+                                  child: Text(
+                                    "ARCHIV",
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.5,
+                                      color: state.showArchive
+                                          ? AppTheme.primaryRed
+                                          : Colors.white54,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 14),
+
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
@@ -81,9 +221,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                         state.showArchive
                             ? "ARCHIV"
                             : "MEINE TRAININGSPLÄNE",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
+                        style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -94,7 +232,9 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                             Icons.add,
                             color: AppTheme.primaryRed,
                           ),
-                          onPressed: () => showTTGInputDialog(
+                          onPressed: settings.offlineMode
+                              ? null
+                              : () => showTTGInputDialog(
                             context: context,
                             title: "Neuer Trainingsplan",
                             buttonText: "Erstellen",
@@ -110,11 +250,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ],
                   ),
                 ),
+
                 const SizedBox(height: 12),
+
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                    child: _buildContent(state),
+                    child: _buildContent(context, state, settings),
                   ),
                 ),
               ],
@@ -125,17 +267,48 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildContent(DashboardState state) {
+  Widget _buildContent(
+      BuildContext context,
+      DashboardState state,
+      SettingsState settings,
+      ) {
+    final theme = Theme.of(context);
+
+    if (settings.offlineMode) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.wifi_off, size: 48, color: Colors.white38),
+            const SizedBox(height: 12),
+            Text(
+              "Offline Modus aktiv",
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              "Keine Verbindung zum Server",
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: Colors.white54,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     if (state.showArchive) {
       return ListView(
         padding: EdgeInsets.zero,
         children: [
           if (state.archivedPlans.isNotEmpty) ...[
-            _section("Archivierte Trainingspläne"),
+            _section(context, "Archivierte Trainingspläne"),
             ...state.archivedPlans.map((p) => ArchivedPlanTile(plan: p)),
           ],
           if (state.archivedFolders.isNotEmpty) ...[
-            _section("Archivierte Muskelgruppen"),
+            _section(context, "Archivierte Muskelgruppen"),
             ...state.archivedFolders.map((f) => ArchivedFolderTile(folder: f)),
           ],
         ],
@@ -147,10 +320,10 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     }
 
     if (state.trainingPlans.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
           "Keine Trainingspläne vorhanden",
-          style: TextStyle(color: Colors.white),
+          style: theme.textTheme.bodyMedium,
         ),
       );
     }

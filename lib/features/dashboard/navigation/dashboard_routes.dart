@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../settings/presentation/screens/settings_screen.dart';
+
 import '../screens/dashboard_screen.dart';
 import '../screens/muscle_group_screen.dart';
 import '../screens/training_exercises_screen.dart';
@@ -10,6 +13,10 @@ List<RouteBase> dashboardRoutes = [
     path: '/dashboard',
     builder: (_, __) => const DashboardScreen(),
     routes: [
+      GoRoute(
+        path: 'settings',
+        builder: (_, __) => const SettingsScreen(),
+      ),
       GoRoute(
         path: 'muscle-group/:folderId',
         builder: (_, s) {

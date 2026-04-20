@@ -30,11 +30,7 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
   bool get open => widget.expandedPlanId == widget.plan.id;
 
   void toggle() {
-    if (open) {
-      widget.onExpand(null);
-    } else {
-      widget.onExpand(widget.plan.id);
-    }
+    widget.onExpand(open ? null : widget.plan.id);
   }
 
   void _confirmDelete() async {
@@ -51,6 +47,7 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(dashboardProvider);
+    final theme = Theme.of(context);
 
     final groups = state.folders.where((f) =>
     f.trainingPlanId == widget.plan.id &&
@@ -64,8 +61,13 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          color: open ? Colors.black.withOpacity(0.35) : Colors.transparent,
-          border: Border.all(color: Colors.white.withOpacity(0.2)),
+          color: open
+              ? theme.colorScheme.surface.withOpacity(
+              theme.brightness == Brightness.dark ? 0.35 : 0.9)
+              : Colors.transparent,
+          border: Border.all(
+            color: theme.dividerColor.withOpacity(0.3),
+          ),
         ),
         child: Column(
           children: [
@@ -80,10 +82,8 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                   Expanded(
                     child: Text(
                       widget.plan.name,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: theme.textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w600,
-                        fontSize: 16,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -95,8 +95,11 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                       SizedBox(
                         width: w,
                         child: IconButton(
-                          icon: const Icon(Icons.edit,
-                              size: 18, color: Colors.white54),
+                          icon: Icon(
+                            Icons.edit,
+                            size: 18,
+                            color: theme.iconTheme.color?.withOpacity(0.6),
+                          ),
                           onPressed: () {
                             showTTGInputDialog(
                               context: context,
@@ -118,9 +121,9 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                           icon: AnimatedRotation(
                             turns: open ? .5 : 0,
                             duration: const Duration(milliseconds: 180),
-                            child: const Icon(
+                            child: Icon(
                               Icons.keyboard_arrow_down,
-                              color: Colors.white54,
+                              color: theme.iconTheme.color?.withOpacity(0.6),
                             ),
                           ),
                           onPressed: toggle,
@@ -133,26 +136,22 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                             final n =
                             ref.read(dashboardProvider.notifier);
 
-                            if (v == 'archive')
-                              n.archivePlan(widget.plan.id);
+                            if (v == 'archive') n.archivePlan(widget.plan.id);
                             if (v == 'delete') _confirmDelete();
-                            if (v == 'up')
-                              n.movePlanUp(widget.plan.id);
-                            if (v == 'down')
-                              n.movePlanDown(widget.plan.id);
+                            if (v == 'up') n.movePlanUp(widget.plan.id);
+                            if (v == 'down') n.movePlanDown(widget.plan.id);
                           },
-                          items: const [
+                          items: [
                             PopupMenuItem(
                               value: 'archive',
                               child: Row(
                                 children: [
-                                  Icon(Icons.archive_outlined,
+                                  const Icon(Icons.archive_outlined,
                                       size: 18,
                                       color: AppTheme.primaryRed),
-                                  SizedBox(width: 10),
+                                  const SizedBox(width: 10),
                                   Text('Archivieren',
-                                      style: TextStyle(
-                                          color: Colors.white)),
+                                      style: theme.textTheme.bodyMedium),
                                 ],
                               ),
                             ),
@@ -160,17 +159,16 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                               value: 'delete',
                               child: Row(
                                 children: [
-                                  Icon(Icons.delete_outline,
+                                  const Icon(Icons.delete_outline,
                                       size: 18,
                                       color: AppTheme.primaryRed),
-                                  SizedBox(width: 10),
+                                  const SizedBox(width: 10),
                                   Text('Löschen',
-                                      style: TextStyle(
-                                          color: Colors.white)),
+                                      style: theme.textTheme.bodyMedium),
                                 ],
                               ),
                             ),
-                            PopupMenuItem(
+                            const PopupMenuItem(
                               enabled: false,
                               padding:
                               EdgeInsets.symmetric(horizontal: 12),
@@ -181,12 +179,11 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                               value: 'up',
                               child: Row(
                                 children: [
-                                  Icon(Icons.arrow_upward,
+                                  const Icon(Icons.arrow_upward,
                                       color: AppTheme.primaryRed),
-                                  SizedBox(width: 8),
+                                  const SizedBox(width: 8),
                                   Text('Nach oben',
-                                      style: TextStyle(
-                                          color: Colors.white)),
+                                      style: theme.textTheme.bodyMedium),
                                 ],
                               ),
                             ),
@@ -194,12 +191,11 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                               value: 'down',
                               child: Row(
                                 children: [
-                                  Icon(Icons.arrow_downward,
+                                  const Icon(Icons.arrow_downward,
                                       color: AppTheme.primaryRed),
-                                  SizedBox(width: 8),
+                                  const SizedBox(width: 8),
                                   Text('Nach unten',
-                                      style: TextStyle(
-                                          color: Colors.white)),
+                                      style: theme.textTheme.bodyMedium),
                                 ],
                               ),
                             ),
@@ -268,11 +264,11 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                         },
                       );
                     },
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Text(
                         "+ Muskelgruppe hinzufügen",
-                        style: TextStyle(
+                        style: theme.textTheme.bodyMedium?.copyWith(
                           color: AppTheme.primaryRed,
                           fontWeight: FontWeight.bold,
                         ),
@@ -298,7 +294,7 @@ class _TTGMenuDivider extends StatelessWidget {
       children: [
         Container(
           height: 1,
-          color: Colors.redAccent.withOpacity(0.6),
+          color: Theme.of(context).dividerColor,
         ),
         Container(
           height: 2,

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/auth/auth_actions.dart';
 
-class DashboardTopBar extends ConsumerWidget
-    implements PreferredSizeWidget {
+class DashboardTopBar extends ConsumerWidget implements PreferredSizeWidget {
   final int selectedTab;
   final Function(int) onTabChanged;
 
@@ -58,20 +58,25 @@ class _TopBarIcons extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _icon(Icons.grid_view, 0, const Color(0xFFFF3B30)),
+        _icon(context, Icons.grid_view, 0, const Color(0xFFFF3B30)),
         const SizedBox(width: 16),
-        _icon(Icons.bar_chart, 2, Colors.redAccent),
+        _icon(context, Icons.bar_chart, 2, Colors.redAccent),
         const SizedBox(width: 16),
-        _icon(Icons.settings, 1, Colors.white),
+        _icon(context, Icons.settings, 1, Colors.white),
       ],
     );
   }
 
-  Widget _icon(IconData icon, int index, Color activeColor) {
+  Widget _icon(BuildContext context, IconData icon, int index, Color activeColor) {
     final isActive = selectedTab == index;
 
     return GestureDetector(
-      onTap: () => onTabChanged(index),
+      onTap: () {
+        onTabChanged(index);
+        if (index == 1) {
+          context.push('/settings');
+        }
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(6),

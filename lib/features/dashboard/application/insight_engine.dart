@@ -6,40 +6,41 @@ class InsightEngine {
 
   InsightDashboardData build(List<WorkoutHistoryEntry> history) {
     final sessions = _group(history);
-    final volumes = _volumes(sessions);
+    final ordered = sessions.entries.toList()
+      ..sort((a, b) =>
+          a.value.first.date.compareTo(b.value.first.date));
+
+    final volumes = _volumes(ordered);
 
     return InsightDashboardData(
-      sessions: _sessionInsights(volumes),
+      sessions: _sessionInsights(ordered, volumes),
       summary: _summary(volumes),
       trend: _trend(volumes),
     );
   }
 
-  Map<String, double> _volumes(
-      Map<String, List<WorkoutHistoryEntry>> sessions,
+  List<double> _volumes(
+      List<MapEntry<String, List<WorkoutHistoryEntry>>> sessions,
       ) {
-    final map = <String, double>{};
-
-    for (final entry in sessions.entries) {
-      final v = entry.value.fold<double>(
-        0,
+    return sessions.map((entry) {
+      return entry.value.fold<double>(
+        0.0,
             (a, b) => a + (b.weight * b.reps),
       );
-      map[entry.key] = v;
-    }
-
-    return map;
+    }).toList();
   }
 
-  List<SessionInsight> _sessionInsights(Map<String, double> v) {
-    final entries = v.entries.toList()
-      ..sort((a, b) => a.key.compareTo(b.key));
+  List<SessionInsight> _sessionInsights(
+      List<MapEntry<String, List<WorkoutHistoryEntry>>> sessions,
+      List<double> volumes,
+      ) {
+    return List.generate(volumes.length, (i) {
+      final current = volumes[i];
+      final prev = i == 0 ? current : volumes[i - 1];
 
-    return List.generate(entries.length, (i) {
-      final current = entries[i].value;
-      final prev = i == 0 ? current : entries[i - 1].value;
-
-      final change = prev == 0 ? 0 : ((current - prev) / prev) * 100;
+      final change = prev == 0
+          ? 0.0
+          : (((current - prev) / prev) * 100).toDouble();
 
       final state = change > 5
           ? SessionState.strong
@@ -48,7 +49,7 @@ class InsightEngine {
           : SessionState.stable;
 
       return SessionInsight(
-        date: DateTime.now(),
+        date: sessions[i].value.first.date,
         volume: current,
         changeToPrevious: change,
         state: state,
@@ -56,14 +57,12 @@ class InsightEngine {
     });
   }
 
-  InsightSummary _summary(Map<String, double> v) {
-    final values = v.values.toList();
-
-    final total = values.fold<double>(0, (a, b) => a + b);
-    final avg = values.isEmpty ? 0 : total / values.length;
+  InsightSummary _summary(List<double> v) {
+    final total = v.fold<double>(0.0, (a, b) => a + b);
+    final avg = v.isEmpty ? 0.0 : total / v.length;
 
     return InsightSummary(
-      totalSessions: values.length,
+      totalSessions: v.length,
       totalVolume: total,
       avgPerSession: avg,
       relativeStrength: 0,
@@ -72,10 +71,8 @@ class InsightEngine {
     );
   }
 
-  TrendInsight _trend(Map<String, double> v) {
-    final values = v.values.toList();
-
-    if (values.length < 3) {
+  TrendInsight _trend(List<double> v) {
+    if (v.length < 3) {
       return const TrendInsight(
         state: TrendState.stable,
         changePercent: 0,
@@ -83,14 +80,16 @@ class InsightEngine {
       );
     }
 
-    final recent = values.sublist(values.length - 3);
-    final prevStart = values.length - 6 < 0 ? 0 : values.length - 6;
-    final prev = values.sublist(prevStart, values.length - 3);
+    final recent = v.sublist(v.length - 3);
+    final prevStart = v.length - 6 < 0 ? 0 : v.length - 6;
+    final prev = v.sublist(prevStart, v.length - 3);
 
     final avgR = _avg(recent);
     final avgP = _avg(prev);
 
-    final change = avgP == 0 ? 0 : ((avgR - avgP) / avgP) * 100;
+    final change = avgP == 0
+        ? 0.0
+        : (((avgR - avgP) / avgP) * 100).toDouble();
 
     if (change > 5) {
       return TrendInsight(
@@ -128,7 +127,7 @@ class InsightEngine {
   }
 
   double _avg(List<double> v) =>
-      v.isEmpty ? 0 : v.reduce((a, b) => a + b) / v.length;
+      v.isEmpty ? 0.0 : v.reduce((a, b) => a + b) / v.length;
 
   String _interpret(double avg) {
     if (avg > 3000) return "Sehr hohe Trainingslast";
