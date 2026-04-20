@@ -8,6 +8,7 @@ class SettingsTile extends StatelessWidget {
   final VoidCallback? onTap;
   final bool? value;
   final ValueChanged<bool>? onChanged;
+  final bool expandable;
 
   const SettingsTile({
     super.key,
@@ -17,6 +18,7 @@ class SettingsTile extends StatelessWidget {
     this.onTap,
     this.value,
     this.onChanged,
+    this.expandable = false,
   });
 
   bool get isSwitch => value != null && onChanged != null;
@@ -26,7 +28,11 @@ class SettingsTile extends StatelessWidget {
     final t = Theme.of(context);
 
     return GestureDetector(
-      onTap: isSwitch ? () => onChanged!(!value!) : onTap,
+      onTap: expandable
+          ? onTap
+          : isSwitch
+          ? () => onChanged!(!value!)
+          : onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         margin: const EdgeInsets.only(bottom: 10),
@@ -92,46 +98,49 @@ class SettingsTile extends StatelessWidget {
                       ],
                     ),
                   ),
-                  isSwitch
-                      ? AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    width: 46,
-                    height: 26,
-                    padding: const EdgeInsets.all(3),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      color: value!
-                          ? t.colorScheme.primary
-                          : Colors.white.withOpacity(0.15),
-                      boxShadow: value!
-                          ? [
-                        BoxShadow(
-                          color: t.colorScheme.primary
-                              .withOpacity(0.6),
-                          blurRadius: 12,
-                          spreadRadius: -2,
-                        ),
-                      ]
-                          : [],
-                    ),
-                    child: Align(
-                      alignment: value!
-                          ? Alignment.centerRight
-                          : Alignment.centerLeft,
-                      child: Container(
-                        width: 20,
-                        height: 20,
+                  if (isSwitch)
+                    GestureDetector(
+                      onTap: () => onChanged!(!value!),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: 46,
+                        height: 26,
+                        padding: const EdgeInsets.all(3),
                         decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: t.colorScheme.onPrimary,
+                          borderRadius: BorderRadius.circular(20),
+                          color: value!
+                              ? t.colorScheme.primary
+                              : Colors.white.withOpacity(0.15),
+                          boxShadow: value!
+                              ? [
+                            BoxShadow(
+                              color: t.colorScheme.primary.withOpacity(0.6),
+                              blurRadius: 12,
+                              spreadRadius: -2,
+                            ),
+                          ]
+                              : [],
+                        ),
+                        child: Align(
+                          alignment: value!
+                              ? Alignment.centerRight
+                              : Alignment.centerLeft,
+                          child: Container(
+                            width: 20,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: t.colorScheme.onPrimary,
+                            ),
+                          ),
                         ),
                       ),
+                    )
+                  else
+                    Icon(
+                      expandable ? Icons.expand_more : Icons.chevron_right,
+                      color: Colors.white.withOpacity(0.4),
                     ),
-                  )
-                      : Icon(
-                    Icons.chevron_right,
-                    color: Colors.white.withOpacity(0.4),
-                  ),
                 ],
               ),
             ),
