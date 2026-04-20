@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../features/auth/screens/loading_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/dashboard/navigation/dashboard_routes.dart';
-
+import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/workout/presentation/screens/workout_start_screen.dart';
 import '../../features/workout/presentation/screens/workout_active_screen.dart';
 import '../../features/workout/presentation/screens/workout_redirect_screen.dart';
@@ -31,6 +30,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (_, __, child) => MainNavigation(child: child),
         routes: [
           ...dashboardRoutes,
+
+          GoRoute(
+            path: '/settings',
+            builder: (_, __) => const SettingsScreen(),
+          ),
+
           GoRoute(
             path: '/workout',
             builder: (_, __) => const WorkoutRedirectScreen(),

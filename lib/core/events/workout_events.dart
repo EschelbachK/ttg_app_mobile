@@ -41,3 +41,11 @@ class StreakUpdatedEvent extends AppEvent {
 
   StreakUpdatedEvent(this.streakDays);
 }
+
+class TimerTickEvent extends AppEvent {
+  final int seconds;
+
+  TimerTickEvent(this.seconds);
+}
+
+class RestFinishedEvent extends AppEvent {}
