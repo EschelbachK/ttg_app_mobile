@@ -7,6 +7,7 @@ StateNotifierProvider<SettingsNotifier, SettingsState>(
 
 class SettingsState {
   final bool soundEnabled, lightMode, offlineMode, keyboardMode, syncEnabled;
+  final bool countdownSound, startSound, voiceFeedback;
   final bool keyboardExpanded;
   final int restTimerSeconds;
   final double fontScale;
@@ -19,6 +20,9 @@ class SettingsState {
     required this.keyboardMode,
     required this.syncEnabled,
     required this.fontScale,
+    required this.countdownSound,
+    required this.startSound,
+    required this.voiceFeedback,
     this.keyboardExpanded = false,
   });
 
@@ -30,6 +34,9 @@ class SettingsState {
     keyboardMode: false,
     syncEnabled: true,
     fontScale: 1,
+    countdownSound: true,
+    startSound: true,
+    voiceFeedback: false,
   );
 
   SettingsState copyWith({
@@ -40,6 +47,9 @@ class SettingsState {
     bool? keyboardMode,
     bool? syncEnabled,
     double? fontScale,
+    bool? countdownSound,
+    bool? startSound,
+    bool? voiceFeedback,
     bool? keyboardExpanded,
   }) {
     return SettingsState(
@@ -50,6 +60,9 @@ class SettingsState {
       keyboardMode: keyboardMode ?? this.keyboardMode,
       syncEnabled: syncEnabled ?? this.syncEnabled,
       fontScale: fontScale ?? this.fontScale,
+      countdownSound: countdownSound ?? this.countdownSound,
+      startSound: startSound ?? this.startSound,
+      voiceFeedback: voiceFeedback ?? this.voiceFeedback,
       keyboardExpanded: keyboardExpanded ?? this.keyboardExpanded,
     );
   }
@@ -63,6 +76,10 @@ class SettingsKeys {
   static const keyboard = 'keyboard_mode';
   static const sync = 'sync_enabled';
   static const font = 'font_scale';
+
+  static const countdown = 'countdown_sound';
+  static const start = 'start_sound';
+  static const voice = 'voice_feedback';
 }
 
 class SettingsNotifier extends StateNotifier<SettingsState> {
@@ -89,6 +106,9 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
       keyboardMode: p.getBool(SettingsKeys.keyboard) ?? false,
       syncEnabled: p.getBool(SettingsKeys.sync) ?? true,
       fontScale: p.getDouble(SettingsKeys.font) ?? 1,
+      countdownSound: p.getBool(SettingsKeys.countdown) ?? true,
+      startSound: p.getBool(SettingsKeys.start) ?? true,
+      voiceFeedback: p.getBool(SettingsKeys.voice) ?? false,
     );
   }
 
@@ -104,6 +124,24 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     final v = !state.soundEnabled;
     state = state.copyWith(soundEnabled: v);
     _set(SettingsKeys.sound, v);
+  }
+
+  void toggleCountdownSound() {
+    final v = !state.countdownSound;
+    state = state.copyWith(countdownSound: v);
+    _set(SettingsKeys.countdown, v);
+  }
+
+  void toggleStartSound() {
+    final v = !state.startSound;
+    state = state.copyWith(startSound: v);
+    _set(SettingsKeys.start, v);
+  }
+
+  void toggleVoiceFeedback() {
+    final v = !state.voiceFeedback;
+    state = state.copyWith(voiceFeedback: v);
+    _set(SettingsKeys.voice, v);
   }
 
   void toggleLightMode() {
