@@ -3,40 +3,51 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../application/settings_provider.dart';
 
-Widget _glassContainer(Widget child) {
-  return Container(
+Widget _glassContainer(BuildContext context, Widget child) {
+  final t = Theme.of(context);
+  final isDark = t.brightness == Brightness.dark;
+
+  Widget content = Container(
+    padding: const EdgeInsets.all(20),
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(24),
+      color: isDark ? null : Colors.white,
+      gradient: isDark
+          ? LinearGradient(
+        colors: [
+          Colors.white.withOpacity(0.08),
+          Colors.white.withOpacity(0.02),
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      )
+          : null,
+      border: Border.all(
+        color: isDark
+            ? Colors.white.withOpacity(0.1)
+            : Colors.black.withOpacity(0.06),
+      ),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.4),
+          color: isDark
+              ? Colors.black.withOpacity(0.4)
+              : Colors.black.withOpacity(0.08),
           blurRadius: 25,
           spreadRadius: -8,
         ),
       ],
     ),
-    child: ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            gradient: LinearGradient(
-              colors: [
-                Colors.white.withOpacity(0.08),
-                Colors.white.withOpacity(0.02),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
-          ),
-          child: child,
-        ),
-      ),
-    ),
+    child: child,
+  );
+
+  return ClipRRect(
+    borderRadius: BorderRadius.circular(24),
+    child: isDark
+        ? BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
+      child: content,
+    )
+        : content,
   );
 }
 
@@ -87,6 +98,7 @@ void showRestTimerSheet(BuildContext context, SettingsState s, SettingsNotifier 
           return Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
             child: _glassContainer(
+              context,
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -98,7 +110,7 @@ void showRestTimerSheet(BuildContext context, SettingsState s, SettingsNotifier 
                     min: 10,
                     max: 180,
                     activeColor: AppTheme.primaryRed,
-                    inactiveColor: Colors.white.withOpacity(0.1),
+                    inactiveColor: Colors.grey.withOpacity(0.2),
                     thumbColor: AppTheme.primaryRed,
                     overlayColor: WidgetStateProperty.all(
                       AppTheme.primaryRed.withOpacity(0.15),
@@ -134,6 +146,7 @@ void showFontScaleSheet(BuildContext context, SettingsState s, SettingsNotifier 
           return Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
             child: _glassContainer(
+              context,
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -145,7 +158,7 @@ void showFontScaleSheet(BuildContext context, SettingsState s, SettingsNotifier 
                     min: 0.8,
                     max: 1.5,
                     activeColor: AppTheme.primaryRed,
-                    inactiveColor: Colors.white.withOpacity(0.1),
+                    inactiveColor: Colors.grey.withOpacity(0.2),
                     thumbColor: AppTheme.primaryRed,
                     overlayColor: WidgetStateProperty.all(
                       AppTheme.primaryRed.withOpacity(0.15),
@@ -175,6 +188,7 @@ void showDeleteAccountSheet(BuildContext context) {
       return Padding(
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
         child: _glassContainer(
+          context,
           const Padding(
             padding: EdgeInsets.all(20),
             child: Text('Account löschen bestätigen'),
