@@ -41,17 +41,18 @@ class SettingsState {
     bool? autoFillValues,
     bool? syncEnabled,
     double? fontScale,
-  }) =>
-      SettingsState(
-        soundEnabled: soundEnabled ?? this.soundEnabled,
-        lightMode: lightMode ?? this.lightMode,
-        offlineMode: offlineMode ?? this.offlineMode,
-        restTimerSeconds: restTimerSeconds ?? this.restTimerSeconds,
-        keyboardMode: keyboardMode ?? this.keyboardMode,
-        autoFillValues: autoFillValues ?? this.autoFillValues,
-        syncEnabled: syncEnabled ?? this.syncEnabled,
-        fontScale: fontScale ?? this.fontScale,
-      );
+  }) {
+    return SettingsState(
+      soundEnabled: soundEnabled ?? this.soundEnabled,
+      lightMode: lightMode ?? this.lightMode,
+      offlineMode: offlineMode ?? this.offlineMode,
+      restTimerSeconds: restTimerSeconds ?? this.restTimerSeconds,
+      keyboardMode: keyboardMode ?? this.keyboardMode,
+      autoFillValues: autoFillValues ?? this.autoFillValues,
+      syncEnabled: syncEnabled ?? this.syncEnabled,
+      fontScale: fontScale ?? this.fontScale,
+    );
+  }
 }
 
 class SettingsKeys {
@@ -96,54 +97,57 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
   void _set<T>(String key, T value) {
     final p = _prefs;
     if (p == null) return;
-
-    if (value is bool) p.setBool(key, value);
-    if (value is int) p.setInt(key, value);
-    if (value is double) p.setDouble(key, value);
+    if (value is bool) {
+      p.setBool(key, value);
+    } else if (value is int) {
+      p.setInt(key, value);
+    } else if (value is double) {
+      p.setDouble(key, value);
+    }
   }
 
-  Future<void> toggleSound() async {
+  void toggleSound() {
     final v = !state.soundEnabled;
     state = state.copyWith(soundEnabled: v);
     _set(SettingsKeys.sound, v);
   }
 
-  Future<void> toggleLightMode() async {
+  void toggleLightMode() {
     final v = !state.lightMode;
     state = state.copyWith(lightMode: v);
     _set(SettingsKeys.light, v);
   }
 
-  Future<void> toggleOffline() async {
+  void toggleOffline() {
     final v = !state.offlineMode;
     state = state.copyWith(offlineMode: v);
     _set(SettingsKeys.offline, v);
   }
 
-  Future<void> setRestTimer(int v) async {
+  void setRestTimer(int v) {
     state = state.copyWith(restTimerSeconds: v);
     _set(SettingsKeys.rest, v);
   }
 
-  Future<void> toggleKeyboard() async {
+  void toggleKeyboard() {
     final v = !state.keyboardMode;
     state = state.copyWith(keyboardMode: v);
     _set(SettingsKeys.keyboard, v);
   }
 
-  Future<void> toggleAutoFill() async {
+  void toggleAutoFill() {
     final v = !state.autoFillValues;
     state = state.copyWith(autoFillValues: v);
     _set(SettingsKeys.autoFill, v);
   }
 
-  Future<void> toggleSync() async {
+  void toggleSync() {
     final v = !state.syncEnabled;
     state = state.copyWith(syncEnabled: v);
     _set(SettingsKeys.sync, v);
   }
 
-  Future<void> setFontScale(double v) async {
+  void setFontScale(double v) {
     state = state.copyWith(fontScale: v);
     _set(SettingsKeys.font, v);
   }
