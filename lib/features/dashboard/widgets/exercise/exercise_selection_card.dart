@@ -1,11 +1,13 @@
 import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/constants/body_regions.dart';
 import '../../../../core/ui/ttg_value_picker_dialog.dart';
+import '../../../settings/application/settings_provider.dart';
 import '../../models/exercise.dart';
 import '../../models/exercise_set.dart';
 import '../../state/dashboard_provider.dart';
@@ -42,6 +44,8 @@ class _State extends ConsumerState<ExerciseSelectionCard> {
 
   @override
   Widget build(BuildContext context) {
+    final keyboard = ref.watch(settingsProvider).keyboardMode;
+
     return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,36 +62,30 @@ class _State extends ConsumerState<ExerciseSelectionCard> {
                 child: _field(
                   "GEWICHT (KG)",
                   weight.toStringAsFixed(1),
-                      () => _double(
-                    "Gewicht",
-                    weight,
-                    500,
-                        (v) => setState(() => weight = v),
-                  ),
+                  keyboard,
+                  true,
+                      () => _double("Gewicht", weight, 500, (v) => setState(() => weight = v)),
+                      (v) => setState(() => weight = double.tryParse(v) ?? weight),
                 ),
               ),
               Expanded(
                 child: _field(
                   "WDH",
                   "$reps",
-                      () => _int(
-                    "Wiederholungen",
-                    reps,
-                    50,
-                        (v) => setState(() => reps = v),
-                  ),
+                  keyboard,
+                  false,
+                      () => _int("Wiederholungen", reps, 50, (v) => setState(() => reps = v)),
+                      (v) => setState(() => reps = int.tryParse(v) ?? reps),
                 ),
               ),
               Expanded(
                 child: _field(
                   "SÄTZE",
                   "$sets",
-                      () => _int(
-                    "Sätze",
-                    sets,
-                    20,
-                        (v) => setState(() => sets = v),
-                  ),
+                  keyboard,
+                  false,
+                      () => _int("Sätze", sets, 20, (v) => setState(() => sets = v)),
+                      (v) => setState(() => sets = int.tryParse(v) ?? sets),
                 ),
               ),
             ],
@@ -97,15 +95,66 @@ class _State extends ConsumerState<ExerciseSelectionCard> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _add,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryRed,
-              ),
-              child: const Text(
-                "hinzufügen",
-                style: TextStyle(color: Colors.white),
-              ),
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryRed),
+              child: const Text("hinzufügen", style: TextStyle(color: Colors.white)),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _field(
+      String title,
+      String value,
+      bool keyboard,
+      bool decimal,
+      VoidCallback onTap,
+      Function(String)? onChanged,
+      ) {
+    if (keyboard) {
+      final controller = TextEditingController(text: value);
+
+      return Column(
+        children: [
+          Text(title, style: const TextStyle(color: Colors.white38, fontSize: 11)),
+          const SizedBox(height: 6),
+          TextFormField(
+            controller: controller,
+            keyboardType: TextInputType.numberWithOptions(decimal: decimal),
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white, fontSize: 18),
+            decoration: const InputDecoration(border: InputBorder.none),
+            inputFormatters: decimal
+                ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))]
+                : [FilteringTextInputFormatter.digitsOnly],
+            onChanged: (val) {
+              if (val.isEmpty) return;
+              onChanged?.call(val);
+            },
+            onEditingComplete: () {
+              if (decimal) {
+                final parsed = double.tryParse(controller.text);
+                if (parsed != null) {
+                  final formatted = parsed.toStringAsFixed(1);
+                  controller.text = formatted;
+                  onChanged?.call(formatted);
+                }
+              }
+              FocusScope.of(context).unfocus();
+            },
+          ),
+        ],
+      );
+    }
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Text(title, style: const TextStyle(color: Colors.white38, fontSize: 11)),
+          const SizedBox(height: 6),
+          Text(value, style: const TextStyle(color: Colors.white, fontSize: 20)),
         ],
       ),
     );
@@ -169,10 +218,7 @@ class _State extends ConsumerState<ExerciseSelectionCard> {
       bodyRegion: category!,
       sets: List.generate(
         safeSets,
-            (_) => ExerciseSet(
-          weight: weight,
-          reps: reps,
-        ),
+            (_) => ExerciseSet(weight: weight, reps: reps),
       ),
     );
 
@@ -206,14 +252,11 @@ class _State extends ConsumerState<ExerciseSelectionCard> {
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(.4),
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(.12),
-                  ),
+                  border: Border.all(color: Colors.white.withOpacity(.12)),
                   boxShadow: [
                     BoxShadow(
                       color: AppTheme.primaryRed.withOpacity(.4),
@@ -224,8 +267,7 @@ class _State extends ConsumerState<ExerciseSelectionCard> {
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.check,
-                        color: AppTheme.primaryRed, size: 18),
+                    Icon(Icons.check, color: AppTheme.primaryRed, size: 18),
                     SizedBox(width: 8),
                     Text(
                       "Übung hinzugefügt",
@@ -244,10 +286,7 @@ class _State extends ConsumerState<ExerciseSelectionCard> {
     );
 
     overlay.insert(entry);
-
-    Future.delayed(const Duration(seconds: 2), () {
-      entry.remove();
-    });
+    Future.delayed(const Duration(seconds: 2), () => entry.remove());
 
     setState(() {
       category = null;
@@ -277,38 +316,16 @@ class _State extends ConsumerState<ExerciseSelectionCard> {
     ),
   );
 
-  Widget _label(String text) => Text(
-    text,
-    style: const TextStyle(color: Colors.white38, fontSize: 12),
-  );
+  Widget _label(String text) =>
+      Text(text, style: const TextStyle(color: Colors.white38, fontSize: 12));
 
   Widget _picker(String? value, VoidCallback onTap) => GestureDetector(
     onTap: onTap,
-    child: Text(
-      value ?? "Hier tippen",
-      style: const TextStyle(color: Colors.white, fontSize: 18),
-    ),
+    child: Text(value ?? "Hier tippen",
+        style: const TextStyle(color: Colors.white, fontSize: 18)),
   );
 
   Widget _divider() => const Divider(color: Colors.white12, height: 30);
-
-  Widget _field(String title, String value, VoidCallback onTap) =>
-      GestureDetector(
-        onTap: onTap,
-        child: Column(
-          children: [
-            Text(
-              title,
-              style: const TextStyle(color: Colors.white38, fontSize: 11),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              value,
-              style: const TextStyle(color: Colors.white, fontSize: 20),
-            ),
-          ],
-        ),
-      );
 
   void _int(String title, int current, int max, Function(int) onSave) {
     showTTGValuePicker(
@@ -316,27 +333,17 @@ class _State extends ConsumerState<ExerciseSelectionCard> {
       title: title,
       initial: current <= 0 ? 1 : current.toDouble(),
       allowDecimal: false,
-      onSubmit: (v) {
-        final value = v.toInt();
-        setState(() => onSave(value));
-      },
+      onSubmit: (v) => setState(() => onSave(v.toInt())),
     );
   }
 
-  void _double(
-      String title,
-      double current,
-      double max,
-      Function(double) onSave,
-      ) {
+  void _double(String title, double current, double max, Function(double) onSave) {
     showTTGValuePicker(
       context: context,
       title: title,
       initial: current <= 0 ? 1 : current,
       allowDecimal: true,
-      onSubmit: (v) {
-        setState(() => onSave(v));
-      },
+      onSubmit: (v) => setState(() => onSave(v)),
     );
   }
 }
