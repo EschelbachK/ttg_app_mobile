@@ -1,7 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/audio/sound_provider.dart';
+import '../../../core/haptics/haptic_provider.dart';
 import '../../../core/events/event_bus_provider.dart';
 import '../../../core/events/workout_events.dart';
+import '../../settings/application/settings_provider.dart';
 import '../../history/application/history_service.dart';
 import '../domain/motivation/motivation_event.dart';
 import 'motivation_provider.dart';
@@ -10,8 +13,11 @@ final motivationListenerProvider = Provider<void>((ref) {
   final bus = ref.read(eventBusProvider);
   final motivator = ref.read(motivationProvider.notifier);
   final historyService = ref.read(historyServiceProvider);
+  final sound = ref.read(soundProvider);
+  final haptic = ref.read(hapticProvider);
+  final settings = ref.read(settingsProvider);
 
-  final sub = bus.on<WorkoutFinishedEvent>().listen((event) {
+  final sub1 = bus.on<WorkoutFinishedEvent>().listen((event) {
     final history = historyService.getAll();
     if (history.isEmpty) return;
 
@@ -31,5 +37,25 @@ final motivationListenerProvider = Provider<void>((ref) {
     motivator.updateStreakFromSession(event.session);
   });
 
-  ref.onDispose(sub.cancel);
+  final sub2 = bus.on<TimerTickEvent>().listen((event) {
+    if (!settings.soundEnabled) return;
+
+    if (event.seconds <= 3 && event.seconds > 0) {
+      sound.playBeep();
+      haptic.light(); // ✅ FIX
+    }
+  });
+
+  final sub3 = bus.on<RestFinishedEvent>().listen((event) {
+    if (!settings.soundEnabled) return;
+
+    sound.playFinish();
+    haptic.heavy(); // ✅ FIX
+  });
+
+  ref.onDispose(() {
+    sub1.cancel();
+    sub2.cancel();
+    sub3.cancel();
+  });
 });

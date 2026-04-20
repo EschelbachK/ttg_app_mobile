@@ -8,8 +8,10 @@ final aiListenerProvider = Provider<void>((ref) {
   final bus = ref.read(eventBusProvider);
   final ai = ref.read(aiCoachProvider);
 
-  bus.on<WorkoutFinishedEvent>().listen((event) {
+  final sub = bus.on<WorkoutFinishedEvent>().listen((event) {
     ai.fatigueScore();
     ai.coachMessage();
   });
+
+  ref.onDispose(sub.cancel);
 });

@@ -8,8 +8,10 @@ final gamificationListenerProvider = Provider<void>((ref) {
   final bus = ref.read(eventBusProvider);
   final game = ref.read(gamificationProvider);
 
-  bus.on<WorkoutFinishedEvent>().listen((event) {
+  final sub = bus.on<WorkoutFinishedEvent>().listen((event) {
     game.totalXP();
     game.currentStreak();
   });
+
+  ref.onDispose(sub.cancel);
 });
