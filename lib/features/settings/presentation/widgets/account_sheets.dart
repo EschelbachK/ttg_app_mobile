@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/ui/ttg_sheet.dart';
+import '../../../../core/ui/privacy_webview.dart';
 
 Widget _field(BuildContext context, String hint, TextEditingController c) {
   final dark = Theme.of(context).brightness == Brightness.dark;
@@ -18,25 +19,28 @@ Widget _field(BuildContext context, String hint, TextEditingController c) {
     child: TextField(
       controller: c,
       obscureText: true,
-      decoration: InputDecoration(
-        hintText: hint,
+      decoration: const InputDecoration(
         border: InputBorder.none,
       ),
     ),
   );
 }
 
-Widget _btn(String text, VoidCallback onTap, {Color? c, Gradient? g}) {
+Widget _btn(String text, VoidCallback onTap, {bool primary = false}) {
   return GestureDetector(
     onTap: onTap,
     child: Container(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
-        color: g == null ? c : null,
-        gradient: g,
+        gradient: primary ? AppTheme.primaryButtonGradient : null,
+        color: primary ? null : Colors.white.withOpacity(0.08),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
       ),
-      child: Text(text, style: const TextStyle(fontWeight: FontWeight.w600)),
+      child: Text(
+        text,
+        style: const TextStyle(fontWeight: FontWeight.w600),
+      ),
     ),
   );
 }
@@ -56,8 +60,11 @@ void showPasswordSheet(BuildContext context) {
         _field(context, 'Neues Passwort', p1),
         _field(context, 'Neues Passwort wiederholen', p2),
         const SizedBox(height: 10),
-        _btn('Speichern', () => Navigator.pop(context),
-            g: AppTheme.primaryButtonGradient),
+        _btn(
+          'Speichern',
+              () => Navigator.pop(context),
+          primary: true,
+        ),
       ],
     ),
   );
@@ -75,9 +82,22 @@ void showPrivacySheet(BuildContext context) {
         const SizedBox(height: 10),
         const Text(
           'Wir nehmen den Schutz deiner Daten sehr ernst. Mehr Infos findest du in der Datenschutzerklärung.',
+          textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 12),
-        _btn('Datenschutzerklärung lesen', () {}, c: Colors.blue),
+        const SizedBox(height: 14),
+        _btn(
+          'Datenschutzerklärung lesen',
+              () {
+            Navigator.pop(context);
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const PrivacyWebView(),
+              ),
+            );
+          },
+          primary: true,
+        ),
       ],
     ),
   );
@@ -95,9 +115,14 @@ void showDeleteAccountSheetNew(BuildContext context) {
         const SizedBox(height: 10),
         const Text(
           'Dieser Vorgang ist endgültig und kann nicht rückgängig gemacht werden.',
+          textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 12),
-        _btn('Account löschen', () {}, c: Colors.red),
+        const SizedBox(height: 14),
+        _btn(
+          'Account löschen',
+              () {},
+          primary: true,
+        ),
       ],
     ),
   );
