@@ -3,17 +3,16 @@ import 'package:audioplayers/audioplayers.dart';
 class SoundService {
   final _player = AudioPlayer();
 
-  Future<void> playBeep() async {
+  Future<void> _play(String path) async {
     await _player.stop();
-    await _player.play(AssetSource('sounds/beep.mp3'));
+    await _player.play(AssetSource(path));
   }
 
-  Future<void> playFinish() async {
-    await _player.stop();
-    await _player.play(AssetSource('sounds/finish.mp3'));
-  }
+  Future<void> playBeep() => _play('sounds/beep.mp3');
 
-  Future<void> dispose() async {
-    await _player.dispose();
-  }
+  Future<void> playFinish() => _play('sounds/finish.mp3');
+
+  Future<void> playStart() => _play('sounds/start.mp3');
+
+  Future<void> dispose() => _player.dispose();
 }
