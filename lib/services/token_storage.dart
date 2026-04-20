@@ -1,40 +1,47 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final tokenStorageProvider = Provider<TokenStorage>(
       (ref) => TokenStorage(),
 );
 
 class TokenStorage {
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
-
   static const _accessTokenKey = 'access_token';
   static const _refreshTokenKey = 'refresh_token';
 
+  Future<SharedPreferences> get _prefs async =>
+      await SharedPreferences.getInstance();
+
   Future<void> saveAccessToken(String token) async {
-    await _storage.write(key: _accessTokenKey, value: token);
+    final prefs = await _prefs;
+    await prefs.setString(_accessTokenKey, token);
   }
 
   Future<void> saveRefreshToken(String token) async {
-    await _storage.write(key: _refreshTokenKey, value: token);
+    final prefs = await _prefs;
+    await prefs.setString(_refreshTokenKey, token);
   }
 
   Future<void> saveTokens(String accessToken, String refreshToken) async {
-    await saveAccessToken(accessToken);
-    await saveRefreshToken(refreshToken);
+    final prefs = await _prefs;
+    await prefs.setString(_accessTokenKey, accessToken);
+    await prefs.setString(_refreshTokenKey, refreshToken);
   }
 
   Future<String?> getAccessToken() async {
-    return _storage.read(key: _accessTokenKey);
+    final prefs = await _prefs;
+    return prefs.getString(_accessTokenKey);
   }
 
   Future<String?> getRefreshToken() async {
-    return _storage.read(key: _refreshTokenKey);
+    final prefs = await _prefs;
+    return prefs.getString(_refreshTokenKey);
   }
 
   Future<void> clear() async {
-    await _storage.delete(key: _accessTokenKey);
-    await _storage.delete(key: _refreshTokenKey);
+    final prefs = await _prefs;
+    await prefs.remove(_accessTokenKey);
+    await prefs.remove(_refreshTokenKey);
   }
 
   Future<void> clearTokens() async {

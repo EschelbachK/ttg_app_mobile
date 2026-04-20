@@ -15,7 +15,24 @@ class HistoryService {
   HistoryService(this._store);
 
   void saveSession(WorkoutSession session) {
-    final entries = WorkoutSummaryMapper.toHistory(session);
+    final entries = <WorkoutHistoryEntry>[];
+
+    for (final group in session.groups) {
+      for (final exercise in group.exercises) {
+        for (final set in exercise.sets) {
+          entries.add(
+            WorkoutHistoryEntry(
+              id: '${session.id}_${exercise.id}_${set.hashCode}',
+              sessionId: session.id,
+              date: session.startedAt,
+              exerciseName: exercise.name,
+              weight: set.weight,
+              reps: set.reps,
+            ),
+          );
+        }
+      }
+    }
 
     if (entries.isEmpty) return;
 
