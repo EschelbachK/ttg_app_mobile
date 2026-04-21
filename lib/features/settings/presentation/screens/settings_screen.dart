@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../application/settings_provider.dart';
+import '../../../../core/settings/settings_controller.dart';
 import '../widgets/settings_bottom_sheets.dart';
 import '../widgets/settings_section.dart';
 import '../widgets/settings_tile.dart';
@@ -38,12 +38,10 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-
             const SettingsSection(
               title: 'WÄHREND DES TRAININGS',
               children: [KeyboardModeTile(), SoundModeTile()],
             ),
-
             SettingsSection(
               title: 'ALLGEMEINE EINSTELLUNGEN',
               children: [
@@ -65,7 +63,6 @@ class SettingsScreen extends ConsumerWidget {
                 const SyncModeExpand(),
               ],
             ),
-
             const SettingsSection(
               title: 'DEIN ACCOUNT',
               children: [
