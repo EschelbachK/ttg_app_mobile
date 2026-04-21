@@ -13,17 +13,37 @@ class AuthService {
       'email': email,
       'password': password,
     });
-    return AuthResponse.fromJson(res.data['data']);
+    return AuthResponse.fromJson(res.data);
   }
 
   Future<AuthResponse> refresh(String refreshToken) async {
     final res = await dio.post('/auth/refresh', data: {
       'refreshToken': refreshToken,
     });
-    return AuthResponse.fromJson(res.data['data']);
+    return AuthResponse.fromJson(res.data);
+  }
+
+  Future<void> register(String email, String username, String password) async {
+    await dio.post('/auth/register', data: {
+      'email': email,
+      'username': username,
+      'password': password,
+    });
+  }
+
+  Future<void> forgotPassword(String email) async {
+    await dio.post('/auth/password/forgot', queryParameters: {
+      'email': email,
+    });
+  }
+
+  Future<void> resetPassword(String token, String password) async {
+    await dio.post('/auth/password/reset', queryParameters: {
+      'token': token,
+      'password': password,
+    });
   }
 }
 
-final authServiceProvider = Provider<AuthService>(
-      (ref) => AuthService(ref.read(dioProvider)),
-);
+final authServiceProvider =
+Provider<AuthService>((ref) => AuthService(ref.read(dioProvider)));
