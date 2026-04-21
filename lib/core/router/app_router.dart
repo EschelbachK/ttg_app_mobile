@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import '../../features/auth/presentation/screens/register_screen.dart';
+import '../../features/auth/presentation/screens/forgot_password_screen.dart';
+import '../../features/auth/presentation/screens/reset_password_screen.dart';
 import '../../features/auth/screens/loading_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/dashboard/navigation/dashboard_routes.dart';
@@ -20,14 +22,34 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/loading',
     refreshListenable: _RouterRefresh(ref),
+
     routes: [
+      GoRoute(
+        path: '/loading',
+        builder: (_, __) => const LoadingScreen(),
+      ),
+
       GoRoute(
         path: '/login',
         builder: (_, __) => const LoginScreen(),
       ),
+
       GoRoute(
-        path: '/loading',
-        builder: (_, __) => const LoadingScreen(),
+        path: '/register',
+        builder: (_, __) => const RegisterScreen(),
+      ),
+
+      GoRoute(
+        path: '/forgot-password',
+        builder: (_, __) => const ForgotPasswordScreen(),
+      ),
+
+      GoRoute(
+        path: '/reset-password',
+        builder: (_, state) {
+          final token = state.uri.queryParameters['token'] ?? '';
+          return ResetPasswordScreen(token: token);
+        },
       ),
 
       ShellRoute(
@@ -73,13 +95,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
     ],
+
     redirect: (context, state) {
       final auth = ref.read(authProvider);
       final loggedIn = auth.isLoggedIn;
       final loc = state.uri.toString();
 
-      if (!loggedIn && loc != '/login') return '/login';
-      if (loggedIn && (loc == '/login' || loc == '/loading')) return '/dashboard';
+      final isAuthRoute = loc.startsWith('/login') ||
+          loc.startsWith('/register') ||
+          loc.startsWith('/forgot-password') ||
+          loc.startsWith('/reset-password');
+
+      if (!loggedIn && !isAuthRoute && loc != '/loading') {
+        return '/login';
+      }
+
+      if (loggedIn && isAuthRoute) {
+        return '/dashboard';
+      }
 
       return null;
     },
