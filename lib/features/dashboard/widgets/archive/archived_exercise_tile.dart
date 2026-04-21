@@ -11,19 +11,17 @@ class ArchivedExerciseTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const _ExerciseRow();
+    return _ExerciseRow(exercise: exercise);
   }
 }
 
 class _ExerciseRow extends StatelessWidget {
-  const _ExerciseRow();
+  final Exercise exercise;
+
+  const _ExerciseRow({required this.exercise});
 
   @override
   Widget build(BuildContext context) {
-    final exercise =
-        (context.findAncestorWidgetOfExactType<ArchivedExerciseTile>()!)
-            .exercise;
-
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
