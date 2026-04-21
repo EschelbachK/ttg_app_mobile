@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../../workout/domain/workout_history_entry.dart';
+import '../../application/pr_service.dart';
 
 class HistoryDetailScreen extends StatelessWidget {
   final List<WorkoutHistoryEntry> entries;
 
   const HistoryDetailScreen({super.key, required this.entries});
-
-  factory HistoryDetailScreen.fromEntries(
-      List<WorkoutHistoryEntry> entries) {
-    return HistoryDetailScreen(entries: entries);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,8 +44,10 @@ class HistoryDetailScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
-                ...sets.map(
-                      (s) => Padding(
+                ...sets.map((s) {
+                  final isPR = PRService.isPR(s, entries);
+
+                  return Padding(
                     padding: const EdgeInsets.only(bottom: 6),
                     child: Row(
                       mainAxisAlignment:
@@ -61,17 +59,26 @@ class HistoryDetailScreen extends StatelessWidget {
                             color: Colors.white70,
                           ),
                         ),
-                        Text(
-                          '${s.weight.toStringAsFixed(1)} kg',
-                          style: t.textTheme.bodySmall?.copyWith(
-                            color: t.colorScheme.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        Row(
+                          children: [
+                            if (isPR)
+                              const Padding(
+                                padding: EdgeInsets.only(right: 6),
+                                child: Text('🔥'),
+                              ),
+                            Text(
+                              '${s.weight.toStringAsFixed(1)} kg',
+                              style: t.textTheme.bodySmall?.copyWith(
+                                color: t.colorScheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ),
-                ),
+                  );
+                }),
               ],
             ),
           );
