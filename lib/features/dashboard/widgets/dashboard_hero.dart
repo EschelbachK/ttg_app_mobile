@@ -5,7 +5,7 @@ import '../../../core/theme/app_theme.dart';
 class DashboardHero extends StatelessWidget {
   final String title;
   final String subtitle;
-  final VoidCallback onStart;
+  final Function(int) onStart;
 
   const DashboardHero({
     super.key,
@@ -49,7 +49,7 @@ class DashboardHero extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: onStart,
+                    onPressed: () => onStart(0), // 👈 wichtig
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primaryRed,
                       padding: const EdgeInsets.symmetric(vertical: 14),
@@ -67,4 +67,5 @@ class DashboardHero extends StatelessWidget {
       ),
     );
   }
-}
+}git add lib/features/dashboard/widgets/dashboard_hero.dart
+git commit -m "connect dashboard hero button to workout tab navigation"
