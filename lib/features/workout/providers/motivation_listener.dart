@@ -4,7 +4,7 @@ import '../../../core/audio/sound_provider.dart';
 import '../../../core/haptics/haptic_provider.dart';
 import '../../../core/events/event_bus_provider.dart';
 import '../../../core/events/workout_events.dart';
-import '../../settings/application/settings_provider.dart';
+import '../../../core/settings/settings_controller.dart';
 import '../../history/application/history_service.dart';
 import '../domain/motivation/motivation_event.dart';
 import 'motivation_provider.dart';
