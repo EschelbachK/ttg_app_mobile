@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../features/settings/application/settings_provider.dart';
+import '../settings/settings_controller.dart';
 import 'sound_service.dart';
 
 final soundProvider = Provider<SoundService>((ref) {
