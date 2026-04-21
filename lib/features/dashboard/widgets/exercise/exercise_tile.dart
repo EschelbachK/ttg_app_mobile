@@ -2,9 +2,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/settings/settings_controller.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/ui/ttg_glow_border.dart';
-import '../../../settings/application/settings_provider.dart';
 import '../../models/exercise.dart';
 import '../../models/exercise_set.dart';
 
