@@ -12,11 +12,14 @@ class ProgressChart extends StatelessWidget {
   Widget build(BuildContext context) {
     if (history.isEmpty) return const SizedBox.shrink();
 
-    final spots = _buildSpots();
+    final sorted = [...history]..sort((a, b) => a.date.compareTo(b.date));
+    final spots = _buildSpots(sorted);
+
     final maxWeight = spots.weight.isEmpty
         ? 0.0
         : spots.weight.map((e) => e.y).reduce((a, b) => a > b ? a : b);
-    final lastIndex = history.length - 1;
+
+    final lastIndex = sorted.length - 1;
 
     return TtgGlassCard(
       child: SizedBox(
@@ -30,13 +33,22 @@ class ProgressChart extends StatelessWidget {
             titlesData: FlTitlesData(show: false),
             lineTouchData: LineTouchData(enabled: true),
             lineBarsData: [
-              _bar(spots.weight, Colors.white,
-                  highlightIndex: lastIndex,
-                  highlightValue: maxWeight),
-              _bar(spots.reps, Colors.white70,
-                  highlightIndex: lastIndex),
-              _bar(spots.volume, Colors.white24,
-                  highlightIndex: lastIndex),
+              _bar(
+                spots.weight,
+                Colors.white,
+                highlightIndex: lastIndex,
+                highlightValue: maxWeight,
+              ),
+              _bar(
+                spots.reps,
+                Colors.white70,
+                highlightIndex: lastIndex,
+              ),
+              _bar(
+                spots.volume,
+                Colors.white24,
+                highlightIndex: lastIndex,
+              ),
             ],
           ),
         ),
@@ -44,7 +56,7 @@ class ProgressChart extends StatelessWidget {
     );
   }
 
-  _ChartSpots _buildSpots() {
+  _ChartSpots _buildSpots(List<WorkoutHistoryEntry> history) {
     final weight = <FlSpot>[];
     final reps = <FlSpot>[];
     final volume = <FlSpot>[];
@@ -67,6 +79,8 @@ class ProgressChart extends StatelessWidget {
         int? highlightIndex,
         double? highlightValue,
       }) {
+    const tol = 0.0001;
+
     return LineChartBarData(
       spots: spots,
       isCurved: true,
@@ -76,8 +90,8 @@ class ProgressChart extends StatelessWidget {
         show: true,
         getDotPainter: (spot, percent, bar, index) {
           final isLast = highlightIndex != null && index == highlightIndex;
-          final isPR =
-              highlightValue != null && spot.y == highlightValue;
+          final isPR = highlightValue != null &&
+              (spot.y >= highlightValue - tol);
 
           if (isPR) {
             return FlDotCirclePainter(

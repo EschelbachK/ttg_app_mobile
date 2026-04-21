@@ -1,14 +1,12 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../core/settings/settings_controller.dart';
 import '../../../core/settings/settings_state.dart';
-import '../../../core/theme/app_theme.dart';
-import '../../../core/ui/ttg_input_dialog.dart';
+import '../../workout/application/workout_history_store.dart';
+import '../../workout/presentation/widgets/progress_chart.dart';
 import '../state/dashboard_provider.dart';
 import '../widgets/dashboard/dashboard_top_bar.dart';
-
 import '../widgets/archive/archived_plan_tile.dart';
 import '../widgets/archive/archived_folder_tile.dart';
 
@@ -56,6 +54,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(dashboardProvider);
     final settings = ref.watch(settingsProvider);
+    final history = ref.watch(workoutHistoryStoreProvider);
+
     final theme = Theme.of(context);
     final notifier = ref.read(dashboardProvider.notifier);
 
@@ -111,149 +111,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
                 const SizedBox(height: 18),
 
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(18),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                      child: Container(
-                        height: 48,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(18),
-                          color: Colors.white.withOpacity(0.06),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.08),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.6),
-                              blurRadius: 30,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: notifier.showPlans,
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 180),
-                                  margin: const EdgeInsets.all(4),
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(14),
-                                    color: !state.showArchive
-                                        ? AppTheme.primaryRed.withOpacity(0.2)
-                                        : Colors.transparent,
-                                    boxShadow: !state.showArchive
-                                        ? [
-                                      BoxShadow(
-                                        color: AppTheme.primaryRed.withOpacity(0.4),
-                                        blurRadius: 20,
-                                        spreadRadius: -4,
-                                      ),
-                                    ]
-                                        : [],
-                                  ),
-                                  child: Text(
-                                    "PLÄNE",
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 0.5,
-                                      color: !state.showArchive
-                                          ? AppTheme.primaryRed
-                                          : Colors.white54,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: notifier.showArchive,
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 180),
-                                  margin: const EdgeInsets.all(4),
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(14),
-                                    color: state.showArchive
-                                        ? AppTheme.primaryRed.withOpacity(0.2)
-                                        : Colors.transparent,
-                                    boxShadow: state.showArchive
-                                        ? [
-                                      BoxShadow(
-                                        color: AppTheme.primaryRed.withOpacity(0.4),
-                                        blurRadius: 20,
-                                        spreadRadius: -4,
-                                      ),
-                                    ]
-                                        : [],
-                                  ),
-                                  child: Text(
-                                    "ARCHIV",
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 0.5,
-                                      color: state.showArchive
-                                          ? AppTheme.primaryRed
-                                          : Colors.white54,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                if (selectedTab == 1)
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      children: [
+                        if (history.isNotEmpty)
+                          ProgressChart(history: history),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  )
+                else
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                      child: _buildContent(context, state, settings),
                     ),
                   ),
-                ),
-
-                const SizedBox(height: 14),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    children: [
-                      const Spacer(),
-                      Text(
-                        state.showArchive ? "ARCHIV" : "MEINE TRAININGSPLÄNE",
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const Spacer(),
-                      if (!state.showArchive)
-                        IconButton(
-                          icon: const Icon(Icons.add, color: AppTheme.primaryRed),
-                          onPressed: settings.offlineMode
-                              ? null
-                              : () => showTTGInputDialog(
-                            context: context,
-                            title: "Neuer Trainingsplan",
-                            buttonText: "Erstellen",
-                            onSubmit: (v) async {
-                              await ref.read(dashboardProvider.notifier).createTrainingPlan(v);
-                            },
-                          ),
-                        )
-                      else
-                        const SizedBox(width: 26),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                    child: _buildContent(context, state, settings),
-                  ),
-                ),
               ],
             ),
           ),
@@ -262,7 +137,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildContent(BuildContext context, DashboardState state, SettingsState settings) {
+  Widget _buildContent(
+      BuildContext context, DashboardState state, SettingsState settings) {
     final theme = Theme.of(context);
 
     if (settings.offlineMode) {
@@ -274,12 +150,14 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             const SizedBox(height: 12),
             Text(
               "Offline Modus aktiv",
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 6),
             Text(
               "Keine Verbindung zum Server",
-              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white54),
+              style:
+              theme.textTheme.bodyMedium?.copyWith(color: Colors.white54),
             ),
           ],
         ),
@@ -302,7 +180,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
       );
     }
 
-    if (state.isLoading) return const Center(child: CircularProgressIndicator());
+    if (state.isLoading)
+      return const Center(child: CircularProgressIndicator());
 
     if (state.trainingPlans.isEmpty) {
       return Center(

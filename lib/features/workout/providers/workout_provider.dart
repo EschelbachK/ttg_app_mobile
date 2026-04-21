@@ -6,11 +6,9 @@ import '../application/workout_state.dart';
 import '../data/workout_api_service.dart';
 
 final workoutProvider =
-StateNotifierProvider<WorkoutController, WorkoutState>((ref) {
-  final api = WorkoutApiService(ref.read(dioProvider));
-
-  return WorkoutController(
-    api,
+StateNotifierProvider<WorkoutController, WorkoutState>(
+      (ref) => WorkoutController(
+    WorkoutApiService(ref.read(dioProvider)),
     ref,
-  );
-});
+  ),
+);

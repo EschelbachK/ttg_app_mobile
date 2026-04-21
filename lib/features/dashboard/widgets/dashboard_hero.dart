@@ -67,5 +67,4 @@ class DashboardHero extends StatelessWidget {
       ),
     );
   }
-}git add lib/features/dashboard/widgets/dashboard_hero.dart
-git commit -m "connect dashboard hero button to workout tab navigation"
+}
