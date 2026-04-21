@@ -10,6 +10,7 @@ class SyncModeExpand extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(settingsProvider);
     final n = ref.read(settingsProvider.notifier);
+    final t = Theme.of(context);
 
     return Column(
       children: [
@@ -23,11 +24,11 @@ class SyncModeExpand extends ConsumerWidget {
           onTap: n.toggleSyncExpanded,
         ),
         if (s.syncExpanded)
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 8, 8, 10),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 6, 8, 10),
             child: Text(
               'Synchronisiert deine Trainingsdaten automatisch und sichert deinen Fortschritt über alle Geräte hinweg.',
-              style: TextStyle(
+              style: t.textTheme.bodySmall?.copyWith(
                 color: Colors.white70,
                 height: 1.4,
               ),
