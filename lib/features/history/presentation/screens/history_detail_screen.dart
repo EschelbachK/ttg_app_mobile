@@ -7,6 +7,12 @@ class HistoryDetailScreen extends StatelessWidget {
 
   const HistoryDetailScreen({super.key, required this.entries});
 
+  factory HistoryDetailScreen.fromEntries(
+      List<WorkoutHistoryEntry> entries,
+      ) {
+    return HistoryDetailScreen(entries: entries);
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context);
