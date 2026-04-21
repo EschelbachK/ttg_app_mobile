@@ -27,21 +27,17 @@ class WorkoutController extends StateNotifier<WorkoutState> {
   late final HistoryService historyService;
 
   Timer? _restTimer;
-  int _restSeconds = 0;
 
-  int get restSeconds => _restSeconds;
-  bool get showRest => _restSeconds > 0;
+  int get restSeconds => state.restSeconds;
+  bool get showRest => state.restSeconds > 0;
   bool get _offline => ref.read(settingsProvider).offlineMode;
 
   WorkoutController(this.api, this.ref) : super(const WorkoutState()) {
     historyService = ref.read(historyServiceProvider);
   }
 
-  void _emit() => state = state.copyWith();
-
   void reset() {
     _restTimer?.cancel();
-    _restSeconds = 0;
     state = const WorkoutState();
   }
 
@@ -145,10 +141,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
 
     historyService.saveSession(s);
 
-    ref.read(eventBusProvider).emit(
-      WorkoutFinishedEvent(s),
-    );
-
+    ref.read(eventBusProvider).emit(WorkoutFinishedEvent(s));
     ref.read(hapticProvider).success();
 
     state = state.copyWith(isFinished: true);
@@ -160,35 +153,42 @@ class WorkoutController extends StateNotifier<WorkoutState> {
 
   void startRestTimer(int seconds, {String? message}) {
     _restTimer?.cancel();
-    _restSeconds = seconds;
 
     final bus = ref.read(eventBusProvider);
 
-    state = state.copyWith(restMessage: message);
+    state = state.copyWith(
+      restSeconds: seconds,
+      restMessage: message,
+    );
 
     _restTimer = Timer.periodic(const Duration(seconds: 1), (t) {
-      _restSeconds--;
+      final next = state.restSeconds - 1;
 
-      bus.emit(TimerTickEvent(_restSeconds));
+      bus.emit(TimerTickEvent(next));
 
-      if (_restSeconds <= 0) {
+      if (next <= 0) {
         t.cancel();
-        _restSeconds = 0;
 
         bus.emit(RestFinishedEvent());
         ref.read(hapticProvider).medium();
 
-        state = state.copyWith(restMessage: null);
+        state = state.copyWith(
+          restSeconds: 0,
+          restMessage: null,
+        );
+        return;
       }
 
-      _emit();
+      state = state.copyWith(restSeconds: next);
     });
   }
 
   void stopRestTimer() {
     _restTimer?.cancel();
-    _restSeconds = 0;
-    state = state.copyWith(restMessage: null);
+    state = state.copyWith(
+      restSeconds: 0,
+      restMessage: null,
+    );
   }
 
   Future<void> addSet(String exerciseId, double weight, int reps) async {
@@ -236,7 +236,7 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     String? nextGroup;
 
     final updatedGroups = s.groups.map((g) {
-      final beforeComplete = g.exercises.every(
+      final before = g.exercises.every(
             (e) => e.sets.isNotEmpty && e.sets.every((x) => x.completed == true),
       );
 
@@ -260,28 +260,18 @@ class WorkoutController extends StateNotifier<WorkoutState> {
         );
       }).toList();
 
-      final afterComplete = exercises.every(
+      final after = exercises.every(
             (e) => e.sets.isNotEmpty && e.sets.every((x) => x.completed == true),
       );
 
-      if (!beforeComplete && afterComplete) {
-        completedGroup = g.name;
-      }
-
-      if (!afterComplete) isFinalWorkout = false;
+      if (!before && after) completedGroup = g.name;
+      if (!after) isFinalWorkout = false;
 
       return g.copyWith(exercises: exercises);
     }).toList();
 
     final updated = s.copyWith(groups: updatedGroups);
     state = state.copyWith(session: updated);
-
-    if (completedGroup != null) {
-      final i = updatedGroups.indexWhere((g) => g.name == completedGroup);
-      if (i != -1 && i + 1 < updatedGroups.length) {
-        nextGroup = updatedGroups[i + 1].name;
-      }
-    }
 
     if (!didCompleteSet) return;
 
@@ -295,6 +285,11 @@ class WorkoutController extends StateNotifier<WorkoutState> {
     final rest = ref.read(settingsProvider).restTimerSeconds;
 
     if (completedGroup != null) {
+      final i = updatedGroups.indexWhere((g) => g.name == completedGroup);
+      if (i != -1 && i + 1 < updatedGroups.length) {
+        nextGroup = updatedGroups[i + 1].name;
+      }
+
       ref.read(hapticProvider).heavy();
 
       startRestTimer(
