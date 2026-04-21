@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../workout/domain/workout_history_entry.dart';
+import '../screens/history_detail_screen.dart';
 
 class HistoryTile extends StatelessWidget {
   final List<WorkoutHistoryEntry> session;
@@ -14,50 +15,56 @@ class HistoryTile extends StatelessWidget {
     final exercises = session.map((e) => e.exerciseName).toSet().length;
     final sets = session.length;
 
-    final volume = session.fold<double>(
-      0,
-          (sum, e) => sum + (e.weight * e.reps),
-    );
+    final volume =
+    session.fold<double>(0, (sum, e) => sum + (e.weight * e.reps));
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        color: Colors.white.withOpacity(0.05),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            _formatDate(date),
-            style: t.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => HistoryDetailScreen.fromEntries(session),
           ),
-          const SizedBox(height: 6),
-          Text(
-            '$exercises Übungen • $sets Sets',
-            style: t.textTheme.bodySmall?.copyWith(
-              color: Colors.white70,
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          color: Colors.white.withOpacity(0.05),
+          border: Border.all(color: Colors.white.withOpacity(0.08)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _date(date),
+              style: t.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'Volumen: ${volume.toStringAsFixed(0)} kg',
-            style: t.textTheme.bodySmall?.copyWith(
-              color: t.colorScheme.primary,
-              fontWeight: FontWeight.w600,
+            const SizedBox(height: 6),
+            Text(
+              '$exercises Übungen • $sets Sets',
+              style: t.textTheme.bodySmall?.copyWith(
+                color: Colors.white70,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 10),
+            Text(
+              'Volumen: ${volume.toStringAsFixed(0)} kg',
+              style: t.textTheme.bodySmall?.copyWith(
+                color: t.colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  String _formatDate(DateTime d) {
-    return '${d.day}.${d.month}.${d.year}';
-  }
+  String _date(DateTime d) => '${d.day}.${d.month}.${d.year}';
 }
