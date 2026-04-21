@@ -6,6 +6,7 @@ import 'package:ttg_app_mobile/features/dashboard/models/training_plan.dart';
 import '../../../core/events/event_bus_provider.dart';
 import '../../../core/events/workout_events.dart';
 import '../../../core/haptics/haptic_provider.dart';
+import '../../../core/settings/settings_controller.dart';
 import '../../history/application/history_service.dart';
 import '../data/workout_api_service.dart';
 import '../domain/workout_session.dart';
@@ -17,7 +18,6 @@ import 'workout_state.dart';
 import 'progression_engine.dart';
 import 'workout_mapper.dart';
 import '../../dashboard/state/dashboard_provider.dart';
-import '../../settings/application/settings_provider.dart';
 
 class WorkoutController extends StateNotifier<WorkoutState> {
   final WorkoutApiService api;
