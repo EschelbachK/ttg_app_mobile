@@ -2,11 +2,10 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/settings/settings_controller.dart';
+import '../../../core/settings/settings_state.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/ui/ttg_input_dialog.dart';
-
-import '../../settings/application/settings_provider.dart';
-
 import '../state/dashboard_provider.dart';
 import '../widgets/dashboard/dashboard_top_bar.dart';
 
