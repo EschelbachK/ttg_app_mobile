@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../features/settings/application/settings_provider.dart';
+import '../settings/settings_controller.dart';
 import 'dio_provider.dart';
 
 final apiClientProvider = Provider<ApiClient>((ref) {
