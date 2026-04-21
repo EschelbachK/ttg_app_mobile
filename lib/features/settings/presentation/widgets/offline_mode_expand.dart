@@ -10,6 +10,9 @@ class OfflineModeExpand extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final s = ref.watch(settingsProvider);
     final n = ref.read(settingsProvider.notifier);
+    final t = Theme.of(context);
+
+    final warning = s.syncEnabled && s.offlineMode;
 
     return Column(
       children: [
@@ -23,14 +26,29 @@ class OfflineModeExpand extends ConsumerWidget {
           onTap: n.toggleOfflineExpanded,
         ),
         if (s.offlineExpanded)
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 8, 8, 10),
-            child: Text(
-              'Trainiere ohne Internet. Deine Daten werden lokal gespeichert und automatisch synchronisiert, sobald du wieder online bist.',
-              style: TextStyle(
-                color: Colors.white70,
-                height: 1.4,
-              ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 6, 8, 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Trainiere ohne Internet. Deine Daten werden lokal gespeichert und automatisch synchronisiert, sobald du wieder online bist.',
+                  style: t.textTheme.bodySmall?.copyWith(
+                    color: Colors.white70,
+                    height: 1.4,
+                  ),
+                ),
+                if (warning) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Sync ist aktiv → wird im Offline-Modus pausiert',
+                    style: t.textTheme.bodySmall?.copyWith(
+                      color: Colors.orange,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ]
+              ],
             ),
           ),
       ],
