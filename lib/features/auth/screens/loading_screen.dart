@@ -1,33 +1,46 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/auth/auth_provider.dart';
 
-class LoadingScreen extends StatefulWidget {
+class LoadingScreen extends ConsumerStatefulWidget {
   const LoadingScreen({super.key});
 
   @override
-  State<LoadingScreen> createState() => _LoadingScreenState();
+  ConsumerState<LoadingScreen> createState() => _LoadingScreenState();
 }
 
-class _LoadingScreenState extends State<LoadingScreen> {
-  @override
-  void initState() {
-    super.initState();
-    Timer(const Duration(milliseconds: 800), () {
-      if (mounted) context.go('/login');
-    });
-  }
+class _LoadingScreenState extends ConsumerState<LoadingScreen> {
+  bool redirected = false;
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.primary;
-    return Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(
-          color: color,
-          strokeWidth: 3,
-        ),
-      ),
+    final auth = ref.watch(authProvider);
+
+    if (!auth.isInitialized) {
+      return const Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (!redirected) {
+      redirected = true;
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+
+        if (auth.isLoggedIn) {
+          context.go('/dashboard');
+        } else {
+          context.go('/login');
+        }
+      });
+    }
+
+    return const Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(child: CircularProgressIndicator()),
     );
   }
 }
