@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../application/settings_provider.dart';
+import '../../../../core/settings/settings_controller.dart';
 import 'settings_tile.dart';
 
 class SyncModeExpand extends ConsumerWidget {
