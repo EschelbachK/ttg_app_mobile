@@ -3,7 +3,7 @@ import '../settings/settings_controller.dart';
 import 'haptic_service.dart';
 
 final hapticProvider = Provider<HapticController>((ref) {
-  final enabled = ref.read(settingsProvider).soundEnabled;
+  final enabled = ref.watch(settingsProvider).soundEnabled;
   return HapticController(enabled);
 });
 
