@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/settings/settings_controller.dart';
 import '../../../../core/ui/ttg_background.dart';
 import '../../../../core/ui/ttg_leave_workout_dialog.dart';
 import '../../../../core/haptics/haptic_provider.dart';
 import '../../../../core/audio/sound_provider.dart';
 
 import '../../providers/workout_provider.dart';
-import '../../../settings/application/settings_provider.dart';
 import '../widgets/collapsible_exercise_block.dart';
 import '../widgets/workout_start_overlay.dart';
 import '../widgets/workout_finish_overlay.dart';
