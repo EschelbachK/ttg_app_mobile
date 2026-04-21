@@ -7,8 +7,7 @@ import 'core/offline/sync_provider.dart';
 import 'core/offline/sync_status_listener.dart';
 import 'core/offline/sync_status_bar.dart';
 import 'core/network/connectivity_provider.dart';
-
-import 'features/settings/application/settings_provider.dart';
+import 'core/settings/settings_controller.dart';
 
 import 'features/workout/providers/motivation_listener.dart';
 import 'features/workout/providers/sound_listener.dart';
