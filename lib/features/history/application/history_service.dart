@@ -11,7 +11,6 @@ final historyServiceProvider = Provider<HistoryService>((ref) {
 
 class HistoryService {
   final WorkoutHistoryStore _store;
-
   HistoryService(this._store);
 
   void saveSession(WorkoutSession session) {
@@ -19,10 +18,12 @@ class HistoryService {
 
     for (final group in session.groups) {
       for (final exercise in group.exercises) {
-        for (final set in exercise.sets) {
+        for (var i = 0; i < exercise.sets.length; i++) {
+          final set = exercise.sets[i];
+
           entries.add(
             WorkoutHistoryEntry(
-              id: '${session.id}_${exercise.id}_${set.hashCode}',
+              id: '${session.id}_${exercise.id}_$i',
               sessionId: session.id,
               date: session.startedAt,
               exerciseName: exercise.name,
@@ -36,16 +37,12 @@ class HistoryService {
 
     if (entries.isEmpty) return;
 
-    for (final entry in entries) {
-      _store.add(entry);
+    for (final e in entries) {
+      _store.add(e);
     }
   }
 
-  List<WorkoutHistoryEntry> getAll() {
-    return _store.entries;
-  }
+  List<WorkoutHistoryEntry> getAll() => _store.entries;
 
-  void clear() {
-    _store.clear();
-  }
+  void clear() => _store.clear();
 }
