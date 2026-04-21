@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../domain/workout_session.dart';
 import '../domain/workout_history_entry.dart';
 import 'workout_summary_mapper.dart';
@@ -11,36 +10,30 @@ StateNotifierProvider<WorkoutHistoryStore, List<WorkoutHistoryEntry>>(
 
 class WorkoutHistoryStore extends StateNotifier<List<WorkoutHistoryEntry>> {
   final Ref ref;
-
   WorkoutHistoryStore(this.ref) : super([]);
 
-  void add(WorkoutHistoryEntry entry) {
-    state = [...state, entry];
-  }
+  void add(WorkoutHistoryEntry e) => state = [...state, e];
 
   void addSession(WorkoutSession session) {
     final entries = WorkoutSummaryMapper.toHistory(session);
-    if (entries.isEmpty) return;
-
-    state = [...state, ...entries];
+    if (entries.isNotEmpty) state = [...state, ...entries];
   }
 
   List<WorkoutHistoryEntry> get entries => state;
 
   List<List<WorkoutHistoryEntry>> get sessions {
-    final Map<String, List<WorkoutHistoryEntry>> grouped = {};
+    final grouped = <String, List<WorkoutHistoryEntry>>{};
 
     for (final e in state) {
-      final key = e.sessionId;
-      grouped.putIfAbsent(key, () => []);
-      grouped[key]!.add(e);
+      (grouped[e.sessionId] ??= []).add(e);
     }
 
-    return grouped.values.toList()
-      ..sort((a, b) => a.first.date.compareTo(b.first.date));
+    final list = grouped.values.toList();
+
+    list.sort((a, b) => b.first.date.compareTo(a.first.date));
+
+    return list;
   }
 
-  void clear() {
-    state = [];
-  }
+  void clear() => state = [];
 }
