@@ -2,7 +2,6 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../settings/settings_controller.dart';
 import '../settings/settings_state.dart';
-import 'sound_service.dart';
 
 final soundProvider = Provider<SoundService>((ref) {
   final settings = ref.watch(settingsProvider);
