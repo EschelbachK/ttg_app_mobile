@@ -1,28 +1,33 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/token_storage.dart';
 import '../../features/auth/models/auth_response.dart';
+import '../../features/auth/models/user_model.dart';
 import 'auth_service.dart';
 
 class AuthState {
   final bool isLoggedIn;
   final String? accessToken;
   final String? refreshToken;
+  final UserModel? user;
 
   const AuthState({
     required this.isLoggedIn,
     this.accessToken,
     this.refreshToken,
+    this.user,
   });
 
   AuthState copyWith({
     bool? isLoggedIn,
     String? accessToken,
     String? refreshToken,
+    UserModel? user,
   }) {
     return AuthState(
       isLoggedIn: isLoggedIn ?? this.isLoggedIn,
       accessToken: accessToken ?? this.accessToken,
       refreshToken: refreshToken ?? this.refreshToken,
+      user: user ?? this.user,
     );
   }
 }
@@ -34,8 +39,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> login(String email, String password) async {
     final res = await ref.read(authServiceProvider).login(email, password);
-
     final storage = ref.read(tokenStorageProvider);
+
     await storage.saveAccessToken(res.accessToken);
     await storage.saveRefreshToken(res.refreshToken);
 
@@ -43,6 +48,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       isLoggedIn: true,
       accessToken: res.accessToken,
       refreshToken: res.refreshToken,
+      user: res.user,
     );
   }
 
@@ -62,6 +68,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
     state = state.copyWith(
       accessToken: res.accessToken,
+      user: res.user,
       isLoggedIn: true,
     );
   }
