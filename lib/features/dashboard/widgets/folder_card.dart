@@ -23,10 +23,9 @@ class _FolderCardState extends ConsumerState<FolderCard> {
 
   @override
   Widget build(BuildContext context) {
-    final n = ref.read(dashboardProvider.notifier);
-    final f = widget.folder;
+    final notifier = ref.read(dashboardProvider.notifier);
     final planId = ref.read(activePlanIdProvider);
-
+    final f = widget.folder;
     final plans = f.plans.cast<TrainingPlan>();
 
     return Padding(
@@ -46,115 +45,34 @@ class _FolderCardState extends ConsumerState<FolderCard> {
                 children: [
                   GestureDetector(
                     onTap: () => setState(() => expanded = !expanded),
-                    child: Container(
+                    child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                       child: Row(
                         children: [
                           const Icon(Icons.folder, color: AppTheme.primaryRed),
                           const SizedBox(width: 10),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  f.name,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  f.bodyRegion,
-                                  style: const TextStyle(
-                                    color: Colors.white38,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          InkWell(
-                            onTap: () {
-                              final c = TextEditingController(text: f.name);
-                              showDialog(
-                                context: context,
-                                builder: (_) => _InputDialog(
-                                  title: "Ordner umbenennen",
-                                  controller: c,
-                                  onSubmit: (v) {
-                                    if (v.isEmpty) return;
-                                    n.renameFolder(f.id, v);
-                                  },
-                                ),
-                              );
-                            },
-                            child: const Padding(
-                              padding: EdgeInsets.only(right: 8),
-                              child: Icon(Icons.edit, color: Colors.white54, size: 18),
-                            ),
-                          ),
+                          Expanded(child: _title(f)),
+                          _edit(context, notifier, f),
                           Icon(
                             expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
                             color: Colors.white54,
                           ),
-                          PopupMenuButton<String>(
-                            icon: const Icon(Icons.more_vert, color: Colors.white54),
-                            onSelected: (v) async {
-                              if (v == 'archive') n.archiveFolder(f.id);
-                              if (v == 'delete') {
-                                final confirm = await _confirm(context, "Ordner löschen");
-                                if (confirm && planId != null) {
-                                  n.deleteFolder(f.id);
-                                }
-                              }
-                            },
-                            itemBuilder: (_) => const [
-                              PopupMenuItem(value: 'archive', child: Text("Ordner archivieren")),
-                              PopupMenuItem(value: 'delete', child: Text("Ordner löschen")),
-                            ],
-                          ),
+                          _menu(context, notifier, f, planId),
                         ],
                       ),
                     ),
                   ),
+
                   if (expanded) ...[
                     ...plans.map(
                           (p) => PlanTile(
                         folderId: f.id,
                         plan: p,
-                        onDelete: () => n.deletePlan(p.id),
-                        onArchive: () => n.archivePlan(p.id),
+                        onDelete: () => notifier.deletePlan(p.id),
+                        onArchive: () => notifier.archivePlan(p.id),
                       ),
                     ),
-                    InkWell(
-                      onTap: () {
-                        final c = TextEditingController();
-                        showDialog(
-                          context: context,
-                          builder: (_) => _InputDialog(
-                            title: "Neue Muskelgruppe",
-                            controller: c,
-                            onSubmit: (v) {
-                              if (v.isEmpty) return;
-                              n.addFolder(f.trainingPlanId, v);
-                            },
-                          ),
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        alignment: Alignment.center,
-                        child: const Text(
-                          "+ Muskelgruppe hinzufügen",
-                          style: TextStyle(
-                            color: AppTheme.primaryRed,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
+                    _add(context, notifier, f),
                   ],
                 ],
               ),
@@ -164,6 +82,90 @@ class _FolderCardState extends ConsumerState<FolderCard> {
       ),
     );
   }
+
+  Widget _title(TrainingFolder f) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        f.name,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
+      ),
+      const SizedBox(height: 2),
+      Text(
+        f.bodyRegion,
+        style: const TextStyle(color: Colors.white38, fontSize: 12),
+      ),
+    ],
+  );
+
+  Widget _edit(BuildContext context, dynamic n, TrainingFolder f) => InkWell(
+    onTap: () {
+      final c = TextEditingController(text: f.name);
+      showDialog(
+        context: context,
+        builder: (_) => _InputDialog(
+          title: "Ordner umbenennen",
+          controller: c,
+          onSubmit: (v) {
+            if (v.isEmpty) return;
+            n.renameFolder(f.id, v);
+          },
+        ),
+      );
+    },
+    child: const Padding(
+      padding: EdgeInsets.only(right: 8),
+      child: Icon(Icons.edit, color: Colors.white54, size: 18),
+    ),
+  );
+
+  Widget _menu(BuildContext context, dynamic n, TrainingFolder f, String? planId) =>
+      PopupMenuButton<String>(
+        icon: const Icon(Icons.more_vert, color: Colors.white54),
+        onSelected: (v) async {
+          if (v == 'archive') n.archiveFolder(f.id);
+          if (v == 'delete') {
+            final confirm = await _confirm(context, "Ordner löschen");
+            if (confirm && planId != null) n.deleteFolder(f.id);
+          }
+        },
+        itemBuilder: (_) => const [
+          PopupMenuItem(value: 'archive', child: Text("Ordner archivieren")),
+          PopupMenuItem(value: 'delete', child: Text("Ordner löschen")),
+        ],
+      );
+
+  Widget _add(BuildContext context, dynamic n, TrainingFolder f) => InkWell(
+    onTap: () {
+      final c = TextEditingController();
+      showDialog(
+        context: context,
+        builder: (_) => _InputDialog(
+          title: "Neue Muskelgruppe",
+          controller: c,
+          onSubmit: (v) {
+            if (v.isEmpty) return;
+            n.addFolder(f.trainingPlanId, v);
+          },
+        ),
+      );
+    },
+    child: Container(
+      padding: const EdgeInsets.all(16),
+      alignment: Alignment.center,
+      child: const Text(
+        "+ Muskelgruppe hinzufügen",
+        style: TextStyle(
+          color: AppTheme.primaryRed,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ),
+  );
 
   Future<bool> _confirm(BuildContext context, String title) async {
     return await showDialog<bool>(
