@@ -1,42 +1,61 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../settings/settings_controller.dart';
+import '../settings/settings_state.dart';
 import 'sound_service.dart';
 
 final soundProvider = Provider<SoundService>((ref) {
-  final s = ref.watch(settingsProvider);
-  final service = SoundService();
+  final settings = ref.watch(settingsProvider);
+  final service = SoundService(settings);
 
   ref.onDispose(service.dispose);
 
-  return _GuardedSoundService(service, s);
+  return service;
 });
 
-class _GuardedSoundService extends SoundService {
-  final SoundService _s;
-  final dynamic settings;
+class SoundService {
+  final SettingsState settings;
+  final _player = AudioPlayerWrapper();
 
-  _GuardedSoundService(this._s, this.settings);
+  SoundService(this.settings);
 
   bool get _enabled => settings.soundEnabled;
 
-  @override
+  Future<void> _play(String path) async {
+    await _player.stop();
+    await _player.play(path);
+  }
+
   Future<void> playBeep() async {
     if (!_enabled || !settings.countdownSound) return;
-    await _s.playBeep();
+    await _play('sounds/beep.mp3');
   }
 
-  @override
   Future<void> playStart() async {
     if (!_enabled || !settings.startSound) return;
-    await _s.playStart();
+    await _play('sounds/start.mp3');
   }
 
-  @override
   Future<void> playFinish() async {
     if (!_enabled) return;
-    await _s.playFinish();
+    await _play('sounds/finish.mp3');
   }
 
-  @override
-  Future<void> dispose() => _s.dispose();
+  Future<void> dispose() => _player.dispose();
+}
+
+class AudioPlayerWrapper {
+  final _player = AudioPlayer();
+
+  Future<void> play(String path) async {
+    await _player.play(AssetSource(path));
+  }
+
+  Future<void> stop() async {
+    await _player.stop();
+  }
+
+  Future<void> dispose() async {
+    await _player.dispose();
+  }
 }
