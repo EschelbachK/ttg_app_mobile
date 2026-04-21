@@ -5,7 +5,6 @@ import '../../../core/auth/auth_provider.dart';
 import '../../../core/error/global_error_handler.dart';
 
 const kPrimaryRed = Color(0xFFE10600);
-const kTextColor = Colors.white;
 const kScale = 0.8;
 double s(double v) => v * kScale;
 
@@ -20,6 +19,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final email = TextEditingController();
   final password = TextEditingController();
   bool loading = false;
+
+  @override
+  void dispose() {
+    email.dispose();
+    password.dispose();
+    super.dispose();
+  }
 
   Future<void> _login() async {
     setState(() => loading = true);
@@ -52,33 +58,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Padding(
               padding: EdgeInsets.all(s(24)),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  _Input("E-Mail", email),
-                  SizedBox(height: s(16)),
-                  _Input("Passwort", password, obscure: true),
-                  SizedBox(height: s(28)),
+                  _Input(
+                    "E-Mail",
+                    email,
+                    type: TextInputType.emailAddress,
+                  ),
+                  SizedBox(height: s(14)),
+                  _Input(
+                    "Passwort",
+                    password,
+                    obscure: true,
+                  ),
+                  SizedBox(height: s(24)),
 
                   _Button("Einloggen", loading ? null : _login),
 
-                  SizedBox(height: s(18)),
+                  SizedBox(height: s(16)),
 
-                  GestureDetector(
-                    onTap: () => context.go('/register'),
-                    child: Text(
-                      "Kein Account? Registrieren",
-                      style: TextStyle(color: Colors.white70),
-                    ),
+                  _Link(
+                    "Kein Account? Registrieren",
+                        () => context.go('/register'),
                   ),
 
-                  SizedBox(height: s(12)),
+                  SizedBox(height: s(8)),
 
-                  GestureDetector(
-                    onTap: () => context.go('/forgot-password'),
-                    child: Text(
-                      "Passwort vergessen?",
-                      style: TextStyle(color: Colors.white54),
-                    ),
+                  _Link(
+                    "Passwort vergessen?",
+                        () => context.go('/forgot-password'),
+                    small: true,
                   ),
                 ],
               ),
@@ -95,20 +104,28 @@ class _Input extends StatelessWidget {
   final String hint;
   final TextEditingController controller;
   final bool obscure;
+  final TextInputType? type;
 
-  const _Input(this.hint, this.controller, {this.obscure = false});
+  const _Input(
+      this.hint,
+      this.controller, {
+        this.obscure = false,
+        this.type,
+      });
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
       obscureText: obscure,
+      keyboardType: type,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(color: Colors.white70),
+        hintStyle: const TextStyle(color: Colors.white60),
+        border: InputBorder.none,
         enabledBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.white30),
+          borderSide: BorderSide(color: Colors.white24),
         ),
       ),
     );
@@ -125,17 +142,40 @@ class _Button extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Opacity(
-        opacity: onTap == null ? 0.6 : 1,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 150),
+        opacity: onTap == null ? 0.5 : 1,
         child: Container(
           width: double.infinity,
-          height: s(52),
+          height: s(50),
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: kPrimaryRed,
-            borderRadius: BorderRadius.circular(s(30)),
+            borderRadius: BorderRadius.circular(s(28)),
           ),
           child: Text(text, style: const TextStyle(color: Colors.white)),
+        ),
+      ),
+    );
+  }
+}
+
+class _Link extends StatelessWidget {
+  final String text;
+  final VoidCallback onTap;
+  final bool small;
+
+  const _Link(this.text, this.onTap, {this.small = false});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Text(
+        text,
+        style: TextStyle(
+          color: Colors.white70,
+          fontSize: small ? 13 : 14,
         ),
       ),
     );
