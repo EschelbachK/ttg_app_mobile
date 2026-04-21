@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/token_storage.dart';
-import '../../features/auth/models/auth_response.dart';
 import '../../features/auth/models/user_model.dart';
 import 'auth_service.dart';
 
@@ -35,7 +34,38 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   final Ref ref;
 
-  AuthNotifier(this.ref) : super(const AuthState(isLoggedIn: false));
+  AuthNotifier(this.ref) : super(const AuthState(isLoggedIn: false)) {
+    init();
+  }
+
+  Future<void> init() async {
+    final storage = ref.read(tokenStorageProvider);
+
+    final access = await storage.getAccessToken();
+    final refresh = await storage.getRefreshToken();
+
+    if (refresh == null) {
+      state = const AuthState(isLoggedIn: false);
+      return;
+    }
+
+    try {
+      final res = await ref.read(authServiceProvider).refresh(refresh);
+
+      await storage.saveAccessToken(res.accessToken);
+      await storage.saveRefreshToken(res.refreshToken);
+
+      state = AuthState(
+        isLoggedIn: true,
+        accessToken: res.accessToken,
+        refreshToken: res.refreshToken,
+        user: res.user,
+      );
+    } catch (_) {
+      await storage.clear();
+      state = const AuthState(isLoggedIn: false);
+    }
+  }
 
   Future<void> login(String email, String password) async {
     final res = await ref.read(authServiceProvider).login(email, password);
@@ -68,6 +98,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
     state = state.copyWith(
       accessToken: res.accessToken,
+      refreshToken: res.refreshToken,
       user: res.user,
       isLoggedIn: true,
     );
