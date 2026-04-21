@@ -8,6 +8,8 @@ import '../../../../core/ui/ttg_background.dart';
 import '../../../../core/ui/ttg_leave_workout_dialog.dart';
 import '../../../../core/haptics/haptic_provider.dart';
 import '../../../../core/audio/sound_provider.dart';
+import '../../../../core/events/event_bus_provider.dart';
+import '../../../../core/events/workout_events.dart';
 
 import '../../providers/workout_provider.dart';
 import '../widgets/collapsible_exercise_block.dart';
@@ -27,11 +29,26 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
   late bool _showStartOverlay;
   bool _showFinishOverlay = false;
 
+  final _scroll = ScrollController();
+
   @override
   void initState() {
     super.initState();
+
     final s = ref.read(workoutProvider);
     _showStartOverlay = s.session != null && !s.isPaused;
+
+    ref.read(eventBusProvider).on<SetCompletedEvent>().listen((_) {
+      Future.delayed(const Duration(milliseconds: 250), () {
+        if (!_scroll.hasClients) return;
+
+        _scroll.animateTo(
+          _scroll.offset + 180,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOut,
+        );
+      });
+    });
   }
 
   Future<void> _exit(BuildContext c) async {
@@ -78,72 +95,79 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
         .toList();
 
     final maxRest = settings.restTimerSeconds;
-    final progress = maxRest == 0
-        ? 0.0
-        : (ctrl.restSeconds / maxRest).clamp(0.0, 1.0);
+    final progress =
+    maxRest == 0 ? 0.0 : (ctrl.restSeconds / maxRest).clamp(0.0, 1.0);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Stack(children: [
-        TtgBackground(
-          child: Stack(children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 90),
-              child: SafeArea(
-                top: false,
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  children: [
-                    for (final g in s.groups) ...[
-                      const SizedBox(height: 20),
-                      _Header(g.name),
-                      const SizedBox(height: 14),
-                      ...g.exercises.map((e) => Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: CollapsibleExerciseBlock(exercise: e),
-                      )),
-                    ],
-                    const SizedBox(height: 120),
-                  ],
+      body: Stack(
+        children: [
+          TtgBackground(
+            child: Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 90),
+                  child: SafeArea(
+                    top: false,
+                    child: ListView(
+                      controller: _scroll,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      children: [
+                        for (final g in s.groups) ...[
+                          const SizedBox(height: 20),
+                          _Header(g.name),
+                          const SizedBox(height: 14),
+                          ...g.exercises.map(
+                                (e) => Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: CollapsibleExerciseBlock(exercise: e),
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 120),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+                SafeArea(
+                  bottom: false,
+                  child: _TopBar(onBack: () => _exit(context)),
+                ),
+              ],
             ),
-            SafeArea(
-              bottom: false,
-              child: _TopBar(onBack: () => _exit(context)),
-            ),
-          ]),
-        ),
-
-        if (_showStartOverlay)
-          WorkoutStartOverlay(
-              onFinish: () => setState(() => _showStartOverlay = false)),
-
-        if (ctrl.restSeconds > 0)
-          _RestOverlay(
-            seconds: ctrl.restSeconds,
-            progress: progress,
-            onSkip: ctrl.stopRestTimer,
-            maxRest: maxRest,
-            onTick: (s) {
-              if (s == maxRest) haptic.light();
-              if (s <= 3 && s > 0) {
-                sound.playBeep();
-                haptic.medium();
-              }
-              if (s == 0) {
-                sound.playFinish();
-                haptic.heavy();
-              }
-            },
           ),
 
-        if (_showFinishOverlay)
-          WorkoutFinishOverlay(
-            completedMuscles: completed,
-            onDone: () => context.go('/workout/summary'),
-          ),
-      ]),
+          if (_showStartOverlay)
+            WorkoutStartOverlay(
+              onFinish: () => setState(() => _showStartOverlay = false),
+            ),
+
+          if (ctrl.restSeconds > 0)
+            _RestOverlay(
+              seconds: ctrl.restSeconds,
+              progress: progress,
+              onSkip: ctrl.stopRestTimer,
+              maxRest: maxRest,
+              onTick: (s) {
+                if (s == maxRest) haptic.light();
+                if (s <= 3 && s > 0) {
+                  sound.playBeep();
+                  haptic.medium();
+                }
+                if (s == 0) {
+                  sound.playFinish();
+                  haptic.heavy();
+                }
+              },
+            ),
+
+          if (_showFinishOverlay)
+            WorkoutFinishOverlay(
+              completedMuscles: completed,
+              onDone: () => context.go('/workout/summary'),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -265,7 +289,8 @@ class _TopBar extends StatelessWidget {
                 color: Colors.white.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.arrow_back, color: Colors.white, size: 18),
+              child:
+              const Icon(Icons.arrow_back, color: Colors.white, size: 18),
             ),
           ),
           const Spacer(),
