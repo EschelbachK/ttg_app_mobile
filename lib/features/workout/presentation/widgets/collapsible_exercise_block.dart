@@ -32,10 +32,14 @@ class _CollapsibleExerciseBlockState
     final sets = widget.exercise.sets;
     final allDone = sets.isNotEmpty && sets.every((s) => s.completed);
 
-    if (allDone &&
-        ref.read(workoutProvider.notifier).restSeconds > 0 &&
-        _expanded) {
+    final ctrl = ref.read(workoutProvider.notifier);
+
+    if (allDone && ctrl.restSeconds > 0 && _expanded) {
       setState(() => _expanded = false);
+    }
+
+    if (!allDone && !_expanded) {
+      setState(() => _expanded = true);
     }
   }
 
@@ -46,13 +50,21 @@ class _CollapsibleExerciseBlockState
 
     final allDone = sets.isNotEmpty && sets.every((s) => s.completed);
 
-    return Container(
+    final isActive =
+        sets.isEmpty || sets.any((s) => s.completed != true);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.04),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: allDone ? kPrimaryRed : Colors.white.withOpacity(0.08),
+          color: allDone
+              ? kPrimaryRed
+              : isActive
+              ? kPrimaryRed.withOpacity(0.5)
+              : Colors.white.withOpacity(0.08),
         ),
       ),
       child: Column(
@@ -78,10 +90,18 @@ class _CollapsibleExerciseBlockState
                         const SizedBox(width: 6),
                         Text(
                           e.name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
+                            shadows: isActive
+                                ? [
+                              Shadow(
+                                color: kPrimaryRed.withOpacity(0.6),
+                                blurRadius: 12,
+                              )
+                            ]
+                                : null,
                           ),
                         ),
                         const SizedBox(width: 6),
@@ -93,7 +113,8 @@ class _CollapsibleExerciseBlockState
                   allDone
                       ? const Row(
                     children: [
-                      Icon(Icons.check, color: kPrimaryRed, size: 16),
+                      Icon(Icons.check,
+                          color: kPrimaryRed, size: 16),
                       SizedBox(width: 4),
                       Text(
                         "Erledigt!",
