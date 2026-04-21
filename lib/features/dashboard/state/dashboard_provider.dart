@@ -5,7 +5,7 @@ import '../../../core/offline/offline_queue.dart';
 import '../../../core/offline/offline_action.dart';
 import '../../../core/offline/offline_cache.dart';
 import '../../../core/offline/cache_keys.dart';
-import '../../settings/application/settings_provider.dart';
+import '../../../core/settings/settings_controller.dart';
 import '../api/dashboard_api.dart';
 import '../models/exercise.dart';
 import '../models/training_folder.dart';
