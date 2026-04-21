@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/auth/auth_actions.dart';
 
 class DashboardTopBar extends ConsumerWidget implements PreferredSizeWidget {
   final int selectedTab;
@@ -31,16 +30,6 @@ class DashboardTopBar extends ConsumerWidget implements PreferredSizeWidget {
         selectedTab: selectedTab,
         onTabChanged: onTabChanged,
       ),
-      actions: [
-        TextButton.icon(
-          onPressed: () => AuthActions.logout(ref, context),
-          icon: const Icon(Icons.logout),
-          label: const Text("Logout"),
-          style: const ButtonStyle(
-            foregroundColor: MaterialStatePropertyAll(Colors.white70),
-          ),
-        ),
-      ],
     );
   }
 }
