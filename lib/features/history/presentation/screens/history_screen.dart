@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../workout/application/workout_history_store.dart';
+import '../../../workout/domain/workout_history_entry.dart';
 import '../../../workout/presentation/widgets/progress_chart.dart';
 import '../widgets/history_tile.dart';
 
@@ -15,12 +16,13 @@ class HistoryScreen extends ConsumerWidget {
 
     final t = Theme.of(context);
 
-    final exercise =
+    final selected =
     entries.isNotEmpty ? entries.first.exerciseName : null;
 
-    final filtered = exercise == null
-        ? <dynamic>[]
-        : entries.where((e) => e.exerciseName == exercise).toList();
+    final List<WorkoutHistoryEntry> filtered =
+    selected == null
+        ? []
+        : entries.where((e) => e.exerciseName == selected).toList();
 
     return Scaffold(
       backgroundColor: t.colorScheme.surface,
@@ -28,10 +30,11 @@ class HistoryScreen extends ConsumerWidget {
         child: sessions.isEmpty
             ? const _Empty()
             : ListView(
-          padding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(
+              horizontal: 16, vertical: 12),
           children: [
-            ProgressChart(history: filtered),
+            if (filtered.isNotEmpty)
+              ProgressChart(history: filtered),
             const SizedBox(height: 20),
             ...sessions.map((s) => HistoryTile(session: s)),
           ],
