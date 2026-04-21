@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/ui/privacy_webview.dart';
+import '../../../../core/auth/auth_provider.dart';
 import 'settings_tile.dart';
 
-class AccountExpand extends StatefulWidget {
+class AccountExpand extends ConsumerStatefulWidget {
   const AccountExpand({super.key});
 
   @override
-  State<AccountExpand> createState() => _AccountExpandState();
+  ConsumerState<AccountExpand> createState() => _AccountExpandState();
 }
 
-class _AccountExpandState extends State<AccountExpand> {
+class _AccountExpandState extends ConsumerState<AccountExpand> {
   int open = -1;
 
   void toggle(int i) => setState(() => open = open == i ? -1 : i);
@@ -18,6 +20,8 @@ class _AccountExpandState extends State<AccountExpand> {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context);
+    final auth = ref.watch(authProvider);
+    final user = auth.user;
 
     final textStyle = t.textTheme.bodyMedium?.copyWith(
       color: Colors.white.withOpacity(0.7),
@@ -26,6 +30,8 @@ class _AccountExpandState extends State<AccountExpand> {
 
     return Column(
       children: [
+        if (user != null) _userHeader(user.username, user.email),
+
         SettingsTile(
           icon: Icons.lock,
           title: 'Passwort',
@@ -49,7 +55,43 @@ class _AccountExpandState extends State<AccountExpand> {
           trailing: Icon(open == 2 ? Icons.expand_less : Icons.expand_more),
         ),
         if (open == 2) _wrap(_delete(textStyle)),
+
+        SettingsTile(
+          icon: Icons.logout,
+          title: 'Logout',
+          onTap: () async {
+            await ref.read(authProvider.notifier).logout();
+          },
+        ),
       ],
+    );
+  }
+
+  Widget _userHeader(String name, String email) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        color: Colors.white.withOpacity(0.05),
+      ),
+      child: Row(
+        children: [
+          const CircleAvatar(radius: 22, child: Icon(Icons.person)),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(name,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w700, color: Colors.white)),
+              Text(email,
+                  style: TextStyle(
+                      color: Colors.white.withOpacity(0.6), fontSize: 12)),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
