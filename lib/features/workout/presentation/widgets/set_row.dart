@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/settings/settings_controller.dart';
 import '../../providers/workout_provider.dart';
 
@@ -37,26 +38,41 @@ class _SetRowState extends ConsumerState<SetRow> {
     });
   }
 
+  void _update({double? w, int? r, bool? c}) {
+    if (_locked) return;
+    _locked = true;
+
+    ref.read(workoutProvider.notifier).updateSet(
+      exerciseId: widget.exerciseId,
+      setId: widget.setId,
+      weight: w ?? widget.weight,
+      reps: r ?? widget.reps,
+      completed: c ?? widget.completed,
+    );
+
+    _unlock();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final controller = ref.read(workoutProvider.notifier);
+    final ctrl = ref.read(workoutProvider.notifier);
+    final state = ref.watch(workoutProvider);
     final keyboard = ref.watch(settingsProvider).keyboardMode;
+
     final isCompleted = widget.completed == true;
 
-    void update({double? w, int? r, bool? c}) {
-      if (_locked) return;
-      _locked = true;
+    final exercise = state.session?.groups
+        .expand((g) => g.exercises)
+        .firstWhere((e) => e.id == widget.exerciseId);
 
-      controller.updateSet(
-        exerciseId: widget.exerciseId,
-        setId: widget.setId,
-        weight: w ?? widget.weight,
-        reps: r ?? widget.reps,
-        completed: c ?? widget.completed,
-      );
+    final suggestion =
+    exercise != null ? ctrl.getSuggestion(exercise) : null;
 
-      _unlock();
-    }
+    final weightDiff =
+    suggestion != null ? (suggestion.weight - widget.weight) : null;
+
+    final repsDiff =
+    suggestion != null ? (suggestion.reps - widget.reps) : null;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -76,6 +92,7 @@ class _SetRowState extends ConsumerState<SetRow> {
               style: const TextStyle(color: Colors.white38, fontSize: 12),
             ),
           ),
+
           Expanded(
             child: Row(
               children: [
@@ -85,9 +102,9 @@ class _SetRowState extends ConsumerState<SetRow> {
                     isDecimal: true,
                     suffix: 'KG',
                     keyboard: keyboard,
-                    onChanged: (v) => update(w: v),
-                    onMinus: () => update(w: widget.weight - 2.5),
-                    onPlus: () => update(w: widget.weight + 2.5),
+                    onChanged: (v) => _update(w: v),
+                    onMinus: () => _update(w: widget.weight - 2.5),
+                    onPlus: () => _update(w: widget.weight + 2.5),
                   ),
                 ),
                 Expanded(
@@ -96,19 +113,44 @@ class _SetRowState extends ConsumerState<SetRow> {
                     isDecimal: false,
                     suffix: 'WDH',
                     keyboard: keyboard,
-                    onChanged: (v) => update(r: v.toInt()),
-                    onMinus: () => update(r: widget.reps - 1),
-                    onPlus: () => update(r: widget.reps + 1),
+                    onChanged: (v) => _update(r: v.toInt()),
+                    onMinus: () => _update(r: widget.reps - 1),
+                    onPlus: () => _update(r: widget.reps + 1),
                   ),
                 ),
               ],
             ),
           ),
+
+          if (!isCompleted &&
+              suggestion != null &&
+              (weightDiff != 0 || repsDiff != 0))
+            Container(
+              margin: const EdgeInsets.only(right: 6),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+              decoration: BoxDecoration(
+                color: kPrimaryRed.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: kPrimaryRed.withOpacity(0.4)),
+              ),
+              child: Text(
+                weightDiff != null && weightDiff != 0
+                    ? "+${weightDiff.toStringAsFixed(1)}kg"
+                    : "+${repsDiff} reps",
+                style: const TextStyle(
+                  color: kPrimaryRed,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+
           GestureDetector(
             onTap: () {
               if (_locked) return;
               HapticFeedback.mediumImpact();
-              update(c: !isCompleted);
+              _update(c: !isCompleted);
             },
             child: Container(
               width: 30,
@@ -154,12 +196,6 @@ class _Stepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = TextEditingController(
-      text: isDecimal
-          ? value.toStringAsFixed(1)
-          : value.toInt().toString(),
-    );
-
     Widget btn(IconData icon, VoidCallback onTap) => GestureDetector(
       onTap: onTap,
       child: Container(
@@ -177,36 +213,35 @@ class _Stepper extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         btn(Icons.remove, onMinus),
-
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 6),
           child: keyboard
               ? SizedBox(
             width: 50,
             child: TextField(
-              controller: controller,
+              controller: TextEditingController(
+                text: isDecimal
+                    ? value.toStringAsFixed(1)
+                    : value.toInt().toString(),
+              ),
               keyboardType: TextInputType.numberWithOptions(
                   decimal: isDecimal),
               textAlign: TextAlign.center,
               style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.w600),
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600),
               inputFormatters: isDecimal
-                  ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))]
+                  ? [
+                FilteringTextInputFormatter.allow(
+                    RegExp(r'^\d*\.?\d*'))
+              ]
                   : [FilteringTextInputFormatter.digitsOnly],
               onChanged: (val) {
                 final parsed = double.tryParse(val);
                 if (parsed != null) onChanged(parsed);
               },
-              onEditingComplete: () {
-                if (isDecimal) {
-                  final parsed = double.tryParse(controller.text);
-                  if (parsed != null) {
-                    controller.text = parsed.toStringAsFixed(1);
-                    onChanged(parsed);
-                  }
-                }
-                FocusScope.of(context).unfocus();
-              },
+              onEditingComplete: () =>
+                  FocusScope.of(context).unfocus(),
             ),
           )
               : Row(
@@ -216,7 +251,8 @@ class _Stepper extends StatelessWidget {
                     ? value.toStringAsFixed(1)
                     : value.toInt().toString(),
                 style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.w600),
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600),
               ),
               const SizedBox(width: 4),
               Text(
@@ -230,7 +266,6 @@ class _Stepper extends StatelessWidget {
             ],
           ),
         ),
-
         btn(Icons.add, onPlus),
       ],
     );
