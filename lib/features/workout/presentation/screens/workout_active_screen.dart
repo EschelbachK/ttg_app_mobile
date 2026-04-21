@@ -55,9 +55,9 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(workoutProvider);
     final ctrl = ref.read(workoutProvider.notifier);
-    final haptic = ref.read(hapticProvider);
+    final settings = ref.watch(settingsProvider);
     final sound = ref.read(soundProvider);
-    final settings = ref.read(settingsProvider);
+    final haptic = ref.read(hapticProvider);
 
     final s = state.session;
 
@@ -72,14 +72,15 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
       );
     }
 
-    final completedMuscleNames = s.groups
-        .where((g) => g.exercises.every((e) =>
-        e.sets.every((set) => set.completed == true)))
+    final completed = s.groups
+        .where((g) => g.exercises.every((e) => e.sets.every((s) => s.completed)))
         .map((g) => g.name)
         .toList();
 
     final maxRest = settings.restTimerSeconds;
-    final progress = (ctrl.restSeconds / maxRest).clamp(0.0, 1.0);
+    final progress = maxRest == 0
+        ? 0.0
+        : (ctrl.restSeconds / maxRest).clamp(0.0, 1.0);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -95,7 +96,7 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
                   children: [
                     for (final g in s.groups) ...[
                       const SizedBox(height: 20),
-                      _PremiumGroupHeader(title: g.name),
+                      _Header(g.name),
                       const SizedBox(height: 14),
                       ...g.exercises.map((e) => Padding(
                         padding: const EdgeInsets.only(bottom: 16),
@@ -123,7 +124,9 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
             seconds: ctrl.restSeconds,
             progress: progress,
             onSkip: ctrl.stopRestTimer,
+            maxRest: maxRest,
             onTick: (s) {
+              if (s == maxRest) haptic.light();
               if (s <= 3 && s > 0) {
                 sound.playBeep();
                 haptic.medium();
@@ -137,7 +140,7 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
 
         if (_showFinishOverlay)
           WorkoutFinishOverlay(
-            completedMuscles: completedMuscleNames,
+            completedMuscles: completed,
             onDone: () => context.go('/workout/summary'),
           ),
       ]),
@@ -149,12 +152,14 @@ class _RestOverlay extends StatefulWidget {
   final int seconds;
   final double progress;
   final VoidCallback onSkip;
+  final int maxRest;
   final Function(int) onTick;
 
   const _RestOverlay({
     required this.seconds,
     required this.progress,
     required this.onSkip,
+    required this.maxRest,
     required this.onTick,
   });
 
@@ -165,6 +170,7 @@ class _RestOverlay extends StatefulWidget {
 class _RestOverlayState extends State<_RestOverlay>
     with SingleTickerProviderStateMixin {
   late AnimationController _pulse;
+  int? _last;
 
   @override
   void initState() {
@@ -178,7 +184,10 @@ class _RestOverlayState extends State<_RestOverlay>
   @override
   void didUpdateWidget(covariant _RestOverlay oldWidget) {
     super.didUpdateWidget(oldWidget);
-    widget.onTick(widget.seconds);
+    if (_last != widget.seconds) {
+      _last = widget.seconds;
+      widget.onTick(widget.seconds);
+    }
   }
 
   @override
@@ -256,8 +265,7 @@ class _TopBar extends StatelessWidget {
                 color: Colors.white.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child:
-              const Icon(Icons.arrow_back, color: Colors.white, size: 18),
+              child: const Icon(Icons.arrow_back, color: Colors.white, size: 18),
             ),
           ),
           const Spacer(),
@@ -278,44 +286,36 @@ class _TopBar extends StatelessWidget {
   }
 }
 
-class _PremiumGroupHeader extends StatelessWidget {
+class _Header extends StatelessWidget {
   final String title;
 
-  const _PremiumGroupHeader({required this.title});
+  const _Header(this.title);
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          height: 1.5,
-          margin: const EdgeInsets.symmetric(horizontal: 20),
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.transparent, kPrimaryRed, Colors.transparent],
-            ),
-          ),
+    return Column(children: [
+      _line(),
+      const SizedBox(height: 12),
+      Text(
+        title.toUpperCase(),
+        style: const TextStyle(
+          color: kPrimaryRed,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 3,
         ),
-        const SizedBox(height: 12),
-        Text(
-          title.toUpperCase(),
-          style: const TextStyle(
-            color: kPrimaryRed,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 3,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Container(
-          height: 1.5,
-          margin: const EdgeInsets.symmetric(horizontal: 20),
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.transparent, kPrimaryRed, Colors.transparent],
-            ),
-          ),
-        ),
-      ],
-    );
+      ),
+      const SizedBox(height: 12),
+      _line(),
+    ]);
   }
+
+  Widget _line() => Container(
+    height: 1.5,
+    margin: const EdgeInsets.symmetric(horizontal: 20),
+    decoration: const BoxDecoration(
+      gradient: LinearGradient(
+        colors: [Colors.transparent, kPrimaryRed, Colors.transparent],
+      ),
+    ),
+  );
 }
