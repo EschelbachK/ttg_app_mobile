@@ -31,19 +31,34 @@ class SettingsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = Theme.of(context);
     final isDark = t.brightness == Brightness.dark;
+    final active = isSwitch && value == true;
+
+    final borderColor = active
+        ? t.colorScheme.primary.withOpacity(0.5)
+        : isDark
+        ? Colors.white.withOpacity(0.06)
+        : Colors.black.withOpacity(0.06);
+
+    final tileColor =
+    isDark ? Colors.white.withOpacity(0.05) : Colors.white;
+
+    final iconColor =
+    active ? t.colorScheme.primary : t.iconTheme.color;
+
+    final subtitleColor = isDark
+        ? Colors.white.withOpacity(0.5)
+        : Colors.black.withOpacity(0.6);
+
+    final expandColor = isDark
+        ? Colors.white.withOpacity(0.4)
+        : Colors.black.withOpacity(0.4);
 
     Widget content = Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(18),
-        color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
-        border: Border.all(
-          color: isSwitch && value == true
-              ? t.colorScheme.primary.withOpacity(0.5)
-              : (isDark
-              ? Colors.white.withOpacity(0.06)
-              : Colors.black.withOpacity(0.06)),
-        ),
+        color: tileColor,
+        border: Border.all(color: borderColor),
         boxShadow: [
           BoxShadow(
             color: isDark
@@ -64,15 +79,10 @@ class SettingsTile extends StatelessWidget {
                   ? Colors.white.withOpacity(0.04)
                   : Colors.black.withOpacity(0.04),
             ),
-            child: Icon(
-              icon,
-              size: 20,
-              color: isSwitch && value == true
-                  ? t.colorScheme.primary
-                  : t.iconTheme.color,
-            ),
+            child: Icon(icon, size: 20, color: iconColor),
           ),
           const SizedBox(width: 12),
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,14 +93,7 @@ class SettingsTile extends StatelessWidget {
                 if (subtitle != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 3),
-                    child: Text(
-                      subtitle!,
-                      style: t.textTheme.bodySmall?.copyWith(
-                        color: isDark
-                            ? Colors.white.withOpacity(0.5)
-                            : Colors.black.withOpacity(0.6),
-                      ),
-                    ),
+                    child: Text(subtitle!, style: t.textTheme.bodySmall?.copyWith(color: subtitleColor)),
                   ),
               ],
             ),
@@ -98,47 +101,14 @@ class SettingsTile extends StatelessWidget {
 
           if (trailing != null) trailing!,
 
-          if (isSwitch)
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () => onChanged?.call(!value!),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: 46,
-                height: 26,
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: value!
-                      ? t.colorScheme.primary
-                      : (isDark
-                      ? Colors.white.withOpacity(0.15)
-                      : Colors.black.withOpacity(0.1)),
-                ),
-                child: Align(
-                  alignment: value!
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
-                  child: Container(
-                    width: 20,
-                    height: 20,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: t.colorScheme.onPrimary,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+          if (isSwitch) _switch(t, isDark),
 
           if (expandable)
             Padding(
               padding: const EdgeInsets.only(left: 8),
               child: Icon(
                 isExpanded ? Icons.expand_less : Icons.expand_more,
-                color: isDark
-                    ? Colors.white.withOpacity(0.4)
-                    : Colors.black.withOpacity(0.4),
+                color: expandColor,
               ),
             ),
         ],
@@ -147,7 +117,7 @@ class SettingsTile extends StatelessWidget {
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
-      onTap: onTap, // 🔥 DAS IST DER FIX
+      onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         margin: const EdgeInsets.only(bottom: 10),
@@ -160,6 +130,41 @@ class SettingsTile extends StatelessWidget {
           ),
         )
             : content,
+      ),
+    );
+  }
+
+  Widget _switch(ThemeData t, bool isDark) {
+    final active = value == true;
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => onChanged?.call(!value!),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 46,
+        height: 26,
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: active
+              ? t.colorScheme.primary
+              : isDark
+              ? Colors.white.withOpacity(0.15)
+              : Colors.black.withOpacity(0.1),
+        ),
+        child: Align(
+          alignment:
+          active ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(
+            width: 20,
+            height: 20,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: t.colorScheme.onPrimary,
+            ),
+          ),
+        ),
       ),
     );
   }
