@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../domain/workout_session.dart';
 import '../../providers/workout_provider.dart';
 import 'set_row.dart';
@@ -29,23 +30,21 @@ class _CollapsibleExerciseBlockState
     super.didUpdateWidget(oldWidget);
 
     final sets = widget.exercise.sets;
-    final allDone =
-        sets.isNotEmpty && sets.every((s) => s.completed == true);
+    final allDone = sets.isNotEmpty && sets.every((s) => s.completed);
 
-    final ctrl = ref.read(workoutProvider.notifier);
-
-    if (allDone && ctrl.restSeconds > 0 && _expanded) {
+    if (allDone &&
+        ref.read(workoutProvider.notifier).restSeconds > 0 &&
+        _expanded) {
       setState(() => _expanded = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final exercise = widget.exercise;
-    final sets = exercise.sets;
+    final e = widget.exercise;
+    final sets = e.sets;
 
-    final allDone =
-        sets.isNotEmpty && sets.every((s) => s.completed == true);
+    final allDone = sets.isNotEmpty && sets.every((s) => s.completed);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -59,9 +58,7 @@ class _CollapsibleExerciseBlockState
       child: Column(
         children: [
           GestureDetector(
-            onTap: () {
-              setState(() => _expanded = !_expanded);
-            },
+            onTap: () => setState(() => _expanded = !_expanded),
             child: Padding(
               padding: const EdgeInsets.all(14),
               child: Row(
@@ -80,7 +77,7 @@ class _CollapsibleExerciseBlockState
                         Container(width: 12, height: 2, color: kPrimaryRed),
                         const SizedBox(width: 6),
                         Text(
-                          exercise.name,
+                          e.name,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
@@ -93,50 +90,45 @@ class _CollapsibleExerciseBlockState
                     ),
                   ),
                   const SizedBox(width: 8),
-                  if (allDone)
-                    Row(
-                      children: const [
-                        Icon(Icons.check, color: kPrimaryRed, size: 16),
-                        SizedBox(width: 4),
-                        Text(
-                          "Erledigt!",
-                          style: TextStyle(
-                            color: kPrimaryRed,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
+                  allDone
+                      ? const Row(
+                    children: [
+                      Icon(Icons.check, color: kPrimaryRed, size: 16),
+                      SizedBox(width: 4),
+                      Text(
+                        "Erledigt!",
+                        style: TextStyle(
+                          color: kPrimaryRed,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
                         ),
-                      ],
-                    )
-                  else
-                    const SizedBox(width: 60),
+                      ),
+                    ],
+                  )
+                      : const SizedBox(width: 60),
                 ],
               ),
             ),
           ),
+
           if (_expanded)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14),
               child: Column(
                 children: [
-                  if (sets.isNotEmpty)
-                    ...sets.asMap().entries.map((entry) {
-                      final set = entry.value;
-
-                      return SetRow(
-                        key: ValueKey(set.id),
-                        index: entry.key,
-                        exerciseId: exercise.id,
-                        setId: set.id,
-                        weight: set.weight,
-                        reps: set.reps,
-                        completed: set.completed,
-                      );
-                    }),
-                  const SizedBox(height: 4),
-                  AddSetButton(
-                    exerciseId: exercise.id,
+                  ...sets.asMap().entries.map(
+                        (entry) => SetRow(
+                      key: ValueKey(entry.value.id),
+                      index: entry.key,
+                      exerciseId: e.id,
+                      setId: entry.value.id,
+                      weight: entry.value.weight,
+                      reps: entry.value.reps,
+                      completed: entry.value.completed,
+                    ),
                   ),
+                  const SizedBox(height: 4),
+                  AddSetButton(exerciseId: e.id),
                   const SizedBox(height: 10),
                 ],
               ),
