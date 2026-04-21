@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../settings/settings_controller.dart';
 import 'sync_state_provider.dart';
 import 'sync_state.dart';
 
@@ -9,27 +10,35 @@ class SyncStatusBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final status = ref.watch(syncStateProvider);
+    final settings = ref.watch(settingsProvider);
 
-    if (status == SyncStatus.idle) return const SizedBox.shrink();
+    if (!settings.syncEnabled && !settings.offlineMode) {
+      return const SizedBox.shrink();
+    }
 
     String text;
     IconData icon;
 
-    switch (status) {
-      case SyncStatus.syncing:
-        text = "Synchronisiere...";
-        icon = Icons.sync;
-        break;
-      case SyncStatus.success:
-        text = "Synchronisiert";
-        icon = Icons.check_circle;
-        break;
-      case SyncStatus.error:
-        text = "Sync fehlgeschlagen";
-        icon = Icons.error;
-        break;
-      default:
-        return const SizedBox.shrink();
+    if (settings.offlineMode) {
+      text = "Offline-Modus aktiv";
+      icon = Icons.wifi_off;
+    } else {
+      switch (status) {
+        case SyncStatus.syncing:
+          text = "Synchronisiere...";
+          icon = Icons.sync;
+          break;
+        case SyncStatus.success:
+          text = "Synchronisiert";
+          icon = Icons.check_circle;
+          break;
+        case SyncStatus.error:
+          text = "Sync fehlgeschlagen";
+          icon = Icons.error;
+          break;
+        default:
+          return const SizedBox.shrink();
+      }
     }
 
     return AnimatedContainer(
