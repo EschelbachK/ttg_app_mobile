@@ -30,6 +30,7 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
   bool _showFinishOverlay = false;
 
   final _scroll = ScrollController();
+  String? _lastExerciseId;
 
   @override
   void initState() {
@@ -40,13 +41,29 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
 
     ref.read(eventBusProvider).on<SetCompletedEvent>().listen((_) {
       Future.delayed(const Duration(milliseconds: 250), () {
-        if (!_scroll.hasClients) return;
+        final state = ref.read(workoutProvider);
+        final session = state.session;
+        if (session == null || !_scroll.hasClients) return;
 
-        _scroll.animateTo(
-          _scroll.offset + 180,
-          duration: const Duration(milliseconds: 400),
-          curve: Curves.easeOut,
-        );
+        for (final g in session.groups) {
+          for (final e in g.exercises) {
+            final done = e.sets.isNotEmpty &&
+                e.sets.every((s) => s.completed);
+
+            if (!done) {
+              if (_lastExerciseId == e.id) return;
+
+              _lastExerciseId = e.id;
+
+              _scroll.animateTo(
+                _scroll.offset + 200,
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeOut,
+              );
+              return;
+            }
+          }
+        }
       });
     });
   }
@@ -120,7 +137,8 @@ class _State extends ConsumerState<WorkoutActiveScreen> {
                           ...g.exercises.map(
                                 (e) => Padding(
                               padding: const EdgeInsets.only(bottom: 16),
-                              child: CollapsibleExerciseBlock(exercise: e),
+                              child:
+                              CollapsibleExerciseBlock(exercise: e),
                             ),
                           ),
                         ],
