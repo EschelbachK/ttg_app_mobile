@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../settings/application/settings_provider.dart';
+import '../../../../core/settings/settings_controller.dart';
 import '../../providers/workout_provider.dart';
 
 const kPrimaryRed = Color(0xFFE10600);
