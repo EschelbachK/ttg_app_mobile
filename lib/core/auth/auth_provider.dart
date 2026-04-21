@@ -5,12 +5,14 @@ import 'auth_service.dart';
 
 class AuthState {
   final bool isLoggedIn;
+  final bool isInitialized;
   final String? accessToken;
   final String? refreshToken;
   final UserModel? user;
 
   const AuthState({
     required this.isLoggedIn,
+    required this.isInitialized,
     this.accessToken,
     this.refreshToken,
     this.user,
@@ -18,12 +20,14 @@ class AuthState {
 
   AuthState copyWith({
     bool? isLoggedIn,
+    bool? isInitialized,
     String? accessToken,
     String? refreshToken,
     UserModel? user,
   }) {
     return AuthState(
       isLoggedIn: isLoggedIn ?? this.isLoggedIn,
+      isInitialized: isInitialized ?? this.isInitialized,
       accessToken: accessToken ?? this.accessToken,
       refreshToken: refreshToken ?? this.refreshToken,
       user: user ?? this.user,
@@ -34,18 +38,20 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   final Ref ref;
 
-  AuthNotifier(this.ref) : super(const AuthState(isLoggedIn: false)) {
+  AuthNotifier(this.ref)
+      : super(const AuthState(isLoggedIn: false, isInitialized: false)) {
     init();
   }
 
   Future<void> init() async {
     final storage = ref.read(tokenStorageProvider);
-
-    final access = await storage.getAccessToken();
     final refresh = await storage.getRefreshToken();
 
     if (refresh == null) {
-      state = const AuthState(isLoggedIn: false);
+      state = const AuthState(
+        isLoggedIn: false,
+        isInitialized: true,
+      );
       return;
     }
 
@@ -57,13 +63,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
       state = AuthState(
         isLoggedIn: true,
+        isInitialized: true,
         accessToken: res.accessToken,
         refreshToken: res.refreshToken,
         user: res.user,
       );
     } catch (_) {
       await storage.clear();
-      state = const AuthState(isLoggedIn: false);
+      state = const AuthState(
+        isLoggedIn: false,
+        isInitialized: true,
+      );
     }
   }
 
@@ -76,6 +86,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
     state = AuthState(
       isLoggedIn: true,
+      isInitialized: true,
       accessToken: res.accessToken,
       refreshToken: res.refreshToken,
       user: res.user,
@@ -84,7 +95,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> logout() async {
     await ref.read(tokenStorageProvider).clear();
-    state = const AuthState(isLoggedIn: false);
+    state = const AuthState(
+      isLoggedIn: false,
+      isInitialized: true,
+    );
   }
 
   Future<void> refreshToken() async {
