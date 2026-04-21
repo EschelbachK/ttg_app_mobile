@@ -2,7 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/ui/privacy_webview.dart';
-import '../../application/settings_provider.dart';
+import '../../../../core/settings/settings_controller.dart';
+import '../../../../core/settings/settings_state.dart';
 
 Widget _sheet(BuildContext c, Widget child) {
   return Padding(
@@ -74,7 +75,7 @@ Widget _input(String hint) {
   );
 }
 
-void showFontScaleSheet(BuildContext c, SettingsState s, SettingsNotifier n) {
+void showFontScaleSheet(BuildContext c, SettingsState s, SettingsController n) {
   double temp = s.fontScale;
 
   showModalBottomSheet(
@@ -191,5 +192,4 @@ void showDeleteAccountSheet(BuildContext c) {
       ),
     ),
   );
-
 }
