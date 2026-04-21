@@ -24,14 +24,19 @@ class ExerciseTile extends ConsumerStatefulWidget {
 
 class _ExerciseTileState extends ConsumerState<ExerciseTile> {
   bool open = false;
-  int? dragging;
 
-  void _updateExercise(Exercise updated) {
+  void _update(Exercise updated) {
     setState(() {
       widget.exercise.sets
         ..clear()
         ..addAll(updated.sets);
     });
+  }
+
+  void _set(Exercise e, int i, double w, int r) {
+    final list = [...e.sets];
+    list[i] = ExerciseSet(weight: w, reps: r);
+    _update(e.copyWith(sets: list));
   }
 
   @override
@@ -103,18 +108,18 @@ class _ExerciseTileState extends ConsumerState<ExerciseTile> {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       itemCount: e.sets.length,
-                      onReorder: (oldIndex, newIndex) {
-                        if (newIndex > oldIndex) newIndex--;
+                      onReorder: (o, n) {
+                        if (n > o) n--;
                         final list = [...e.sets];
-                        final item = list.removeAt(oldIndex);
-                        list.insert(newIndex, item);
-                        _updateExercise(e.copyWith(sets: list));
+                        final item = list.removeAt(o);
+                        list.insert(n, item);
+                        _update(e.copyWith(sets: list));
                       },
                       itemBuilder: (_, i) {
                         final s = e.sets[i];
 
                         return Padding(
-                          key: ValueKey("${s.hashCode}-$i"),
+                          key: ValueKey("$i-${s.hashCode}"),
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
@@ -136,21 +141,9 @@ class _ExerciseTileState extends ConsumerState<ExerciseTile> {
                                           s.weight,
                                           "KG",
                                           keyboard,
-                                              (val) {
-                                            final updated = [...e.sets];
-                                            updated[i] = ExerciseSet(weight: val, reps: s.reps);
-                                            _updateExercise(e.copyWith(sets: updated));
-                                          },
-                                              () {
-                                            final updated = [...e.sets];
-                                            updated[i] = ExerciseSet(weight: s.weight - 1, reps: s.reps);
-                                            _updateExercise(e.copyWith(sets: updated));
-                                          },
-                                              () {
-                                            final updated = [...e.sets];
-                                            updated[i] = ExerciseSet(weight: s.weight + 1, reps: s.reps);
-                                            _updateExercise(e.copyWith(sets: updated));
-                                          },
+                                              (v) => _set(e, i, v, s.reps),
+                                              () => _set(e, i, s.weight - 1, s.reps),
+                                              () => _set(e, i, s.weight + 1, s.reps),
                                         ),
                                       ),
                                       const SizedBox(width: 6),
@@ -159,21 +152,9 @@ class _ExerciseTileState extends ConsumerState<ExerciseTile> {
                                           s.reps.toDouble(),
                                           "WDH",
                                           keyboard,
-                                              (val) {
-                                            final updated = [...e.sets];
-                                            updated[i] = ExerciseSet(weight: s.weight, reps: val.toInt());
-                                            _updateExercise(e.copyWith(sets: updated));
-                                          },
-                                              () {
-                                            final updated = [...e.sets];
-                                            updated[i] = ExerciseSet(weight: s.weight, reps: s.reps - 1);
-                                            _updateExercise(e.copyWith(sets: updated));
-                                          },
-                                              () {
-                                            final updated = [...e.sets];
-                                            updated[i] = ExerciseSet(weight: s.weight, reps: s.reps + 1);
-                                            _updateExercise(e.copyWith(sets: updated));
-                                          },
+                                              (v) => _set(e, i, s.weight, v.toInt()),
+                                              () => _set(e, i, s.weight, s.reps - 1),
+                                              () => _set(e, i, s.weight, s.reps + 1),
                                         ),
                                       ),
                                     ],
@@ -181,11 +162,11 @@ class _ExerciseTileState extends ConsumerState<ExerciseTile> {
                                 ),
 
                                 const SizedBox(width: 6),
+
                                 GestureDetector(
                                   onTap: () {
-                                    final updated = [...e.sets];
-                                    updated.removeAt(i);
-                                    _updateExercise(e.copyWith(sets: updated));
+                                    final list = [...e.sets]..removeAt(i);
+                                    _update(e.copyWith(sets: list));
                                   },
                                   child: const Icon(Icons.close, color: Colors.white38, size: 18),
                                 ),
@@ -217,17 +198,15 @@ class _ExerciseTileState extends ConsumerState<ExerciseTile> {
       ) {
     if (keyboard) {
       return TextFormField(
-        initialValue:
-        unit == "KG" ? v.toStringAsFixed(1) : v.toInt().toString(),
-        keyboardType: TextInputType.number,
+        initialValue: unit == "KG" ? v.toStringAsFixed(1) : v.toInt().toString(),
+        keyboardType: TextInputType.numberWithOptions(decimal: unit == "KG"),
         textAlign: TextAlign.center,
         style: const TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          suffixText: unit,
-          border: InputBorder.none,
-        ),
+        decoration: const InputDecoration(border: InputBorder.none),
+        inputFormatters: unit == "KG"
+            ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))]
+            : [FilteringTextInputFormatter.digitsOnly],
         onChanged: (val) {
-          if (val.isEmpty) return;
           final parsed = double.tryParse(val);
           if (parsed != null) onChanged(parsed);
         },
@@ -260,10 +239,7 @@ class _ExerciseTileState extends ConsumerState<ExerciseTile> {
           borderRadius: BorderRadius.circular(8),
         ),
         child: Center(
-          child: Text(
-            t,
-            style: const TextStyle(color: Colors.white),
-          ),
+          child: Text(t, style: const TextStyle(color: Colors.white)),
         ),
       ),
     );
