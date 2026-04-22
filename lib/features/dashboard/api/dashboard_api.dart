@@ -48,14 +48,29 @@ class DashboardApi {
   Future<void> archiveTrainingPlan(String planId) =>
       dio.post('/training-plans/$planId/archive');
 
-  Future<void> restoreTrainingPlan(String id) =>
-      dio.patch('/training-plans/$id', data: {'archived': false});
+  Future<void> restoreTrainingPlan(String id) async {
+    await dio.post('/training-plans/$id/restore');
+  }
 
   Future<void> updateTrainingPlanOrder(String planId, int order) =>
       dio.patch(
         '/training-plans/$planId/order',
         data: {'order': order},
       );
+
+  Future<void> updateExercise({
+    required String planId,
+    required String folderId,
+    required String exerciseId,
+    required List<Map<String, dynamic>> sets,
+  }) async {
+    await dio.put(
+      '/training-plans/$planId/folders/$folderId/exercises/$exerciseId',
+      data: {
+        'sets': sets,
+      },
+    );
+  }
 
   Future<List<dynamic>> getFolders(String planId) =>
       _getList('/training-plans/$planId/folders');
@@ -101,7 +116,7 @@ class DashboardApi {
       dio.post('/training-folders/$folderId/archive');
 
   Future<void> restoreFolder(String folderId) =>
-      dio.patch('/training-folders/$folderId/restore');
+      dio.post('/training-folders/$folderId/restore');
 
   Future<List<dynamic>> getExercises({
     required String planId,

@@ -84,7 +84,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await storage.saveAccessToken(res.accessToken);
     await storage.saveRefreshToken(res.refreshToken);
 
-    state = AuthState(
+    state = state.copyWith(
       isLoggedIn: true,
       isInitialized: true,
       accessToken: res.accessToken,

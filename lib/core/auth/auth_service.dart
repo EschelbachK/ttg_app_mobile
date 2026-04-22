@@ -1,15 +1,14 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/auth/models/auth_response.dart';
-import '../network/dio_provider.dart';
+import '../network/api_client.dart';
 
 class AuthService {
-  final Dio dio;
+  final ApiClient api;
 
-  AuthService(this.dio);
+  AuthService(this.api);
 
   Future<AuthResponse> login(String email, String password) async {
-    final res = await dio.post('/auth/login', data: {
+    final res = await api.post('/auth/login', data: {
       'email': email,
       'password': password,
     });
@@ -17,14 +16,14 @@ class AuthService {
   }
 
   Future<AuthResponse> refresh(String refreshToken) async {
-    final res = await dio.post('/auth/refresh', data: {
+    final res = await api.post('/auth/refresh', data: {
       'refreshToken': refreshToken,
     });
     return AuthResponse.fromJson(res.data);
   }
 
   Future<void> register(String email, String username, String password) async {
-    await dio.post('/auth/register', data: {
+    await api.post('/auth/register', data: {
       'email': email,
       'username': username,
       'password': password,
@@ -32,13 +31,13 @@ class AuthService {
   }
 
   Future<void> forgotPassword(String email) async {
-    await dio.post('/auth/password/forgot', queryParameters: {
+    await api.post('/auth/password/forgot', data: {
       'email': email,
     });
   }
 
   Future<void> resetPassword(String token, String password) async {
-    await dio.post('/auth/password/reset', queryParameters: {
+    await api.post('/auth/password/reset', data: {
       'token': token,
       'password': password,
     });
@@ -46,4 +45,4 @@ class AuthService {
 }
 
 final authServiceProvider =
-Provider<AuthService>((ref) => AuthService(ref.read(dioProvider)));
+Provider<AuthService>((ref) => AuthService(ref.read(apiClientProvider)));

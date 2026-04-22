@@ -18,13 +18,14 @@ class Exercise {
     String? name,
     String? bodyRegion,
     List<ExerciseSet>? sets,
-  }) =>
-      Exercise(
-        id: id ?? this.id,
-        name: name ?? this.name,
-        bodyRegion: bodyRegion ?? this.bodyRegion,
-        sets: sets ?? this.sets,
-      );
+  }) {
+    return Exercise(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      bodyRegion: bodyRegion ?? this.bodyRegion,
+      sets: sets ?? this.sets,
+    );
+  }
 
   factory Exercise.fromJson(Map<String, dynamic> json) {
     final s = (json['sets'] as List?) ?? [];

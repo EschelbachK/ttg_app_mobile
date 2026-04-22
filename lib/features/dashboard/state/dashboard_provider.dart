@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/dio_provider.dart';
 import '../../../core/error/global_error_handler.dart';
@@ -119,33 +120,65 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
           .toList()
         ..sort((a, b) => a.order.compareTo(b.order));
 
-      final archivedFolders = (await api.getArchivedFolders())
+      /// 🔥 archived folders laden + exercises (mit 403 Schutz)
+      final archivedFoldersRaw = (await api.getArchivedFolders())
           .map<TrainingFolder>((e) => TrainingFolder.fromJson(e))
           .toList();
 
-      final foldersNested = await Future.wait(
-        [...plans, ...archivedPlans].map((p) async {
-          final folderData = await api.getFolders(p.id);
-          return Future.wait(folderData.map((e) async {
-            final f = TrainingFolder.fromJson(e);
-            final ex = await api.getExercises(
-              planId: p.id,
-              folderId: f.id,
-            );
-            return f.copyWith(
-              trainingPlanId: p.id,
-              exercises:
-              ex.map<Exercise>((x) => Exercise.fromJson(x)).toList(),
-            );
-          }));
+      final archivedFolders = await Future.wait(
+        archivedFoldersRaw.map((f) async {
+          List<Exercise> exercises = [];
+
+          try {
+            if (f.trainingPlanId != null) {
+              final ex = await api.getExercises(
+                planId: f.trainingPlanId,
+                folderId: f.id,
+              );
+
+              exercises =
+                  ex.map<Exercise>((x) => Exercise.fromJson(x)).toList();
+            }
+          } catch (_) {
+            /// 🔥 verhindert 403 crash
+          }
+
+          return f.copyWith(exercises: exercises);
         }),
       );
 
-      final allFolders = foldersNested
-          .expand((e) => e)
-          .where((f) => !archivedFolders.any((a) => a.id == f.id))
-          .toList();
+      /// 🔥 aktive folders (OHNE archived!)
+      final foldersNested = await Future.wait(
+        plans.map((p) async {
+          final folderData = await api.getFolders(p.id);
 
+          /// 🔥 WICHTIG: vorher filtern
+          final activeFolderData = folderData.where(
+                (e) => !archivedFolders.any((a) => a.id == e['id']),
+          );
+
+          return Future.wait(
+            activeFolderData.map((e) async {
+              final f = TrainingFolder.fromJson(e);
+
+              final ex = await api.getExercises(
+                planId: p.id,
+                folderId: f.id,
+              );
+
+              return f.copyWith(
+                trainingPlanId: p.id,
+                exercises:
+                ex.map<Exercise>((x) => Exercise.fromJson(x)).toList(),
+              );
+            }),
+          );
+        }),
+      );
+
+      final allFolders = foldersNested.expand((e) => e).toList();
+
+      /// 🔥 KRITISCH: STATE UPDATE
       state = state.copyWith(
         trainingPlans: plans,
         archivedPlans: archivedPlans,
@@ -153,6 +186,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         folders: allFolders,
       );
 
+      /// 🔥 cache speichern
       await OfflineCache.save(CacheKeys.dashboard, {
         'plans': plans.map((e) => e.toJson()).toList(),
         'archivedPlans': archivedPlans.map((e) => e.toJson()).toList(),
@@ -174,8 +208,19 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
       );
       return;
     }
-    await online();
-    await loadTrainingPlans();
+
+    try {
+      await online();
+      await loadTrainingPlans();
+    } catch (e) {
+      if (e is DioException) {
+        print("❌ STATUS: ${e.response?.statusCode}");
+        print("❌ DATA: ${e.response?.data}");
+        print("❌ PATH: ${e.requestOptions.path}");
+        print("❌ METHOD: ${e.requestOptions.method}");
+      }
+      rethrow;
+    }
   }
 
   Future<void> createTrainingPlan(String name) =>
@@ -358,30 +403,29 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         payload: {'id': id},
         online: () => api.restoreFolder(id),
       );
-
   Future<void> importFolderToPlan({
     required String folderId,
     required String targetPlanId,
     required String name,
   }) =>
       _runOrQueue(
-        type: 'import_folder',
-        payload: {
-          'folderId': folderId,
-          'targetPlanId': targetPlanId,
-          'name': name,
-        },
-        online: () async {
-          await api.createFolder(
-            trainingPlanId: targetPlanId,
-            name: name,
-            order: state.folders
-                .where((f) => f.trainingPlanId == targetPlanId)
-                .length,
+          type: 'import_folder',
+          payload: {
+            'folderId': folderId,
+            'targetPlanId': targetPlanId,
+            'name': name,
+          },
+          online: () async {
+            await api.createFolder(
+              trainingPlanId: targetPlanId,
+              name: name,
+              order: state.folders
+                  .where((f) => f.trainingPlanId == targetPlanId)
+                  .length,
+            );
+          },
           );
-          await api.restoreFolder(folderId);
-        },
-      );
+
 
   Future<void> _createExercise(
       String folderId, String planId, Exercise exercise) =>
@@ -406,22 +450,51 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
         ),
       );
 
-  Future<void> addExercise(
+  Future<void> importExercise(
       String folderId, String planId, Exercise exercise) async {
+
+    final uiExercise = exercise.copyWith(
+      sets: exercise.sets.map((s) => s.copyWith()).toList(),
+    );
+
     state = state.copyWith(
       folders: state.folders.map((f) {
         if (f.id != folderId) return f;
-        return f.copyWith(exercises: [...f.exercises, exercise]);
+
+        return f.copyWith(
+          exercises: [
+            ...f.exercises.map((e) => e.copyWith()),
+            uiExercise,
+          ],
+        );
       }).toList(),
     );
 
     await _createExercise(folderId, planId, exercise);
-    await loadTrainingPlans();
   }
 
-  Future<void> importExercise(
-      String folderId, String planId, Exercise exercise) =>
-      _createExercise(folderId, planId, exercise);
+  Future<void> addExercise(
+      String folderId, String planId, Exercise exercise) async {
+
+    final uiExercise = exercise.copyWith(
+      sets: exercise.sets.map((s) => s.copyWith()).toList(),
+    );
+
+    state = state.copyWith(
+      folders: state.folders.map((f) {
+        if (f.id != folderId) return f;
+
+        return f.copyWith(
+          exercises: [
+            ...f.exercises.map((e) => e.copyWith()),
+            uiExercise,
+          ],
+        );
+      }).toList(),
+    );
+
+    await _createExercise(folderId, planId, exercise);
+  }
 
   Future<void> removeExercise({
     required String planId,
@@ -441,6 +514,30 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
           exerciseId: exerciseId,
         ),
       );
+  Future<void> updateExerciseSets({
+    required String planId,
+    required String folderId,
+    required String exerciseId,
+  }) async {
+    try {
+      final exercise = state.folders
+          .firstWhere((f) => f.id == folderId)
+          .exercises
+          .firstWhere((e) => e.id == exerciseId);
+
+      await api.updateExercise(
+        planId: planId,
+        folderId: folderId,
+        exerciseId: exerciseId,
+        sets: exercise.sets.map((s) => {
+          'weight': s.weight,
+          'repetitions': s.reps,
+        }).toList(),
+      );
+    } catch (e) {
+      print("❌ updateExerciseSets failed: $e");
+    }
+  }
 
   String _mapBodyRegion(String c) {
     switch (c) {

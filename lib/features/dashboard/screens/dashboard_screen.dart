@@ -25,10 +25,12 @@ class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+  ConsumerState<DashboardScreen> createState() =>
+      _DashboardScreenState();
 }
 
-class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+class _DashboardScreenState
+    extends ConsumerState<DashboardScreen> {
   String? expandedPlanId;
   int selectedTab = 0;
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -41,6 +43,12 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
+  Future<void> _switchTab(int i) async {
+    setState(() => selectedTab = i);
+    final n = ref.read(dashboardProvider.notifier);
+    i == 1 ? n.showArchive() : n.showPlans();
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(dashboardProvider);
@@ -50,59 +58,65 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
     final map = <String, double>{};
     for (final e in entries) {
-      map[e.sessionId] = (map[e.sessionId] ?? 0) + (e.weight * e.reps);
+      map[e.sessionId] =
+          (map[e.sessionId] ?? 0) + (e.weight * e.reps);
     }
 
-    final total = map.values.fold(0.0, (a, b) => a + b);
-    final sessions = map.length;
-    final avg = sessions == 0 ? 0.0 : total / sessions;
-    final best = map.isEmpty ? 0.0 : map.values.reduce((a, b) => a > b ? a : b);
     final list = map.values.toList();
 
     final kpis = KPIs(
-      totalVolume: total,
-      avgVolume: avg,
-      bestSession: best,
-      totalSessions: sessions,
+      totalVolume:
+      map.values.fold(0.0, (a, b) => a + b),
+      avgVolume: map.isEmpty
+          ? 0
+          : map.values.reduce((a, b) => a + b) /
+          map.length,
+      bestSession: map.isEmpty
+          ? 0
+          : map.values.reduce((a, b) => a > b ? a : b),
+      totalSessions: map.length,
     );
 
-    final compare = list.length < 2 ? (0.0, 0.0) : (list.last, list[list.length - 2]);
+    final compare = list.length < 2
+        ? (0.0, 0.0)
+        : (list.last, list[list.length - 2]);
 
     return Stack(
       children: [
         Positioned.fill(
-          child: Image.asset("assets/images/dashboard_bg.png", fit: BoxFit.cover),
+          child: Image.asset(
+            "assets/images/dashboard_bg.png",
+            fit: BoxFit.cover,
+          ),
         ),
         Positioned.fill(
-          child: Container(color: Colors.black.withOpacity(.6)),
+          child:
+          Container(color: Colors.black.withOpacity(.6)),
         ),
         Scaffold(
           key: scaffoldKey,
           drawer: const TtgDrawer(),
           backgroundColor: Colors.transparent,
-
-          // ✅ FIX: kein Builder mehr
           appBar: DashboardTopBar(
             selectedTab: selectedTab,
-            onTabChanged: (i) {
-              setState(() => selectedTab = i);
-              final n = ref.read(dashboardProvider.notifier);
-              i == 1 ? n.showArchive() : n.showPlans();
-            },
-            onMenuTap: () => scaffoldKey.currentState?.openDrawer(),
+            onTabChanged: _switchTab,
+            onMenuTap: () =>
+                scaffoldKey.currentState?.openDrawer(),
           ),
-
           body: SafeArea(
             child: Column(
               children: [
                 const SizedBox(height: 12),
 
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  margin: const EdgeInsets.symmetric(
+                      horizontal: 20),
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(.6),
-                    borderRadius: BorderRadius.circular(30),
+                    color:
+                    Colors.black.withOpacity(.6),
+                    borderRadius:
+                    BorderRadius.circular(30),
                   ),
                   child: Row(
                     children: [
@@ -115,30 +129,46 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 const SizedBox(height: 20),
 
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 20),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment:
+                    MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         "MEINE TRAININGSPLÄNE",
-                        style: t.textTheme.titleLarge?.copyWith(
+                        style: t.textTheme.titleLarge
+                            ?.copyWith(
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.2,
                           color: Colors.white,
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.add, color: Color(0xFFFF3B30)),
-                        onPressed: settings.offlineMode
+                        icon: const Icon(Icons.add,
+                            color:
+                            Color(0xFFFF3B30)),
+                        onPressed:
+                        settings.offlineMode
                             ? null
-                            : () => showTTGInputDialog(
-                          context: context,
-                          title: "Neuer Trainingsplan",
-                          buttonText: "Erstellen",
-                          onSubmit: (v) async {
-                            await ref.read(dashboardProvider.notifier).createTrainingPlan(v);
-                          },
-                        ),
+                            : () =>
+                            showTTGInputDialog(
+                              context:
+                              context,
+                              title:
+                              "Neuer Trainingsplan",
+                              buttonText:
+                              "Erstellen",
+                              onSubmit:
+                                  (v) async {
+                                await ref
+                                    .read(
+                                    dashboardProvider
+                                        .notifier)
+                                    .createTrainingPlan(
+                                    v);
+                              },
+                            ),
                       )
                     ],
                   ),
@@ -149,7 +179,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 Expanded(
                   child: selectedTab == 1
                       ? _buildArchive(state)
-                      : _buildPlans(state, settings),
+                      : _buildPlans(
+                      state, settings),
                 ),
               ],
             ),
@@ -159,46 +190,55 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildPlans(DashboardState state, SettingsState settings) {
+  Widget _buildPlans(
+      DashboardState state,
+      SettingsState settings) {
     if (state.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+          child: CircularProgressIndicator());
     }
 
     if (state.trainingPlans.isEmpty) {
       return Center(
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(40),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFFF3B30).withOpacity(.6),
-                blurRadius: 20,
-                spreadRadius: 1,
-              )
-            ],
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor:
+            const Color(0xFFFF3B30),
+            padding:
+            const EdgeInsets.symmetric(
+                horizontal: 36,
+                vertical: 18),
+            shape:
+            RoundedRectangleBorder(
+              borderRadius:
+              BorderRadius.circular(40),
+            ),
           ),
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFF3B30),
-              padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 18),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(40),
+          onPressed: settings.offlineMode
+              ? null
+              : () =>
+              showTTGInputDialog(
+                context: context,
+                title:
+                "Neuer Trainingsplan",
+                buttonText:
+                "Erstellen",
+                onSubmit:
+                    (v) async {
+                  await ref
+                      .read(
+                      dashboardProvider
+                          .notifier)
+                      .createTrainingPlan(
+                      v);
+                },
               ),
-            ),
-            onPressed: settings.offlineMode
-                ? null
-                : () => showTTGInputDialog(
-              context: context,
-              title: "Neuer Trainingsplan",
-              buttonText: "Erstellen",
-              onSubmit: (v) async {
-                await ref.read(dashboardProvider.notifier).createTrainingPlan(v);
-              },
-            ),
-            child: const Text(
-              "+ Neuen Plan erstellen",
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-            ),
+          child: const Text(
+            "+ Neuen Plan erstellen",
+            style: TextStyle(
+                color: Colors.white,
+                fontWeight:
+                FontWeight.w600),
           ),
         ),
       );
@@ -206,56 +246,110 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
 
     return ListView(
       padding: EdgeInsets.zero,
-      children: state.trainingPlans.map((p) {
-        return Column(
-          children: [
-            TrainingPlanCard(
-              plan: p,
-              expandedPlanId: expandedPlanId,
-              onExpand: (id) => setState(() => expandedPlanId = id),
-            ),
-            const SizedBox(height: 12),
-          ],
-        );
-      }).toList(),
+      children: state.trainingPlans
+          .map((p) => Column(
+        children: [
+          TrainingPlanCard(
+            plan: p,
+            expandedPlanId:
+            expandedPlanId,
+            onExpand: (id) =>
+                setState(() =>
+                expandedPlanId =
+                    id),
+          ),
+          const SizedBox(height: 12),
+        ],
+      ))
+          .toList(),
     );
   }
 
-  Widget _buildArchive(DashboardState state) {
+  /// 🔥 FIXED ARCHIVE
+  Widget _buildArchive(
+      DashboardState state) {
+    if (state.isLoading) {
+      return const Center(
+          child: CircularProgressIndicator());
+    }
+
     return ListView(
-      padding: EdgeInsets.zero,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       children: [
-        if (state.archivedPlans.isNotEmpty)
-          ...state.archivedPlans.map((p) => ArchivedPlanTile(plan: p)),
-        if (state.archivedFolders.isNotEmpty)
-          ...state.archivedFolders.map((f) => ArchivedFolderTile(folder: f)),
+
+        const SizedBox(height: 10),
+
+        const Text(
+          "ARCHIVIERTE TRAININGSPLÄNE",
+          style: TextStyle(
+            color: Colors.white54,
+            fontSize: 13,
+            letterSpacing: 1.2,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        ...state.archivedPlans.map(
+              (p) => ArchivedPlanTile(plan: p),
+        ),
+
+        const SizedBox(height: 30),
+
+        const Text(
+          "ARCHIVIERTE MUSKELGRUPPEN",
+          style: TextStyle(
+            color: Colors.white54,
+            fontSize: 13,
+            letterSpacing: 1.2,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        ...state.archivedFolders.map(
+              (f) => ArchivedFolderTile(folder: f),
+        ),
+
+        const SizedBox(height: 40),
       ],
     );
   }
 
   Widget _tab(String text, int index) {
-    final selected = selectedTab == index;
+    final selected =
+        selectedTab == index;
 
     return Expanded(
       child: GestureDetector(
-        onTap: () {
-          setState(() => selectedTab = index);
-          final n = ref.read(dashboardProvider.notifier);
-          index == 1 ? n.showArchive() : n.showPlans();
-        },
+        onTap: () =>
+            _switchTab(index),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 14),
+          duration: const Duration(
+              milliseconds: 200),
+          padding:
+          const EdgeInsets.symmetric(
+              vertical: 14),
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFFFF3B30) : Colors.transparent,
-            borderRadius: BorderRadius.circular(30),
+            color: selected
+                ? const Color(
+                0xFFFF3B30)
+                : Colors.transparent,
+            borderRadius:
+            BorderRadius.circular(
+                30),
           ),
           child: Center(
             child: Text(
               text,
               style: TextStyle(
-                color: selected ? Colors.white : Colors.white54,
-                fontWeight: FontWeight.w600,
+                color: selected
+                    ? Colors.white
+                    : Colors.white54,
+                fontWeight:
+                FontWeight.w600,
               ),
             ),
           ),

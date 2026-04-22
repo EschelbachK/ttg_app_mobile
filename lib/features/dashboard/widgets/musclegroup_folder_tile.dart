@@ -10,8 +10,8 @@ class TrainingFolderPlanTile extends StatelessWidget {
   final TrainingFolder folder;
   final TrainingPlan plan;
   final VoidCallback onDelete;
-  final VoidCallback onMoveUp;
-  final VoidCallback onMoveDown;
+  final VoidCallback? onMoveUp;   // ✅ FIX
+  final VoidCallback? onMoveDown; // ✅ FIX
   final VoidCallback onArchive;
   final VoidCallback onDuplicate;
   final VoidCallback onRename;
@@ -74,29 +74,36 @@ class TrainingFolderPlanTile extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 GestureDetector(
                   onTap: onMoveUp,
-                  child: const Icon(
+                  child: Icon(
                     Icons.arrow_upward,
                     size: 18,
-                    color: AppTheme.primaryRed,
+                    color: onMoveUp == null
+                        ? Colors.grey
+                        : AppTheme.primaryRed, // ✅ grau wenn disabled
                   ),
                 ),
                 const SizedBox(width: 15),
                 GestureDetector(
                   onTap: onMoveDown,
-                  child: const Icon(
+                  child: Icon(
                     Icons.arrow_downward,
                     size: 18,
-                    color: AppTheme.primaryRed,
+                    color: onMoveDown == null
+                        ? Colors.grey
+                        : AppTheme.primaryRed, // ✅ grau wenn disabled
                   ),
                 ),
               ],
             ),
+
             const SizedBox(width: 4),
+
             TTGPopupMenu(
               onSelected: (v) {
                 if (v == 'rename') onRename();

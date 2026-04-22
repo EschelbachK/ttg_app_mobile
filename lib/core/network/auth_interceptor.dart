@@ -20,7 +20,10 @@ class AuthInterceptor extends Interceptor {
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     if (_isAuthPath(options.path)) return handler.next(options);
 
+    print("INTERCEPTOR HIT: ${options.path}");
+
     final token = await ref.read(tokenStorageProvider).getAccessToken();
+    print("AUTH TOKEN: $token");
 
     if (token?.isNotEmpty == true) {
       options.headers['Authorization'] = 'Bearer $token';

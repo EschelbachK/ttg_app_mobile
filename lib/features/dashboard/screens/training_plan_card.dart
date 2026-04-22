@@ -49,10 +49,13 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
     final state = ref.watch(dashboardProvider);
     final theme = Theme.of(context);
 
-    final groups = state.folders.where((f) =>
+    final groups = state.folders
+        .where((f) =>
     f.trainingPlanId == widget.plan.id &&
         f.name.trim().isNotEmpty &&
-        f.name.toLowerCase() != "allgemein");
+        f.name.toLowerCase() != "allgemein")
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
 
     return Padding(
       padding: EdgeInsets.fromLTRB(0, 0, 0, open ? 16 : 12),
@@ -78,7 +81,6 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                 children: [
                   const Icon(Icons.folder, color: AppTheme.primaryRed),
                   const SizedBox(width: 10),
-
                   Expanded(
                     child: Text(
                       widget.plan.name,
@@ -88,7 +90,6 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -213,38 +214,50 @@ class _TrainingPlanCardState extends ConsumerState<TrainingPlanCard> {
                 children: [
                   const SizedBox(height: 8),
 
-                  ...groups.map((g) => TrainingFolderPlanTile(
-                    folder: g,
-                    plan: widget.plan,
-                    onDelete: () => ref
-                        .read(dashboardProvider.notifier)
-                        .deleteFolder(g.id),
-                    onMoveUp: () => ref
-                        .read(dashboardProvider.notifier)
-                        .moveFolderUp(g.id),
-                    onMoveDown: () => ref
-                        .read(dashboardProvider.notifier)
-                        .moveFolderDown(g.id),
-                    onArchive: () => ref
-                        .read(dashboardProvider.notifier)
-                        .archiveFolder(g.id),
-                    onDuplicate: () => ref
-                        .read(dashboardProvider.notifier)
-                        .duplicateFolder(g.id),
-                    onRename: () {
-                      showTTGInputDialog(
-                        context: context,
-                        title: "Muskelgruppe umbenennen",
-                        buttonText: "Speichern",
-                        initialValue: g.name,
-                        onSubmit: (value) {
-                          ref
-                              .read(dashboardProvider.notifier)
-                              .renameFolder(g.id, value);
-                        },
-                      );
-                    },
-                  )),
+                  ...groups.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final g = entry.value;
+
+                    final isFirst = index == 0;
+                    final isLast = index == groups.length - 1;
+
+                    return TrainingFolderPlanTile(
+                      folder: g,
+                      plan: widget.plan,
+                      onDelete: () => ref
+                          .read(dashboardProvider.notifier)
+                          .deleteFolder(g.id),
+                      onMoveUp: isFirst
+                          ? null
+                          : () => ref
+                          .read(dashboardProvider.notifier)
+                          .moveFolderUp(g.id),
+                      onMoveDown: isLast
+                          ? null
+                          : () => ref
+                          .read(dashboardProvider.notifier)
+                          .moveFolderDown(g.id),
+                      onArchive: () => ref
+                          .read(dashboardProvider.notifier)
+                          .archiveFolder(g.id),
+                      onDuplicate: () => ref
+                          .read(dashboardProvider.notifier)
+                          .duplicateFolder(g.id),
+                      onRename: () {
+                        showTTGInputDialog(
+                          context: context,
+                          title: "Muskelgruppe umbenennen",
+                          buttonText: "Speichern",
+                          initialValue: g.name,
+                          onSubmit: (value) {
+                            ref
+                                .read(dashboardProvider.notifier)
+                                .renameFolder(g.id, value);
+                          },
+                        );
+                      },
+                    );
+                  }),
 
                   const SizedBox(height: 6),
 
