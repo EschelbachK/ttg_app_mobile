@@ -12,4 +12,5 @@ class SettingsKeys {
   static const language = 'language';
   static const weight = 'weight_unit';
   static const height = 'height_unit';
+  static const weightStep = 'weight_step';
 }
