@@ -1,11 +1,19 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../core/settings/settings_controller.dart';
 import '../../../core/settings/settings_state.dart';
+import '../../../core/ui/ttg_input_dialog.dart';
+
 import '../../workout/application/workout_history_store.dart';
 import '../../workout/presentation/widgets/progress_chart.dart';
+import '../../workout/presentation/widgets/volume_chart.dart';
+
+import '../domain/dashboard_data.dart';
 import '../state/dashboard_provider.dart';
+import '../widgets/analytics/kpi_cards.dart';
+import '../widgets/analytics/session_compare_card.dart';
 import '../widgets/dashboard/dashboard_top_bar.dart';
 import '../widgets/archive/archived_plan_tile.dart';
 import '../widgets/archive/archived_folder_tile.dart';
@@ -33,102 +41,116 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _section(BuildContext context, String title) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Center(
-        child: Text(
-          title,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1,
-            color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(dashboardProvider);
     final settings = ref.watch(settingsProvider);
-    final history = ref.watch(workoutHistoryStoreProvider);
+    final entries = ref.watch(workoutHistoryStoreProvider);
+    final t = Theme.of(context);
 
-    final theme = Theme.of(context);
-    final notifier = ref.read(dashboardProvider.notifier);
+    final map = <String, double>{};
+    for (final e in entries) {
+      map[e.sessionId] = (map[e.sessionId] ?? 0) + (e.weight * e.reps);
+    }
+
+    final total = map.values.fold(0.0, (a, b) => a + b);
+    final sessions = map.length;
+    final avg = sessions == 0 ? 0.0 : total / sessions;
+    final best = map.isEmpty ? 0.0 : map.values.reduce((a, b) => a > b ? a : b);
+    final list = map.values.toList();
+
+    final kpis = KPIs(
+      totalVolume: total,
+      avgVolume: avg,
+      bestSession: best,
+      totalSessions: sessions,
+    );
+
+    final compare = list.length < 2 ? (0.0, 0.0) : (list.last, list[list.length - 2]);
 
     return Stack(
       children: [
         Positioned.fill(
-          child: Image.asset(
-            "assets/images/dashboard_bg.png",
-            fit: BoxFit.cover,
-          ),
+          child: Image.asset("assets/images/dashboard_bg.png", fit: BoxFit.cover),
         ),
         Positioned.fill(
-          child: Container(
-            color: theme.brightness == Brightness.dark
-                ? Colors.black.withOpacity(0.55)
-                : Colors.white.withOpacity(0.6),
-          ),
+          child: Container(color: Colors.black.withOpacity(.6)),
         ),
         Scaffold(
           key: scaffoldKey,
           drawer: const TtgDrawer(),
           backgroundColor: Colors.transparent,
+
+          // ✅ FIX: kein Builder mehr
           appBar: DashboardTopBar(
             selectedTab: selectedTab,
-            onTabChanged: (i) => setState(() => selectedTab = i),
+            onTabChanged: (i) {
+              setState(() => selectedTab = i);
+              final n = ref.read(dashboardProvider.notifier);
+              i == 1 ? n.showArchive() : n.showPlans();
+            },
             onMenuTap: () => scaffoldKey.currentState?.openDrawer(),
           ),
+
           body: SafeArea(
             child: Column(
               children: [
-                if (settings.offlineMode)
-                  Container(
-                    margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: Colors.redAccent.withOpacity(0.4),
-                      ),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        "OFFLINE MODUS AKTIV",
-                        style: TextStyle(
-                          color: Colors.redAccent,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1,
+                const SizedBox(height: 12),
+
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(.6),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: Row(
+                    children: [
+                      _tab("PLÄNE", 0),
+                      _tab("ARCHIV", 1),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "MEINE TRAININGSPLÄNE",
+                        style: t.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.2,
+                          color: Colors.white,
                         ),
                       ),
-                    ),
+                      IconButton(
+                        icon: const Icon(Icons.add, color: Color(0xFFFF3B30)),
+                        onPressed: settings.offlineMode
+                            ? null
+                            : () => showTTGInputDialog(
+                          context: context,
+                          title: "Neuer Trainingsplan",
+                          buttonText: "Erstellen",
+                          onSubmit: (v) async {
+                            await ref.read(dashboardProvider.notifier).createTrainingPlan(v);
+                          },
+                        ),
+                      )
+                    ],
                   ),
+                ),
 
-                const SizedBox(height: 18),
+                const SizedBox(height: 30),
 
-                if (selectedTab == 1)
-                  Expanded(
-                    child: ListView(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      children: [
-                        if (history.isNotEmpty)
-                          ProgressChart(history: history),
-                        const SizedBox(height: 20),
-                      ],
-                    ),
-                  )
-                else
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-                      child: _buildContent(context, state, settings),
-                    ),
-                  ),
+                Expanded(
+                  child: selectedTab == 1
+                      ? _buildArchive(state)
+                      : _buildPlans(state, settings),
+                ),
               ],
             ),
           ),
@@ -137,57 +159,47 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     );
   }
 
-  Widget _buildContent(
-      BuildContext context, DashboardState state, SettingsState settings) {
-    final theme = Theme.of(context);
-
-    if (settings.offlineMode) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.wifi_off, size: 48, color: Colors.white38),
-            const SizedBox(height: 12),
-            Text(
-              "Offline Modus aktiv",
-              style: theme.textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              "Keine Verbindung zum Server",
-              style:
-              theme.textTheme.bodyMedium?.copyWith(color: Colors.white54),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (state.showArchive) {
-      return ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          if (state.archivedPlans.isNotEmpty) ...[
-            _section(context, "Archivierte Trainingspläne"),
-            ...state.archivedPlans.map((p) => ArchivedPlanTile(plan: p)),
-          ],
-          if (state.archivedFolders.isNotEmpty) ...[
-            _section(context, "Archivierte Muskelgruppen"),
-            ...state.archivedFolders.map((f) => ArchivedFolderTile(folder: f)),
-          ],
-        ],
-      );
-    }
-
-    if (state.isLoading)
+  Widget _buildPlans(DashboardState state, SettingsState settings) {
+    if (state.isLoading) {
       return const Center(child: CircularProgressIndicator());
+    }
 
     if (state.trainingPlans.isEmpty) {
       return Center(
-        child: Text(
-          "Keine Trainingspläne vorhanden",
-          style: theme.textTheme.bodyMedium,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(40),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFF3B30).withOpacity(.6),
+                blurRadius: 20,
+                spreadRadius: 1,
+              )
+            ],
+          ),
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF3B30),
+              padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 18),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(40),
+              ),
+            ),
+            onPressed: settings.offlineMode
+                ? null
+                : () => showTTGInputDialog(
+              context: context,
+              title: "Neuer Trainingsplan",
+              buttonText: "Erstellen",
+              onSubmit: (v) async {
+                await ref.read(dashboardProvider.notifier).createTrainingPlan(v);
+              },
+            ),
+            child: const Text(
+              "+ Neuen Plan erstellen",
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+            ),
+          ),
         ),
       );
     }
@@ -206,6 +218,49 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ],
         );
       }).toList(),
+    );
+  }
+
+  Widget _buildArchive(DashboardState state) {
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        if (state.archivedPlans.isNotEmpty)
+          ...state.archivedPlans.map((p) => ArchivedPlanTile(plan: p)),
+        if (state.archivedFolders.isNotEmpty)
+          ...state.archivedFolders.map((f) => ArchivedFolderTile(folder: f)),
+      ],
+    );
+  }
+
+  Widget _tab(String text, int index) {
+    final selected = selectedTab == index;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() => selectedTab = index);
+          final n = ref.read(dashboardProvider.notifier);
+          index == 1 ? n.showArchive() : n.showPlans();
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: BoxDecoration(
+            color: selected ? const Color(0xFFFF3B30) : Colors.transparent,
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: Center(
+            child: Text(
+              text,
+              style: TextStyle(
+                color: selected ? Colors.white : Colors.white54,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
