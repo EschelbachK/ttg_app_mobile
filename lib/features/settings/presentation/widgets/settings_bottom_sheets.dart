@@ -40,7 +40,6 @@ Widget _handle() => Center(
 
 Widget _btn(String text, VoidCallback tap, {Color? color}) {
   final c = color ?? AppTheme.primaryRed;
-
   return GestureDetector(
     onTap: tap,
     child: Container(
@@ -50,10 +49,7 @@ Widget _btn(String text, VoidCallback tap, {Color? color}) {
         gradient: LinearGradient(colors: [c.withOpacity(0.9), c]),
       ),
       child: Center(
-        child: Text(
-          text,
-          style: const TextStyle(fontWeight: FontWeight.w700),
-        ),
+        child: Text(text, style: const TextStyle(fontWeight: FontWeight.w700)),
       ),
     ),
   );
@@ -102,6 +98,45 @@ void showFontScaleSheet(BuildContext c, SettingsState s, SettingsController n) {
             const SizedBox(height: 20),
             _btn('Speichern', () {
               n.setFontScale(temp);
+              Navigator.pop(c);
+            }),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+void showWeightStepSheet(BuildContext c, SettingsState s, SettingsController n) {
+  double temp = s.weightStep;
+
+  showModalBottomSheet(
+    context: c,
+    backgroundColor: Colors.transparent,
+    builder: (_) => _sheet(
+      c,
+      StatefulBuilder(
+        builder: (_, set) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _handle(),
+            const Text('Gewichtsschritte',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 12),
+            Text('${temp.toStringAsFixed(1)} kg'),
+            Slider(
+              value: temp,
+              min: 0.5,
+              max: 10.0,
+              divisions: 19,
+              activeColor: AppTheme.primaryRed,
+              onChanged: (v) => set(() {
+                temp = (v * 2).round() / 2;
+              }),
+            ),
+            const SizedBox(height: 20),
+            _btn('Speichern', () {
+              n.setWeightStep(temp);
               Navigator.pop(c);
             }),
           ],
