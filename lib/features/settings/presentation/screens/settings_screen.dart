@@ -14,6 +14,7 @@ import '../widgets/offline_mode_expand.dart';
 import '../widgets/sync_mode_expand.dart';
 import '../widgets/account_expand.dart';
 import '../widgets/user_card.dart';
+import '../widgets/weight_step_expand.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -49,14 +50,11 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 20),
-
             const UserCard(),
-
             const SettingsSection(
               title: 'WÄHREND DES TRAININGS',
               children: [KeyboardModeTile(), SoundModeTile()],
             ),
-
             SettingsSection(
               title: 'ALLGEMEINE EINSTELLUNGEN',
               children: [
@@ -73,6 +71,7 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
+                const WeightStepExpand(),
                 const LightModeExpand(),
                 const OfflineModeExpand(),
                 const SyncModeExpand(),
@@ -89,7 +88,6 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ],
             ),
-
             const SettingsSection(
               title: 'DEIN ACCOUNT',
               children: [AccountExpand()],
