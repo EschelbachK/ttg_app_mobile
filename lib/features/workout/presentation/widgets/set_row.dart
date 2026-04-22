@@ -53,11 +53,15 @@ class _SetRowState extends ConsumerState<SetRow> {
     _unlock();
   }
 
+  double _normalize(double v) => (v * 2).round() / 2;
+
   @override
   Widget build(BuildContext context) {
     final ctrl = ref.read(workoutProvider.notifier);
     final state = ref.watch(workoutProvider);
-    final keyboard = ref.watch(settingsProvider).keyboardMode;
+    final settings = ref.watch(settingsProvider);
+    final keyboard = settings.keyboardMode;
+    final step = settings.weightStep;
 
     final isCompleted = widget.completed == true;
 
@@ -92,7 +96,6 @@ class _SetRowState extends ConsumerState<SetRow> {
               style: const TextStyle(color: Colors.white38, fontSize: 12),
             ),
           ),
-
           Expanded(
             child: Row(
               children: [
@@ -103,8 +106,10 @@ class _SetRowState extends ConsumerState<SetRow> {
                     suffix: 'KG',
                     keyboard: keyboard,
                     onChanged: (v) => _update(w: v),
-                    onMinus: () => _update(w: widget.weight - 2.5),
-                    onPlus: () => _update(w: widget.weight + 2.5),
+                    onMinus: () =>
+                        _update(w: _normalize(widget.weight - step)),
+                    onPlus: () =>
+                        _update(w: _normalize(widget.weight + step)),
                   ),
                 ),
                 Expanded(
@@ -121,31 +126,6 @@ class _SetRowState extends ConsumerState<SetRow> {
               ],
             ),
           ),
-
-          if (!isCompleted &&
-              suggestion != null &&
-              (weightDiff != 0 || repsDiff != 0))
-            Container(
-              margin: const EdgeInsets.only(right: 6),
-              padding:
-              const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-              decoration: BoxDecoration(
-                color: kPrimaryRed.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: kPrimaryRed.withOpacity(0.4)),
-              ),
-              child: Text(
-                weightDiff != null && weightDiff != 0
-                    ? "+${weightDiff.toStringAsFixed(1)}kg"
-                    : "+${repsDiff} reps",
-                style: const TextStyle(
-                  color: kPrimaryRed,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-
           GestureDetector(
             onTap: () {
               if (_locked) return;
@@ -224,12 +204,11 @@ class _Stepper extends StatelessWidget {
                     ? value.toStringAsFixed(1)
                     : value.toInt().toString(),
               ),
-              keyboardType: TextInputType.numberWithOptions(
-                  decimal: isDecimal),
+              keyboardType:
+              TextInputType.numberWithOptions(decimal: isDecimal),
               textAlign: TextAlign.center,
               style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600),
+                  color: Colors.white, fontWeight: FontWeight.w600),
               inputFormatters: isDecimal
                   ? [
                 FilteringTextInputFormatter.allow(
@@ -251,8 +230,7 @@ class _Stepper extends StatelessWidget {
                     ? value.toStringAsFixed(1)
                     : value.toInt().toString(),
                 style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600),
+                    color: Colors.white, fontWeight: FontWeight.w600),
               ),
               const SizedBox(width: 4),
               Text(
