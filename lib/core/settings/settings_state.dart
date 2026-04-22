@@ -3,7 +3,7 @@ class SettingsState {
   final bool countdownSound, startSound, voiceFeedback;
   final bool keyboardExpanded, soundExpanded, languageExpanded, lightExpanded, offlineExpanded, syncExpanded;
   final int restTimerSeconds;
-  final double fontScale;
+  final double fontScale, weightStep;
   final String language, weightUnit, heightUnit;
 
   const SettingsState({
@@ -14,6 +14,7 @@ class SettingsState {
     required this.keyboardMode,
     required this.syncEnabled,
     required this.fontScale,
+    required this.weightStep,
     required this.countdownSound,
     required this.startSound,
     required this.voiceFeedback,
@@ -36,6 +37,7 @@ class SettingsState {
     keyboardMode: false,
     syncEnabled: true,
     fontScale: 1,
+    weightStep: 1.0,
     countdownSound: true,
     startSound: true,
     voiceFeedback: false,
@@ -47,7 +49,8 @@ class SettingsState {
   SettingsState copyWith({
     bool? soundEnabled, bool? lightMode, bool? offlineMode,
     int? restTimerSeconds, bool? keyboardMode, bool? syncEnabled,
-    double? fontScale, bool? countdownSound, bool? startSound, bool? voiceFeedback,
+    double? fontScale, double? weightStep,
+    bool? countdownSound, bool? startSound, bool? voiceFeedback,
     bool? keyboardExpanded, bool? soundExpanded, bool? languageExpanded,
     bool? lightExpanded, bool? offlineExpanded, bool? syncExpanded,
     String? language, String? weightUnit, String? heightUnit,
@@ -59,6 +62,7 @@ class SettingsState {
     keyboardMode: keyboardMode ?? this.keyboardMode,
     syncEnabled: syncEnabled ?? this.syncEnabled,
     fontScale: fontScale ?? this.fontScale,
+    weightStep: weightStep ?? this.weightStep,
     countdownSound: countdownSound ?? this.countdownSound,
     startSound: startSound ?? this.startSound,
     voiceFeedback: voiceFeedback ?? this.voiceFeedback,
