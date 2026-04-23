@@ -8,6 +8,7 @@ import 'core/offline/sync_status_listener.dart';
 import 'core/offline/sync_status_bar.dart';
 import 'core/network/connectivity_provider.dart';
 import 'core/settings/settings_controller.dart';
+import 'core/deeplink/deeplink_service.dart';
 
 import 'features/workout/providers/motivation_listener.dart';
 import 'features/workout/providers/sound_listener.dart';
@@ -27,12 +28,35 @@ class MyApp extends ConsumerStatefulWidget {
 }
 
 class _MyAppState extends ConsumerState<MyApp> {
+  bool _deepLinkInitialized = false;
+
   @override
   void initState() {
     super.initState();
+
     Future.microtask(() {
       ref.read(connectivityProvider);
       ref.read(syncEngineProvider).processQueue();
+    });
+  }
+
+  void _initDeepLinks() {
+    if (_deepLinkInitialized) return;
+    _deepLinkInitialized = true;
+
+    final router = ref.read(appRouterProvider);
+
+    ref.read(deepLinkProvider).init((uri) {
+      final path = uri.path;
+      final token = uri.queryParameters['token'];
+
+      if (path.contains('verify')) {
+        router.go('/verify-info');
+      }
+
+      if (path.contains('reset-password') && token != null) {
+        router.go('/reset-password?token=$token');
+      }
     });
   }
 
@@ -49,6 +73,8 @@ class _MyAppState extends ConsumerState<MyApp> {
 
     final theme =
     settings.lightMode ? AppTheme.lightTheme : AppTheme.darkTheme;
+
+    _initDeepLinks();
 
     return SyncStatusListener(
       child: MaterialApp.router(
