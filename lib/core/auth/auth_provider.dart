@@ -78,19 +78,24 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> login(String email, String password) async {
-    final res = await ref.read(authServiceProvider).login(email, password);
-    final storage = ref.read(tokenStorageProvider);
+    try {
+      final res =
+      await ref.read(authServiceProvider).login(email, password);
+      final storage = ref.read(tokenStorageProvider);
 
-    await storage.saveAccessToken(res.accessToken);
-    await storage.saveRefreshToken(res.refreshToken);
+      await storage.saveAccessToken(res.accessToken);
+      await storage.saveRefreshToken(res.refreshToken);
 
-    state = state.copyWith(
-      isLoggedIn: true,
-      isInitialized: true,
-      accessToken: res.accessToken,
-      refreshToken: res.refreshToken,
-      user: res.user,
-    );
+      state = state.copyWith(
+        isLoggedIn: true,
+        isInitialized: true,
+        accessToken: res.accessToken,
+        refreshToken: res.refreshToken,
+        user: res.user,
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<void> logout() async {
@@ -106,16 +111,24 @@ class AuthNotifier extends StateNotifier<AuthState> {
     final token = await storage.getRefreshToken();
     if (token == null) return;
 
-    final res = await ref.read(authServiceProvider).refresh(token);
+    try {
+      final res = await ref.read(authServiceProvider).refresh(token);
 
-    await storage.saveAccessToken(res.accessToken);
+      await storage.saveAccessToken(res.accessToken);
 
-    state = state.copyWith(
-      accessToken: res.accessToken,
-      refreshToken: res.refreshToken,
-      user: res.user,
-      isLoggedIn: true,
-    );
+      state = state.copyWith(
+        accessToken: res.accessToken,
+        refreshToken: res.refreshToken,
+        user: res.user,
+        isLoggedIn: true,
+      );
+    } catch (_) {
+      await storage.clear();
+      state = const AuthState(
+        isLoggedIn: false,
+        isInitialized: true,
+      );
+    }
   }
 }
 
