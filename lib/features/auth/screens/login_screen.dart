@@ -17,37 +17,36 @@ class LoginScreen extends ConsumerStatefulWidget {
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-
-  bool isLoading = false;
+  final email = TextEditingController();
+  final password = TextEditingController();
+  bool loading = false;
 
   Future<void> _login() async {
-    setState(() => isLoading = true);
-
+    setState(() => loading = true);
     try {
       await ref.read(authProvider.notifier).login(
-        emailController.text.trim(),
-        passwordController.text.trim(),
+        email.text.trim(),
+        password.text.trim(),
       );
-
       if (context.mounted) context.go('/dashboard');
     } catch (e) {
-      final error = GlobalErrorHandler.handle(e);
-
+      final err = GlobalErrorHandler.handle(e);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error.message)),
-        );
+        final msg = err.message.toLowerCase().contains("nicht bestätigt")
+            ? "Bitte bestätige zuerst deine E-Mail"
+            : err.message;
+
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(msg)));
       }
     } finally {
-      if (mounted) setState(() => isLoading = false);
+      if (mounted) setState(() => loading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
+    final h = MediaQuery.of(context).size.height;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -56,7 +55,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           Positioned.fill(
             child: FittedBox(
               fit: BoxFit.fitHeight,
-              alignment: const Alignment(0.1, -1.0),
+              alignment: const Alignment(0.1, -1),
               child: Transform.scale(
                 scaleX: 0.85,
                 scaleY: 1.09,
@@ -69,19 +68,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               padding: EdgeInsets.symmetric(horizontal: s(24)),
               child: Column(
                 children: [
-                  SizedBox(height: screenHeight * 0.44),
-                  _GlowInput(
-                    hint: 'E-Mail-Adresse',
-                    controller: emailController,
-                  ),
+                  SizedBox(height: h * 0.44),
+                  _GlowInput('E-Mail-Adresse', email),
                   SizedBox(height: s(22)),
-                  _GlowInput(
-                    hint: 'Passwort',
-                    obscure: true,
-                    controller: passwordController,
-                  ),
+                  _GlowInput('Passwort', password, obscure: true),
                   SizedBox(height: s(36)),
-                  _LoginButton(onTap: isLoading ? null : _login),
+                  _LoginButton(onTap: loading ? null : _login),
                   SizedBox(height: s(18)),
                   Text(
                     'oder',
@@ -91,14 +83,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ),
                   SizedBox(height: s(18)),
-                  const _GlassButton(
+                  _GlassButton(
                     icon: Icons.person,
                     label: 'kostenlosen Account erstellen',
+                    onTap: () => context.go('/register'),
                   ),
                   SizedBox(height: s(10)),
-                  const _GlassButton(
+                  _GlassButton(
                     icon: Icons.key,
                     label: 'Passwort vergessen?',
+                    onTap: () => context.go('/forgot-password'),
                   ),
                   SizedBox(height: s(24)),
                   const _LanguageSwitch(),
@@ -107,7 +101,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ),
           ),
-          if (isLoading)
+          if (loading)
             const Center(child: CircularProgressIndicator()),
         ],
       ),
@@ -120,11 +114,7 @@ class _GlowInput extends StatefulWidget {
   final bool obscure;
   final TextEditingController controller;
 
-  const _GlowInput({
-    required this.hint,
-    required this.controller,
-    this.obscure = false,
-  });
+  const _GlowInput(this.hint, this.controller, {this.obscure = false});
 
   @override
   State<_GlowInput> createState() => _GlowInputState();
@@ -266,35 +256,40 @@ class _LoginButton extends StatelessWidget {
 class _GlassButton extends StatelessWidget {
   final IconData icon;
   final String label;
+  final VoidCallback? onTap;
 
   const _GlassButton({
     required this.icon,
     required this.label,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: s(18)),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(s(36)),
-        color: Colors.white.withOpacity(0.08),
-        border: Border.all(color: Colors.white.withOpacity(0.25)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: Colors.white70, size: s(20)),
-          SizedBox(width: s(10)),
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: s(16),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: s(18)),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(s(36)),
+          color: Colors.white.withOpacity(0.08),
+          border: Border.all(color: Colors.white.withOpacity(0.25)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.white70, size: s(20)),
+            SizedBox(width: s(10)),
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: s(16),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
