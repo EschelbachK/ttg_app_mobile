@@ -19,15 +19,28 @@ class ResetPasswordScreen extends ConsumerStatefulWidget {
 
 class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
   final password = TextEditingController();
+  final confirmPassword = TextEditingController();
   bool loading = false;
+
+  bool get valid =>
+      password.text.length >= 8 &&
+          password.text == confirmPassword.text;
 
   @override
   void dispose() {
     password.dispose();
+    confirmPassword.dispose();
     super.dispose();
   }
 
   Future<void> _reset() async {
+    if (!valid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Passwörter stimmen nicht überein")),
+      );
+      return;
+    }
+
     setState(() => loading = true);
 
     try {
@@ -44,9 +57,20 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
       }
     } catch (e) {
       final err = GlobalErrorHandler.handle(e);
+
       if (context.mounted) {
+        String msg = err.message;
+
+        final lower = msg.toLowerCase();
+
+        if (lower.contains("token") && lower.contains("invalid")) {
+          msg = "Link ungültig";
+        } else if (lower.contains("token") && lower.contains("expired")) {
+          msg = "Link abgelaufen";
+        }
+
         ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(err.message)));
+            .showSnackBar(SnackBar(content: Text(msg)));
       }
     } finally {
       if (mounted) setState(() => loading = false);
@@ -73,6 +97,10 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
                   SizedBox(height: s(20)),
 
                   _Input("Neues Passwort", password, obscure: true),
+
+                  SizedBox(height: s(16)),
+
+                  _Input("Passwort bestätigen", confirmPassword, obscure: true),
 
                   SizedBox(height: s(24)),
 
