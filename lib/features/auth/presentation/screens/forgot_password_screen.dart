@@ -22,15 +22,13 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   Future<void> _send() async {
     setState(() => loading = true);
-
     try {
-      await ref.read(authServiceProvider).forgotPassword(
-        email.text.trim(),
-      );
-
+      await ref.read(authServiceProvider).forgotPassword(email.text.trim());
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("E-Mail wurde gesendet")),
+          const SnackBar(
+            content: Text("Wenn ein Account existiert, wurde eine Mail gesendet"),
+          ),
         );
         context.go('/login');
       }
@@ -47,25 +45,45 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final h = MediaQuery.of(context).size.height;
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          Center(
-            child: Padding(
-              padding: EdgeInsets.all(s(24)),
+          Positioned.fill(
+            child: FittedBox(
+              fit: BoxFit.fitHeight,
+              alignment: const Alignment(0.1, -1),
+              child: Transform.scale(
+                scaleX: 0.85,
+                scaleY: 1.09,
+                child: Image.asset('assets/images/login_bg.png'),
+              ),
+            ),
+          ),
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: s(24)),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    "Passwort zurücksetzen",
-                    style: TextStyle(color: Colors.white, fontSize: 20),
+                  SizedBox(height: h * 0.44),
+
+                  Text(
+                    "PASSWORT ZURÜCKSETZEN",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: s(20),
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 1.2,
+                    ),
                   ),
-                  SizedBox(height: s(20)),
 
-                  _Input("E-Mail", email),
+                  SizedBox(height: s(30)),
 
-                  SizedBox(height: s(28)),
+                  _GlowInput('E-Mail-Adresse', email),
+
+                  SizedBox(height: s(36)),
 
                   _Button("Link senden", loading ? null : _send),
 
@@ -75,9 +93,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     onTap: () => context.go('/login'),
                     child: Text(
                       "Zurück zum Login",
-                      style: TextStyle(color: Colors.white70),
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: s(14),
+                      ),
                     ),
                   ),
+
+                  SizedBox(height: s(40)),
                 ],
               ),
             ),
@@ -89,24 +112,61 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   }
 }
 
-class _Input extends StatelessWidget {
+class _GlowInput extends StatefulWidget {
   final String hint;
   final TextEditingController controller;
 
-  const _Input(this.hint, this.controller);
+  const _GlowInput(this.hint, this.controller);
+
+  @override
+  State<_GlowInput> createState() => _GlowInputState();
+}
+
+class _GlowInputState extends State<_GlowInput> {
+  final focus = FocusNode();
+  bool active = false;
+
+  @override
+  void initState() {
+    super.initState();
+    focus.addListener(() => setState(() => active = focus.hasFocus));
+  }
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: const TextStyle(color: Colors.white70),
-        enabledBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.white30),
+    return Column(
+      children: [
+        TextField(
+          controller: widget.controller,
+          focusNode: focus,
+          cursorColor: kPrimaryRed,
+          style: TextStyle(color: kTextColor, fontSize: s(18)),
+          decoration: InputDecoration(
+            hintText: widget.hint,
+            hintStyle: TextStyle(
+              color: kTextColor.withOpacity(0.7),
+              fontSize: s(16),
+            ),
+            border: InputBorder.none,
+          ),
         ),
-      ),
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          height: s(2),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                kPrimaryRed.withOpacity(0),
+                kPrimaryRed,
+                kPrimaryRed.withOpacity(0),
+              ],
+            ),
+            boxShadow: active
+                ? [BoxShadow(color: kPrimaryRed.withOpacity(0.45), blurRadius: s(10))]
+                : [],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -125,13 +185,54 @@ class _Button extends StatelessWidget {
         opacity: onTap == null ? 0.6 : 1,
         child: Container(
           width: double.infinity,
-          height: s(52),
+          height: s(56),
           alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: kPrimaryRed,
-            borderRadius: BorderRadius.circular(s(30)),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(s(40)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: kPrimaryRed.withOpacity(0.5),
+                      blurRadius: s(25),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(s(40)),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF5A0000), Color(0xFF2A0000)],
+                  ),
+                  border: Border.all(color: kPrimaryRed, width: s(1.6)),
+                ),
+              ),
+              Container(
+                margin: EdgeInsets.all(s(2)),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(s(38)),
+                  gradient: LinearGradient(
+                    colors: [
+                      kPrimaryRed.withOpacity(0.6),
+                      kPrimaryRed,
+                      kPrimaryRed.withOpacity(0.6),
+                    ],
+                  ),
+                ),
+              ),
+              Text(
+                text,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: s(16),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
-          child: Text(text, style: const TextStyle(color: Colors.white)),
         ),
       ),
     );
