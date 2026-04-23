@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/reset_password_screen.dart';
+import '../../features/auth/presentation/verify/verify_info_screen.dart';
 import '../../features/auth/screens/loading_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/dashboard/navigation/dashboard_routes.dart';
@@ -37,6 +38,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/register',
         builder: (_, __) => const RegisterScreen(),
+      ),
+
+      GoRoute(
+        path: '/verify-info',
+        builder: (_, state) {
+          final email = state.extra as String?;
+          return VerifyInfoScreen(email: email);
+        },
       ),
 
       GoRoute(
@@ -104,7 +113,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isAuthRoute = loc.startsWith('/login') ||
           loc.startsWith('/register') ||
           loc.startsWith('/forgot-password') ||
-          loc.startsWith('/reset-password');
+          loc.startsWith('/reset-password') ||
+          loc.startsWith('/verify-info');
 
       if (!loggedIn && !isAuthRoute && loc != '/loading') {
         return '/login';
