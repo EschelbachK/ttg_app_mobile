@@ -31,15 +31,21 @@ class AuthService {
   }
 
   Future<void> forgotPassword(String email) async {
-    await api.post('/auth/password/forgot', data: {
+    await api.post('/auth/forgot-password', data: {
       'email': email,
     });
   }
 
   Future<void> resetPassword(String token, String password) async {
-    await api.post('/auth/password/reset', data: {
+    await api.post('/auth/reset-password', data: {
       'token': token,
       'password': password,
+    });
+  }
+
+  Future<void> resendVerification(String email) async {
+    await api.post('/auth/resend-verification', data: {
+      'email': email,
     });
   }
 }
