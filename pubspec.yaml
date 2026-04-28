@@ -36,6 +36,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    # vorhandene Assets
     - assets/images/login_bg.png
     - assets/images/dashboard_bg.png
     - assets/sounds/beep.mp3
@@ -44,3 +45,8 @@ flutter:
     - assets/icons/google.png
     - assets/icons/facebook.png
     - assets/icons/instagram.png
+
+    # neue Übungsassets
+    - assets/exercises/images/
+    - assets/exercises/thumbnails/
+    - assets/exercises/animations/
