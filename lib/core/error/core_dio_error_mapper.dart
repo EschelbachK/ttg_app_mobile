@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'api_exceptions.dart';
+import 'core_api_exceptions.dart';
 
 class DioErrorMapper {
   static ApiException map(DioException e) {

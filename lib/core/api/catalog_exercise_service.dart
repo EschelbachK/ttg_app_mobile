@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import '../../features/dashboard/models/ranked_exercise_response.dart';
 import '../../features/dashboard/models/training_exercise.dart';
-import '../error/global_error_handler.dart';
+import '../error/core_global_error_handler.dart';
 
 class ExerciseService {
   final Dio dio;

@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/token_storage.dart';
 import '../../features/auth/models/user_model.dart';
-import 'auth_service.dart';
+import 'auth_service_provider.dart';
 
 class AuthState {
   final bool isLoggedIn;

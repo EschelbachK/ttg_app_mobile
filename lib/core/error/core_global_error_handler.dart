@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'app_error.dart';
-import 'dio_error_mapper.dart';
+import 'core_app_error.dart';
+import 'core_dio_error_mapper.dart';
 
 class GlobalErrorHandler {
   static AppError handle(Object error) {

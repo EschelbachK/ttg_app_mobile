@@ -1,6 +1,6 @@
 import '../../features/workout/domain/workout_session.dart';
 import '../../features/workout/domain/set_log.dart';
-import 'app_event.dart';
+import 'core_app_event.dart';
 
 class WorkoutFinishedEvent extends AppEvent {
   final WorkoutSession session;

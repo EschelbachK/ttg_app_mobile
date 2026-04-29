@@ -1,6 +1,6 @@
 import '../settings/settings_controller.dart';
-import 'offline_queue.dart';
-import 'offline_action.dart';
+import '../offline/offline_queue.dart';
+import '../offline/offline_action.dart';
 import '../../features/dashboard/api/dashboard_api.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'sync_state_provider.dart';
