@@ -1,174 +1,161 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../core/theme/app_theme.dart';
-import '../../../core/ui/ttg_glow_border.dart';
+import '../../../core/constants/body_regions.dart';
+import '../../../core/constants/exercise_types.dart';
+import '../../../core/constants/exercise_tags.dart';
 import '../state/exercise_catalog_provider.dart';
 
-class ExerciseCatalogScreen extends ConsumerWidget {
-  const ExerciseCatalogScreen({super.key});
+class ExerciseCatalogScreen extends ConsumerStatefulWidget {
+  final String category;
+  final String folderId;
+  final String planId;
 
-  static const _baseUrl = "http://10.0.2.2:8080";
-
-  String _img(String path) => path.isEmpty ? "" : "$_baseUrl$path";
+  const ExerciseCatalogScreen({
+    super.key,
+    required this.category,
+    required this.folderId,
+    required this.planId,
+  });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
+  ConsumerState<ExerciseCatalogScreen> createState() => _ExerciseCatalogScreenState();
+}
+
+class _ExerciseCatalogScreenState extends ConsumerState<ExerciseCatalogScreen> {
+  final _scrollController = ScrollController();
+  String get mappedCategory => mapCategoryToBodyRegion(widget.category);
+  String _selectedType = ExerciseTypes.ALL;
+  final List<String> _selectedTags = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+    _fetchInitial();
+  }
+
+  void _fetchInitial() {
+    ref.read(exerciseCatalogStateProvider.notifier)
+        .updateFilters(bodyRegion: mappedCategory, exerciseType: _selectedType, tags: _selectedTags);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      ref.read(exerciseCatalogStateProvider.notifier).fetchExercises();
+    }
+  }
+
+  void _onTypeChanged(String? type) {
+    if (type == null) return;
+    setState(() => _selectedType = type);
+    ref.read(exerciseCatalogStateProvider.notifier)
+        .updateFilters(bodyRegion: mappedCategory, exerciseType: _selectedType, tags: _selectedTags);
+  }
+
+  void _onTagsChanged(List<String> tags) {
+    setState(() => _selectedTags
+      ..clear()
+      ..addAll(tags));
+    ref.read(exerciseCatalogStateProvider.notifier)
+        .updateFilters(bodyRegion: mappedCategory, exerciseType: _selectedType, tags: _selectedTags);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(exerciseCatalogStateProvider);
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF0B0D10),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF0B0D10),
+        elevation: 0,
+        title: Text(widget.category, style: const TextStyle(color: Colors.white)),
       ),
-    );
-
-    final async = ref.watch(exerciseCatalogProvider);
-
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: Image.asset(
-            "assets/images/dashboard_bg.png",
-            fit: BoxFit.cover,
-          ),
-        ),
-        Positioned.fill(
-          child: Container(color: Colors.black.withOpacity(.6)),
-        ),
-        Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            title: const Text(
-              "Übungen",
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-          body: async.when(
-            data: (items) {
-              final sorted = [...items]
-                ..sort((a, b) =>
-                    a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-
-              return sorted.isEmpty
-                  ? const Center(
-                child: Text(
-                  "Keine Übungen",
-                  style: TextStyle(color: Colors.white54),
-                ),
-              )
-                  : ListView.builder(
-                padding: const EdgeInsets.only(bottom: 100),
-                itemCount: sorted.length,
+      body: Column(
+        children: [
+          _buildFilters(),
+          Expanded(
+            child: state.isLoading && state.items.isEmpty
+                ? const Center(child: CircularProgressIndicator())
+                : state.error != null && state.items.isEmpty
+                ? Center(child: Text("Error: ${state.error}", style: const TextStyle(color: Colors.white)))
+                : RefreshIndicator(
+              onRefresh: () async => ref.read(exerciseCatalogStateProvider.notifier)
+                  .fetchExercises(refresh: true),
+              child: ListView.builder(
+                controller: _scrollController,
+                itemCount: state.hasMore ? state.items.length + 1 : state.items.length,
                 itemBuilder: (_, i) {
-                  final e = sorted[i];
-                  final img = _img(e.imageUrl);
-
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 10),
-                    child: TTGGlowBorder(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(
-                              sigmaX: 12, sigmaY: 12),
-                          child: Container(
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(.05),
-                              borderRadius:
-                              BorderRadius.circular(20),
-                              border: Border.all(
-                                color: Colors.white
-                                    .withOpacity(.08),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                ClipRRect(
-                                  borderRadius:
-                                  BorderRadius.circular(12),
-                                  child: img.isNotEmpty
-                                      ? Image.network(
-                                    img,
-                                    width: 50,
-                                    height: 50,
-                                    fit: BoxFit.cover,
-                                  )
-                                      : Container(
-                                    width: 50,
-                                    height: 50,
-                                    color: Colors.black,
-                                    child: const Icon(
-                                      Icons
-                                          .fitness_center,
-                                      color: AppTheme
-                                          .primaryRed,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                    CrossAxisAlignment
-                                        .start,
-                                    children: [
-                                      Text(
-                                        e.name,
-                                        style:
-                                        const TextStyle(
-                                          color:
-                                          Colors.white,
-                                          fontWeight:
-                                          FontWeight
-                                              .w600,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        "${e.bodyRegion} • ${e.equipment}",
-                                        style:
-                                        const TextStyle(
-                                          color:
-                                          Colors.white54,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const Icon(
-                                  Icons.chevron_right,
-                                  color: Colors.white38,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
+                  if (i >= state.items.length) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  }
+                  final e = state.items[i];
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1B1F23),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: ListTile(
+                      title: Text(e.name, style: const TextStyle(color: Colors.white)),
+                      subtitle: Text("${e.primaryMuscle} • ${e.equipment}",
+                          style: const TextStyle(color: Colors.white54)),
+                      trailing: const Icon(Icons.chevron_right, color: Colors.white38),
                     ),
                   );
                 },
-              );
-            },
-            loading: () => const Center(
-              child: CircularProgressIndicator(
-                color: AppTheme.primaryRed,
-              ),
-            ),
-            error: (e, _) => Center(
-              child: Text(
-                e.toString(),
-                style: const TextStyle(color: Colors.red),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilters() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          DropdownButton<String>(
+            value: _selectedType,
+            dropdownColor: const Color(0xFF1B1F23),
+            isExpanded: true,
+            style: const TextStyle(color: Colors.white),
+            items: ExerciseTypes.all
+                .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                .toList(),
+            onChanged: _onTypeChanged,
+          ),
+          Wrap(
+            spacing: 8,
+            children: ExerciseTags.all.map((tag) {
+              final selected = _selectedTags.contains(tag);
+              return ChoiceChip(
+                label: Text(tag, style: TextStyle(color: selected ? Colors.white : Colors.white54)),
+                selected: selected,
+                selectedColor: const Color(0xFF3B3F43),
+                backgroundColor: const Color(0xFF1B1F23),
+                onSelected: (s) {
+                  final newTags = List<String>.from(_selectedTags);
+                  if (s) newTags.add(tag); else newTags.remove(tag);
+                  _onTagsChanged(newTags);
+                },
+              );
+            }).toList(),
+          ),
+        ],
+      ),
     );
   }
 }
