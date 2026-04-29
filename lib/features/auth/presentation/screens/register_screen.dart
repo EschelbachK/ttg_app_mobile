@@ -3,8 +3,8 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/auth/auth_service.dart';
-import '../../../../core/error/global_error_handler.dart';
+import '../../../../core/auth/auth_service_provider.dart';
+import '../../../../core/error/core_global_error_handler.dart';
 
 const kPrimaryRed = Color(0xFFE10600);
 
