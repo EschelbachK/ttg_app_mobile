@@ -40,150 +40,152 @@ class _State extends ConsumerState<MuscleGroupScreen> {
     final folder = ref.watch(dashboardProvider).folders.firstWhere((f) => f.id == widget.folderId);
     final exercises = folder.exercises;
 
-    return Stack(children: [
-      Positioned.fill(child: Image.asset("assets/images/dashboard_bg.png", fit: BoxFit.cover)),
-      Positioned.fill(child: Container(color: Colors.black.withOpacity(.55))),
-      Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
+    return Stack(
+      children: [
+        Positioned.fill(child: Image.asset("assets/images/dashboard_bg.png", fit: BoxFit.cover)),
+        Positioned.fill(child: Container(color: Colors.black.withOpacity(.55))),
+        Scaffold(
           backgroundColor: Colors.transparent,
-          elevation: 0,
-          centerTitle: true,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white54),
-            onPressed: () => Navigator.pop(context),
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            centerTitle: true,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white54),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(folder.name, style: const TextStyle(color: Colors.white)),
           ),
-          title: Text(folder.name, style: const TextStyle(color: Colors.white)),
-        ),
-        body: SingleChildScrollView(
-          child: Column(children: [
-            const SizedBox(height: 20),
+          body: SingleChildScrollView(
+            child: Column(children: [
+              const SizedBox(height: 20),
 
-            if (!widget.isArchived)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: TTGGlowBorder(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(22),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(.35),
-                          borderRadius: BorderRadius.circular(22),
-                          border: Border.all(color: Colors.white.withOpacity(.12)),
-                        ),
-                        child: Column(children: [
-                          GestureDetector(
-                            onTap: () => setState(() => open = !open),
-                            child: Container(
-                              margin: const EdgeInsets.only(bottom: 6),
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                color: Colors.white.withOpacity(0.04),
-                                border: Border.all(color: Colors.white.withOpacity(0.08)),
+              if (!widget.isArchived)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: TTGGlowBorder(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(22),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(.35),
+                            borderRadius: BorderRadius.circular(22),
+                            border: Border.all(color: Colors.white.withOpacity(.12)),
+                          ),
+                          child: Column(children: [
+                            GestureDetector(
+                              onTap: () => setState(() => open = !open),
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 6),
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16),
+                                  color: Colors.white.withOpacity(0.04),
+                                  border: Border.all(color: Colors.white.withOpacity(0.08)),
+                                ),
+                                child: Row(children: [
+                                  Container(
+                                    width: 10,
+                                    height: 10,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: AppTheme.primaryRed,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppTheme.primaryRed.withOpacity(.9),
+                                          blurRadius: 12,
+                                          spreadRadius: 2,
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  const Expanded(
+                                    child: Text(
+                                      "Übung hinzufügen",
+                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16),
+                                    ),
+                                  ),
+                                  const Icon(Icons.add, size: 18, color: AppTheme.primaryRed),
+                                ]),
                               ),
-                              child: Row(children: [
-                                Container(
-                                  width: 10,
-                                  height: 10,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: AppTheme.primaryRed,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: AppTheme.primaryRed.withOpacity(.9),
-                                        blurRadius: 12,
-                                        spreadRadius: 2,
-                                      )
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                const Expanded(
-                                  child: Text(
-                                    "Übung hinzufügen",
-                                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 16),
-                                  ),
-                                ),
-                                const Icon(Icons.add, size: 18, color: AppTheme.primaryRed),
-                              ]),
                             ),
-                          ),
-                          AnimatedSize(
-                            duration: const Duration(milliseconds: 200),
-                            child: open
-                                ? Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: ExerciseSelectionCard(
-                                folderId: folder.id,
-                                planId: widget.plan.id,
-                                onAdded: () => setState(() => open = false),
-                              ),
-                            )
-                                : const SizedBox(),
-                          ),
-                        ]),
+                            AnimatedSize(
+                              duration: const Duration(milliseconds: 200),
+                              child: open
+                                  ? Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: ExerciseSelectionCard(
+                                  folderId: folder.id,
+                                  planId: widget.plan.id,
+                                  onAdded: () => setState(() => open = false),
+                                ),
+                              )
+                                  : const SizedBox(),
+                            ),
+                          ]),
+                        ),
                       ),
                     ),
                   ),
                 ),
+
+              const SizedBox(height: 10),
+
+              exercises.isEmpty
+                  ? Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(children: [
+                  const SizedBox(height: 40),
+                  Icon(Icons.fitness_center, color: Colors.white.withOpacity(.35), size: 48),
+                  const SizedBox(height: 14),
+                  Text(
+                    "Noch keine Übungen",
+                    style: TextStyle(color: Colors.white.withOpacity(.75), fontSize: 15),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    "Füge deine erste Übung hinzu!",
+                    style: TextStyle(color: Colors.white.withOpacity(.45), fontSize: 14),
+                  ),
+                ]),
+              )
+                  : ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(bottom: 100),
+                itemCount: exercises.length,
+                itemBuilder: (_, i) {
+                  final e = exercises[i];
+                  return ExerciseTile(
+                    exercise: e,
+                    onDelete: () async {
+                      final ok = await showTTGConfirmDialog(
+                        context: context,
+                        title: "Übung löschen",
+                        subtitle: "Wirklich löschen?",
+                      );
+                      if (!ok) return;
+
+                      ref.read(dashboardProvider.notifier).removeExercise(
+                        planId: widget.plan.id,
+                        folderId: folder.id,
+                        exerciseId: e.id,
+                      );
+
+                      if (exercises.length == 1) {
+                        setState(() => open = true);
+                      }
+                    },
+                  );
+                },
               ),
-
-            const SizedBox(height: 10),
-
-            exercises.isEmpty
-                ? Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(children: [
-                const SizedBox(height: 40),
-                Icon(Icons.fitness_center, color: Colors.white.withOpacity(.35), size: 48),
-                const SizedBox(height: 14),
-                Text(
-                  "Noch keine Übungen",
-                  style: TextStyle(color: Colors.white.withOpacity(.75), fontSize: 15),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  "Füge deine erste Übung hinzu!",
-                  style: TextStyle(color: Colors.white.withOpacity(.45), fontSize: 14),
-                ),
-              ]),
-            )
-                : ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.only(bottom: 100),
-              itemCount: exercises.length,
-              itemBuilder: (_, i) {
-                final e = exercises[i];
-                return ExerciseTile(
-                  exercise: e,
-                  onDelete: () async {
-                    final ok = await showTTGConfirmDialog(
-                      context: context,
-                      title: "Übung löschen",
-                      subtitle: "Wirklich löschen?",
-                    );
-                    if (!ok) return;
-
-                    ref.read(dashboardProvider.notifier).removeExercise(
-                      planId: widget.plan.id,
-                      folderId: folder.id,
-                      exerciseId: e.id,
-                    );
-
-                    if (exercises.length == 1) {
-                      setState(() => open = true);
-                    }
-                  },
-                );
-              },
-            ),
-          ]),
+            ]),
+          ),
         ),
-      ),
-    ]);
+      ],
+    );
   }
 }
