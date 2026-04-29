@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../offline/sync_provider.dart';
+import '../sync/sync_provider.dart';
 import 'settings_state.dart';
 import 'settings_keys.dart';
 
