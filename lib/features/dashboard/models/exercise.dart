@@ -13,19 +13,13 @@ class Exercise {
     required this.sets,
   });
 
-  Exercise copyWith({
-    String? id,
-    String? name,
-    String? bodyRegion,
-    List<ExerciseSet>? sets,
-  }) {
-    return Exercise(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      bodyRegion: bodyRegion ?? this.bodyRegion,
-      sets: sets ?? this.sets,
-    );
-  }
+  Exercise copyWith({String? id, String? name, String? bodyRegion, List<ExerciseSet>? sets}) =>
+      Exercise(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        bodyRegion: bodyRegion ?? this.bodyRegion,
+        sets: sets ?? this.sets,
+      );
 
   factory Exercise.fromJson(Map<String, dynamic> json) {
     final s = (json['sets'] as List?) ?? [];
@@ -37,10 +31,5 @@ class Exercise {
     );
   }
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'bodyRegion': bodyRegion,
-    'sets': sets.map((e) => e.toJson()).toList(),
-  };
+  Map<String, dynamic> toJson() => {'id': id, 'name': name, 'bodyRegion': bodyRegion, 'sets': sets.map((e) => e.toJson()).toList()};
 }
