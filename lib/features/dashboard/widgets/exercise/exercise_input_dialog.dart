@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ttg_app_mobile/features/dashboard/models/exercise.dart';
+import '../../models/exercise.dart';
 import '../../models/exercise_set.dart';
 import '../../state/dashboard_provider.dart';
 
@@ -19,8 +19,7 @@ class ExerciseInputDialog extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ExerciseInputDialog> createState() =>
-      _ExerciseInputDialogState();
+  ConsumerState<ExerciseInputDialog> createState() => _ExerciseInputDialogState();
 }
 
 class _ExerciseInputDialogState extends ConsumerState<ExerciseInputDialog> {
@@ -34,10 +33,7 @@ class _ExerciseInputDialogState extends ConsumerState<ExerciseInputDialog> {
       context: context,
       builder: (_) => AlertDialog(
         title: Text(title),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-        ),
+        content: TextField(controller: controller, keyboardType: TextInputType.number),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text("Abbrechen")),
           ElevatedButton(
@@ -51,12 +47,12 @@ class _ExerciseInputDialogState extends ConsumerState<ExerciseInputDialog> {
         ],
       ),
     );
+    controller.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final notifier = ref.read(dashboardProvider.notifier);
-
     return AlertDialog(
       backgroundColor: const Color(0xFF1B1F23),
       title: Text(widget.name, style: const TextStyle(color: Colors.white)),
@@ -71,7 +67,6 @@ class _ExerciseInputDialogState extends ConsumerState<ExerciseInputDialog> {
               buildField("SÄTZE", sets, (v) => setState(() => sets = v)),
             ],
           ),
-          const SizedBox(height: 20),
         ],
       ),
       actions: [
@@ -83,12 +78,8 @@ class _ExerciseInputDialogState extends ConsumerState<ExerciseInputDialog> {
               id: DateTime.now().millisecondsSinceEpoch.toString(),
               name: widget.name,
               bodyRegion: widget.category,
-              sets: List.generate(
-                sets,
-                    (index) => ExerciseSet(weight: weight, reps: reps),
-              ),
+              sets: List.generate(sets, (_) => ExerciseSet(weight: weight, reps: reps)),
             );
-
             notifier.addExercise(widget.folderId, widget.planId, exercise);
             Navigator.pop(context);
           },
