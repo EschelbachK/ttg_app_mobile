@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
-import 'core/offline/sync_provider.dart';
-import 'core/offline/sync_status_listener.dart';
-import 'core/offline/sync_status_bar.dart';
+import 'core/sync/sync_provider.dart';
+import 'core/sync/sync_status_listener.dart';
+import 'core/sync/sync_status_bar.dart';
 import 'core/network/connectivity_provider.dart';
 import 'core/settings/settings_controller.dart';
-import 'core/deeplink/deeplink_service.dart';
+import 'core/deeplink/core_deeplink_service_provider.dart';
 
 import 'features/workout/providers/motivation_listener.dart';
 import 'features/workout/providers/sound_listener.dart';
