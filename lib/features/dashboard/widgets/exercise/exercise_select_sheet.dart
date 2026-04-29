@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../catalog/models/exercise_catalog_item.dart';
 import '../../../../core/ui/ttg_exercise_selection_sheet.dart';
-import '../../../../core/constants/body_regions.dart';
+import '../../../../core/constants/exercise_body_regions.dart';
 import '../../../catalog/state/exercise_catalog_state.dart';
 
 class ExerciseSelectSheet extends ConsumerWidget {
