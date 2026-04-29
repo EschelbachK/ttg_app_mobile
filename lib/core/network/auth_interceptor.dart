@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../services/token_storage.dart';
-import '../auth/auth_provider.dart';
-import '../error/api_exceptions.dart';
-import '../error/dio_error_mapper.dart';
+import '../auth/auth_state_provider.dart';
+import '../error/core_api_exceptions.dart';
+import '../error/core_dio_error_mapper.dart';
 import 'dio_provider.dart';
 
 class AuthInterceptor extends Interceptor {
