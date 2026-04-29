@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../../../../core/constants/body_regions.dart';
-import '../../../catalog/state/exercise_catalog_provider.dart';
 import '../../../catalog/models/exercise_catalog_item.dart';
 import '../../../../core/ui/ttg_exercise_selection_sheet.dart';
+import '../../../../core/constants/body_regions.dart';
+import '../../../catalog/state/exercise_catalog_state.dart';
 
 class ExerciseSelectSheet extends ConsumerWidget {
   final String category;
@@ -13,19 +12,14 @@ class ExerciseSelectSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final exercises = ref.watch(exerciseCatalogProvider);
+    final exercisesAsync = ref.watch(exerciseCatalogProvider);
 
-    return exercises.when(
+    return exercisesAsync.when(
       data: (list) {
-        List<ExerciseCatalogItem> filtered;
-
-        if (category == "Alle Bereiche") {
-          filtered = list;
-        } else {
-          final mapped = mapCategoryToBodyRegion(category);
-          filtered =
-              list.where((e) => e.bodyRegion == mapped).toList();
-        }
+        final mappedBodyRegion = mapCategoryToBodyRegion(category);
+        final filtered = mappedBodyRegion == "ALL"
+            ? list
+            : list.where((e) => e.bodyRegion.toUpperCase() == mappedBodyRegion.toUpperCase()).toList();
 
         return TTGExerciseSelectionSheet<ExerciseCatalogItem>(
           items: filtered,
@@ -40,12 +34,7 @@ class ExerciseSelectSheet extends ConsumerWidget {
       ),
       error: (e, _) => SizedBox(
         height: 500,
-        child: Center(
-          child: Text(
-            "Fehler: $e",
-            style: const TextStyle(color: Colors.white),
-          ),
-        ),
+        child: Center(child: Text("Fehler: $e", style: const TextStyle(color: Colors.white))),
       ),
     );
   }
