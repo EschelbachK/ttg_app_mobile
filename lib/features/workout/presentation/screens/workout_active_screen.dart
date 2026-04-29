@@ -6,10 +6,10 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/settings/settings_controller.dart';
 import '../../../../core/ui/ttg_background.dart';
 import '../../../../core/ui/ttg_leave_workout_dialog.dart';
-import '../../../../core/haptics/haptic_provider.dart';
-import '../../../../core/audio/sound_provider.dart';
-import '../../../../core/events/event_bus_provider.dart';
-import '../../../../core/events/workout_events.dart';
+import '../../../../core/haptics/haptic_controller_provider.dart';
+import '../../../../core/audio/core_sound_service_provider.dart';
+import '../../../../core/events/core_event_bus_provider.dart';
+import '../../../../core/events/workout_session_events.dart';
 
 import '../../providers/workout_provider.dart';
 import '../widgets/collapsible_exercise_block.dart';
