@@ -2,25 +2,24 @@ import 'package:dio/dio.dart';
 
 class CatalogApi {
   final Dio dio;
-
   CatalogApi(this.dio);
 
-  Future<List<dynamic>> _get(String path) async {
-    final res = await dio.get("/exercise-catalog$path");
-
-    final list = List<dynamic>.from(res.data);
-
-    list.sort((a, b) {
-      final aName = (a["name"] ?? "").toString().toLowerCase();
-      final bName = (b["name"] ?? "").toString().toLowerCase();
-      return aName.compareTo(bName);
-    });
-
+  Future<List<Map<String, dynamic>>> _get(String path, {Map<String, dynamic>? queryParameters}) async {
+    final res = await dio.get("/exercise-catalog$path", queryParameters: queryParameters);
+    final data = res.data as List<dynamic>? ?? [];
+    final list = data.map((e) => Map<String, dynamic>.from(e)).toList();
+    list.sort((a, b) => (a["name"] ?? "").toString().toLowerCase().compareTo((b["name"] ?? "").toString().toLowerCase()));
     return list;
   }
 
-  Future<List<dynamic>> fetchExercises() => _get("/all");
+  Future<List<Map<String, dynamic>>> fetchExercises({Map<String, dynamic>? filter, int page = 1, int size = 20}) =>
+      _get("/all", queryParameters: {'page': page, 'size': size, ...?filter});
 
-  Future<List<dynamic>> searchExercises(String q) =>
-      _get("/search?q=$q");
+  Future<List<Map<String, dynamic>>> searchExercises(String query) =>
+      _get("/search", queryParameters: {'q': query});
+
+  Future<Map<String, dynamic>> fetchExerciseDetail(String id) async {
+    final res = await dio.get("/exercise-catalog/$id");
+    return Map<String, dynamic>.from(res.data as Map<String, dynamic>);
+  }
 }
