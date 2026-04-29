@@ -23,35 +23,6 @@ class TrainingFolder {
     this.order = 0,
   });
 
-  factory TrainingFolder.fromJson(Map<String, dynamic> json) {
-    final ex = (json['exercises'] as List?) ?? [];
-    return TrainingFolder(
-      id: (json['id'] ?? json['_id'] ?? '').toString(),
-      name: (json['name'] ?? '').toString(),
-      trainingPlanId:
-      (json['trainingPlanId'] ?? json['planId'] ?? '').toString(),
-      trainingPlanName:
-      (json['trainingPlanName'] ?? json['planName'] ?? '').toString(),
-      bodyRegion: (json['bodyRegion'] ?? '').toString(),
-      plans: [],
-      exercises: ex.map((e) => Exercise.fromJson(e)).toList(),
-      archived: json['archived'] ?? false,
-      order: (json['order'] ?? 0) as int,
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'trainingPlanId': trainingPlanId,
-    'trainingPlanName': trainingPlanName,
-    'bodyRegion': bodyRegion,
-    'plans': plans,
-    'exercises': exercises.map((e) => e.toJson()).toList(),
-    'archived': archived,
-    'order': order,
-  };
-
   TrainingFolder copyWith({
     String? id,
     String? name,
@@ -74,4 +45,31 @@ class TrainingFolder {
         archived: archived ?? this.archived,
         order: order ?? this.order,
       );
+
+  factory TrainingFolder.fromJson(Map<String, dynamic> json) {
+    final ex = (json['exercises'] as List?) ?? [];
+    return TrainingFolder(
+      id: (json['id'] ?? json['_id'] ?? '').toString(),
+      name: (json['name'] ?? '').toString(),
+      trainingPlanId: (json['trainingPlanId'] ?? json['planId'] ?? '').toString(),
+      trainingPlanName: (json['trainingPlanName'] ?? json['planName'] ?? '').toString(),
+      bodyRegion: (json['bodyRegion'] ?? '').toString(),
+      plans: [],
+      exercises: ex.map((e) => Exercise.fromJson(e)).toList(),
+      archived: json['archived'] ?? false,
+      order: (json['order'] ?? 0) as int,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'trainingPlanId': trainingPlanId,
+    'trainingPlanName': trainingPlanName,
+    'bodyRegion': bodyRegion,
+    'plans': plans,
+    'exercises': exercises.map((e) => e.toJson()).toList(),
+    'archived': archived,
+    'order': order,
+  };
 }
