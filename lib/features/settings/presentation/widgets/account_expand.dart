@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/ui/privacy_webview.dart';
-import '../../../../core/auth/auth_provider.dart';
+import '../../../../core/auth/auth_state_provider.dart';
 import 'settings_tile.dart';
 
 class AccountExpand extends ConsumerStatefulWidget {
