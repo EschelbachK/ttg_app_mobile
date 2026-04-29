@@ -2,9 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/dio_provider.dart';
 import '../api/catalog_api.dart';
 import '../models/exercise_catalog_item.dart';
-import '../../../core/constants/body_regions.dart';
-import '../../../core/constants/exercise_types.dart';
-import '../../../core/constants/exercise_tags.dart';
+import '../../../core/constants/exercise_body_regions.dart';
+import '../../../core/constants/exercise_types_constants.dart';
+import '../../../core/constants/exercise_tags_constants.dart';
 
 final catalogApiProvider = Provider<CatalogApi>((ref) => CatalogApi(ref.read(dioProvider)));
 
