@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../../../core/settings/settings_controller.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/ui/ttg_glow_border.dart';
@@ -43,9 +42,8 @@ class _ExerciseTileState extends ConsumerState<ExerciseTile> {
   }
 
   void _addSet() {
-    final e = widget.exercise;
-    final list = [...e.sets, ExerciseSet(weight: 0, reps: 0)];
-    _update(e.copyWith(sets: list));
+    final list = [...widget.exercise.sets, ExerciseSet(weight: 0, reps: 0)];
+    _update(widget.exercise.copyWith(sets: list));
   }
 
   double _normalize(double v) => (v * 2).round() / 2;
@@ -78,12 +76,8 @@ class _ExerciseTileState extends ConsumerState<ExerciseTile> {
                       padding: const EdgeInsets.all(14),
                       child: Row(
                         children: [
-                          Icon(
-                            open
-                                ? Icons.keyboard_arrow_up
-                                : Icons.keyboard_arrow_down,
-                            color: Colors.white54,
-                          ),
+                          Icon(open ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
+                              color: Colors.white54),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Center(
@@ -92,13 +86,11 @@ class _ExerciseTileState extends ConsumerState<ExerciseTile> {
                                 children: [
                                   Container(width: 12, height: 2, color: AppTheme.primaryRed),
                                   const SizedBox(width: 6),
-                                  Text(
-                                    e.name,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
+                                  Text(e.name,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                      )),
                                   const SizedBox(width: 6),
                                   Container(width: 12, height: 2, color: AppTheme.primaryRed),
                                 ],
@@ -113,13 +105,10 @@ class _ExerciseTileState extends ConsumerState<ExerciseTile> {
                       ),
                     ),
                   ),
-
                   if (open) ...[
                     const SizedBox(height: 8),
-
                     ...List.generate(e.sets.length, (i) {
                       final s = e.sets[i];
-
                       return Container(
                         margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -131,10 +120,8 @@ class _ExerciseTileState extends ConsumerState<ExerciseTile> {
                           children: [
                             SizedBox(
                               width: 24,
-                              child: Text(
-                                '#${i + 1}',
-                                style: const TextStyle(color: Colors.white38, fontSize: 12),
-                              ),
+                              child: Text('#${i + 1}',
+                                  style: const TextStyle(color: Colors.white38, fontSize: 12)),
                             ),
                             Expanded(
                               child: Row(
@@ -183,9 +170,7 @@ class _ExerciseTileState extends ConsumerState<ExerciseTile> {
                         ),
                       );
                     }),
-
                     const SizedBox(height: 10),
-
                     GestureDetector(
                       onTap: _addSet,
                       child: Container(
@@ -200,19 +185,16 @@ class _ExerciseTileState extends ConsumerState<ExerciseTile> {
                           children: [
                             Icon(Icons.add, color: kPrimaryRed, size: 18),
                             SizedBox(width: 8),
-                            Text(
-                              'SATZ HINZUFÜGEN',
-                              style: TextStyle(
-                                color: kPrimaryRed,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
+                            Text('SATZ HINZUFÜGEN',
+                                style: TextStyle(
+                                  color: kPrimaryRed,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 1.2,
+                                )),
                           ],
                         ),
                       ),
                     ),
-
                     const SizedBox(height: 6),
                   ]
                 ],
@@ -224,15 +206,8 @@ class _ExerciseTileState extends ConsumerState<ExerciseTile> {
     );
   }
 
-  Widget _stepper(
-      double value,
-      bool isDecimal,
-      String suffix,
-      bool keyboard,
-      Function(double) onChanged,
-      VoidCallback onMinus,
-      VoidCallback onPlus,
-      ) {
+  Widget _stepper(double value, bool isDecimal, String suffix, bool keyboard,
+      Function(double) onChanged, VoidCallback onMinus, VoidCallback onPlus) {
     Widget btn(IconData icon, VoidCallback onTap) => GestureDetector(
       onTap: onTap,
       child: Container(
@@ -257,20 +232,13 @@ class _ExerciseTileState extends ConsumerState<ExerciseTile> {
             width: 50,
             child: TextField(
               controller: TextEditingController(
-                text: isDecimal
-                    ? value.toStringAsFixed(1)
-                    : value.toInt().toString(),
+                text: isDecimal ? value.toStringAsFixed(1) : value.toInt().toString(),
               ),
-              keyboardType:
-              TextInputType.numberWithOptions(decimal: isDecimal),
+              keyboardType: TextInputType.numberWithOptions(decimal: isDecimal),
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                  color: Colors.white, fontWeight: FontWeight.w600),
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
               inputFormatters: isDecimal
-                  ? [
-                FilteringTextInputFormatter.allow(
-                    RegExp(r'^\d*\.?\d*'))
-              ]
+                  ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))]
                   : [FilteringTextInputFormatter.digitsOnly],
               onChanged: (val) {
                 final parsed = double.tryParse(val);
@@ -280,22 +248,11 @@ class _ExerciseTileState extends ConsumerState<ExerciseTile> {
           )
               : Row(
             children: [
-              Text(
-                isDecimal
-                    ? value.toStringAsFixed(1)
-                    : value.toInt().toString(),
-                style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.w600),
-              ),
+              Text(isDecimal ? value.toStringAsFixed(1) : value.toInt().toString(),
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
               const SizedBox(width: 4),
-              Text(
-                suffix,
-                style: const TextStyle(
-                  color: kPrimaryRed,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              Text(suffix,
+                  style: const TextStyle(color: kPrimaryRed, fontSize: 11, fontWeight: FontWeight.w700)),
             ],
           ),
         ),
