@@ -2,126 +2,50 @@ import 'package:dio/dio.dart';
 
 class DashboardApi {
   final Dio dio;
-
   DashboardApi(this.dio);
 
   List<dynamic> _extractList(dynamic data) {
     if (data is List) return data;
-
     if (data is Map) {
       if (data['content'] is List) return data['content'];
-
-      final list = data.values.firstWhere(
-            (v) => v is List,
-        orElse: () => [],
-      );
-
+      final list = data.values.firstWhere((v) => v is List, orElse: () => []);
       return list is List ? list : [];
     }
-
     return [];
   }
 
-  Future<List<dynamic>> _getList(
-      String path, {
-        Map<String, dynamic>? query,
-      }) async {
+  Future<List<dynamic>> _getList(String path, {Map<String, dynamic>? query}) async {
     final res = await dio.get(path, queryParameters: query);
     return _extractList(res.data);
   }
 
-  Future<List<dynamic>> getTrainingPlans() =>
-      _getList('/training-plans');
+  Future<List<dynamic>> getTrainingPlans() => _getList('/training-plans');
+  Future<List<dynamic>> getArchivedPlans() => _getList('/training-plans/archived');
+  Future<List<dynamic>> getFolders(String planId) => _getList('/training-plans/$planId/folders');
+  Future<List<dynamic>> getArchivedFolders() => _getList('/training-folders/archived');
 
-  Future<List<dynamic>> getArchivedPlans() =>
-      _getList('/training-plans/archived');
+  Future<void> createTrainingPlan(String name) => dio.post('/training-plans', data: {'title': name});
+  Future<void> updateTrainingPlan(String planId, String name) => dio.patch('/training-plans/$planId', data: {'title': name});
+  Future<void> deleteTrainingPlan(String planId) => dio.delete('/training-plans/$planId');
+  Future<void> archiveTrainingPlan(String planId) => dio.post('/training-plans/$planId/archive');
+  Future<void> restoreTrainingPlan(String id) => dio.post('/training-plans/$id/restore');
+  Future<void> updateTrainingPlanOrder(String planId, int order) => dio.patch('/training-plans/$planId/order', data: {'order': order});
 
-  Future<void> createTrainingPlan(String name) =>
-      dio.post('/training-plans', data: {'title': name});
+  Future<void> createFolder({required String trainingPlanId, required String name, required int order}) =>
+      dio.post('/training-plans/$trainingPlanId/folders', data: {'name': name, 'order': order});
 
-  Future<void> updateTrainingPlan(String planId, String name) =>
-      dio.patch('/training-plans/$planId', data: {'title': name});
-
-  Future<void> deleteTrainingPlan(String planId) =>
-      dio.delete('/training-plans/$planId');
-
-  Future<void> archiveTrainingPlan(String planId) =>
-      dio.post('/training-plans/$planId/archive');
-
-  Future<void> restoreTrainingPlan(String id) async {
-    await dio.post('/training-plans/$id/restore');
-  }
-
-  Future<void> updateTrainingPlanOrder(String planId, int order) =>
-      dio.patch(
-        '/training-plans/$planId/order',
-        data: {'order': order},
-      );
-
-  Future<void> updateExercise({
-    required String planId,
-    required String folderId,
-    required String exerciseId,
-    required List<Map<String, dynamic>> sets,
-  }) async {
-    await dio.put(
-      '/training-plans/$planId/folders/$folderId/exercises/$exerciseId',
-      data: {
-        'sets': sets,
-      },
-    );
-  }
-
-  Future<List<dynamic>> getFolders(String planId) =>
-      _getList('/training-plans/$planId/folders');
-
-  Future<List<dynamic>> getArchivedFolders() =>
-      _getList('/training-folders/archived');
-
-  Future<void> createFolder({
-    required String trainingPlanId,
-    required String name,
-    required int order,
-  }) =>
-      dio.post(
-        '/training-plans/$trainingPlanId/folders',
-        data: {
-          'name': name,
-          'order': order,
-        },
-      );
-
-  Future<void> updateFolder({
-    required String folderId,
-    required String name,
-  }) =>
-      dio.patch(
-        '/training-folders/$folderId',
-        data: {'name': name},
-      );
+  Future<void> updateFolder({required String folderId, required String name}) =>
+      dio.patch('/training-folders/$folderId', data: {'name': name});
 
   Future<void> updateFolderOrder(String folderId, int order) =>
-      dio.patch(
-        '/training-folders/$folderId/order',
-        data: {'order': order},
-      );
+      dio.patch('/training-folders/$folderId/order', data: {'order': order});
 
-  Future<void> deleteFolder(String folderId) =>
-      dio.delete('/training-folders/$folderId');
+  Future<void> deleteFolder(String folderId) => dio.delete('/training-folders/$folderId');
+  Future<void> duplicateFolder(String folderId) => dio.post('/training-folders/$folderId/duplicate');
+  Future<void> archiveFolder(String folderId) => dio.post('/training-folders/$folderId/archive');
+  Future<void> restoreFolder(String folderId) => dio.post('/training-folders/$folderId/restore');
 
-  Future<void> duplicateFolder(String folderId) =>
-      dio.post('/training-folders/$folderId/duplicate');
-
-  Future<void> archiveFolder(String folderId) =>
-      dio.post('/training-folders/$folderId/archive');
-
-  Future<void> restoreFolder(String folderId) =>
-      dio.post('/training-folders/$folderId/restore');
-
-  Future<List<dynamic>> getExercises({
-    required String planId,
-    required String folderId,
-  }) =>
+  Future<List<dynamic>> getExercises({required String planId, required String folderId}) =>
       _getList('/training-plans/$planId/folders/$folderId/exercises');
 
   Future<void> createExercise({
@@ -131,21 +55,20 @@ class DashboardApi {
     required String bodyRegion,
     required List<Map<String, dynamic>> sets,
   }) =>
-      dio.post(
-        '/training-plans/$planId/folders/$folderId/exercises',
-        data: {
-          'name': name,
-          'bodyRegion': bodyRegion,
-          'sets': sets,
-        },
-      );
+      dio.post('/training-plans/$planId/folders/$folderId/exercises', data: {'name': name, 'bodyRegion': bodyRegion, 'sets': sets});
+
+  Future<void> updateExercise({
+    required String planId,
+    required String folderId,
+    required String exerciseId,
+    required List<Map<String, dynamic>> sets,
+  }) =>
+      dio.put('/training-plans/$planId/folders/$folderId/exercises/$exerciseId', data: {'sets': sets});
 
   Future<void> deleteExercise({
     required String planId,
     required String folderId,
     required String exerciseId,
   }) =>
-      dio.delete(
-        '/training-plans/$planId/folders/$folderId/exercises/$exerciseId',
-      );
+      dio.delete('/training-plans/$planId/folders/$folderId/exercises/$exerciseId');
 }
