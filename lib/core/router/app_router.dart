@@ -16,8 +16,8 @@ import '../../features/workout/presentation/screens/workout_exercise_detail_scre
 import '../../features/workout/presentation/screens/workout_summary_screen.dart';
 import '../../core/ui/privacy_webview.dart';
 
-import '../auth/auth_provider.dart';
-import '../navigation/main_navigation.dart';
+import '../auth/auth_state_provider.dart';
+import '../navigation/main_navigation_widget.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
