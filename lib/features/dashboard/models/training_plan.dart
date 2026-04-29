@@ -27,34 +27,23 @@ class TrainingPlan {
     String? originFolderName,
     List<dynamic>? folders,
     bool? isArchived,
-  }) {
-    return TrainingPlan(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      order: order ?? this.order,
-      exercises: exercises ?? this.exercises,
-      originFolderName: originFolderName ?? this.originFolderName,
-      folders: folders ?? this.folders,
-      isArchived: isArchived ?? this.isArchived,
-    );
-  }
-
-  // 🔥 SAFE INT PARSER
-  static int _parseOrder(dynamic value) {
-    if (value == null) return 0;
-    if (value is int) return value;
-    if (value is double) return value.toInt();
-    if (value is String) return int.tryParse(value) ?? 0;
-    return 0;
-  }
+  }) =>
+      TrainingPlan(
+        id: id ?? this.id,
+        name: name ?? this.name,
+        order: order ?? this.order,
+        exercises: exercises ?? this.exercises,
+        originFolderName: originFolderName ?? this.originFolderName,
+        folders: folders ?? this.folders,
+        isArchived: isArchived ?? this.isArchived,
+      );
 
   factory TrainingPlan.fromJson(Map<String, dynamic> json) {
     final ex = (json['exercises'] as List?) ?? [];
-
     return TrainingPlan(
       id: (json['id'] ?? json['_id'] ?? '').toString(),
       name: (json['title'] ?? json['name'] ?? '').toString(),
-      order: _parseOrder(json['order']), // 🔥 FIX
+      order: json['order'] is int ? json['order'] as int : int.tryParse('${json['order']}') ?? 0,
       exercises: ex.map((e) => Exercise.fromJson(e)).toList(),
       originFolderName: json['originFolderName']?.toString(),
       folders: (json['folders'] as List?) ?? [],
@@ -62,15 +51,13 @@ class TrainingPlan {
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': name,
-      'order': order,
-      'exercises': exercises.map((e) => e.toJson()).toList(),
-      'originFolderName': originFolderName,
-      'folders': folders,
-      'isArchived': isArchived,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'title': name,
+    'order': order,
+    'exercises': exercises.map((e) => e.toJson()).toList(),
+    'originFolderName': originFolderName,
+    'folders': folders,
+    'isArchived': isArchived,
+  };
 }
