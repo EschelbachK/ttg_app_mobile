@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/api/exercise_service.dart';
+import '../../../core/api/catalog_exercise_service.dart';
 import '../../../core/network/dio_provider.dart';
-import '../../../core/error/global_error_handler.dart';
+import '../../../core/error/core_global_error_handler.dart';
 import '../../../core/offline/offline_queue.dart';
 import '../../../core/offline/offline_action.dart';
 import '../../../core/offline/offline_cache.dart';
