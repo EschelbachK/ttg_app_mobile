@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import '../offline/sync_provider.dart';
+import '../sync/sync_provider.dart';
 import '../settings/settings_controller.dart';
 
 final connectivityProvider = Provider<void>((ref) {
