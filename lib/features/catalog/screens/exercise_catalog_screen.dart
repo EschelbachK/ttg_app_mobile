@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/body_regions.dart';
-import '../../../core/constants/exercise_types.dart';
-import '../../../core/constants/exercise_tags.dart';
+import '../../../core/constants/exercise_body_regions.dart';
+import '../../../core/constants/exercise_types_constants.dart';
+import '../../../core/constants/exercise_tags_constants.dart';
 import '../state/exercise_catalog_provider.dart';
 
 class ExerciseCatalogScreen extends ConsumerStatefulWidget {
