@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../catalog/state/exercise_catalog_state.dart';
-import '../../../core/constants/body_regions.dart';
+import '../../../core/constants/exercise_body_regions.dart';
 
 class ExerciseCategoryScreen extends ConsumerStatefulWidget {
   final String category;
