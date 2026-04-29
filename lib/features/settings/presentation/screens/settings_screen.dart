@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/settings/settings_controller.dart';
-import '../../../../core/offline/sync_state_provider.dart';
-import '../../../../core/offline/sync_state.dart';
+import '../../../../core/sync/sync_state_provider.dart';
+import '../../../../core/sync/sync_state.dart';
 import '../widgets/settings_bottom_sheets.dart';
 import '../widgets/settings_section.dart';
 import '../widgets/settings_tile.dart';
