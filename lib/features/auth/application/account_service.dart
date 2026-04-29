@@ -1,4 +1,4 @@
-import '../../../core/api/account_api.dart';
+import '../../../core/api/auth_account_api.dart.dart';
 
 class AccountService {
   final AccountApi api;
