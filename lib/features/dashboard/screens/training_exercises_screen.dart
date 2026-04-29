@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../state/dashboard_provider.dart';
-import '../../../core/layout/app_layout.dart';
+import '../../../core/layout/app_layout_widget.dart';
 
 class TrainingExercisesScreen extends ConsumerWidget {
   final String folderId;
